@@ -1,0 +1,5 @@
+
+
+bool installScript(packinst inst);
+
+
