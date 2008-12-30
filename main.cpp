@@ -19,7 +19,7 @@ void mrt();
 
 
 int main(int argc, char *argv[]){
-    //Config::initialise(argv[0]);
+    Config::initialise(argv[0]);
 
 
     if(argc < 2){
@@ -86,8 +86,8 @@ void help()
 void mrt()
 {
 cout<<"\n\n";
-cout<<"          ___         "<<endl;
-cout<<"         |___|        "<<endl;
+cout<<"                 ___         "<<endl;
+cout<<"                |___|        "<<endl;
 cout<<"	       /  o o \\      "<<endl;
 cout<<"	      [c-_  __|      "<<endl;
 cout<<"	       \\__-(--)      "<<endl;
