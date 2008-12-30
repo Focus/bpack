@@ -10,14 +10,16 @@ using namespace std;
 #include "config.hpp"
 #include "install.hpp"
 
-//List of functions we need.
+//List of functions we need.
+
 void help();
+void mrt();
 
 
 
-//Just an example, load up test.txt
+
 int main(int argc, char *argv[]){
-    Config::initialise(argv[0]);
+    //Config::initialise(argv[0]);
 
 
     if(argc < 2){
@@ -61,6 +63,8 @@ int main(int argc, char *argv[]){
               printPackages(getInstalledPackages(Config::getPacklistPath().c_str()));
               //cout << "list not aviliable\n";
               }
+         else if(!strcmp(argv[1],"mrt"))
+              mrt();
          else
               cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details!\n";
               
@@ -75,5 +79,21 @@ void help()
      cout<<"\n\tupgrade [package] \t upgrades [package] to the lastest version";
      cout<<"\n\tscan \t scans the computer for installed packages";
      cout<<"\n\tlist \t lists the installed packages that bpack has stored\n";
+     
+     cout<<"\n\nThis bpack has Mr.T powers!!\n\n";
 
+}
+void mrt()
+{
+cout<<"\n\n";
+cout<<"          ___         "<<endl;
+cout<<"         |___|        "<<endl;
+cout<<"	       /  o o \\      "<<endl;
+cout<<"	      [c-_  __|      "<<endl;
+cout<<"	       \\__-(--)      "<<endl;
+cout<<"	     ( \\=====/ )     "<<endl;
+cout<<"	     ( )\\===/( )     "<<endl;
+cout<<"	    (--) --- (--)    "<<endl;
+cout<<""<<endl;
+cout<<"I PITY THE FOOL THAT DOESN'T BPACK!!"<<endl;
 }
