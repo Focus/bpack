@@ -1,0 +1,184 @@
+README 
+	Bpack developed by Bati Sengul and Michael Bush
+==Contents==
+
+1. 	=Installation=
+
+   a.	Pre-requisites
+   b.	Instructions
+
+2.	=Configuration=
+
+3.	=Usage=
+
+   a.	Installing packages
+      i.	Basic installation
+      ii.	Advanced options
+      iii.	Making installation scrips
+      iv.	Making package discriptions
+      v.	Checking packages
+   b.	Removing packages
+      i.	Basic removal
+      ii.	Removing scanned files
+      iii.	Manual removal
+   c.	Upgrading packages
+   d.	Running updates
+   e.	Scanning the computer for pre-installed packages
+
+4.	=Contributing=
+
+   a.	Development
+   b.	Donating
+
+
+
+
+
+				=== 1 ===  ===Installation===
+
+
+== a ==  ==Pre-requisites==
+
+Bpack currently requires a working linux/unix system. It also requires gcc, glibc, binutils and wget, also you may want to get git. Bpack does not really need wget if you grab all the tar balls your self and point bpack towards them (look at 3.a.ii).
+
+
+
+== b ==  ==Instructions==
+
+Do 
+
+	./configure 
+
+to run the configure script. Then the package can be made with
+
+	make
+
+and installed as root with,
+
+	make install
+
+One can of course pass parameters such as --prefix to configure and DESTDIR to make to change the destination in which bpack is installed.
+
+
+
+				=== 2 ===  ===Configuration===
+
+To configure the way bpack work edit the configuration file which is in /etc/bpack.conf by default. Here is a list of configurations:
+
+
+
+				=== 3 ===  ===Usage===
+
+
+== a ==  ==Installing packages==
+
+
+=i=   =Basic Installation=
+
+Bpack packages are installed with
+
+	bpack install [package]
+
+[package] is the package to be installed. For example to install gcc,
+
+	bpack install gcc
+
+or to install gcc version 4.3.2,
+
+	bpack install gcc-4.3.2
+
+Multiple packages can be installed from a single call by listing packages, e.g. to install gcc, wget and ncurses call
+
+	bpack install gcc wget ncurses
+
+
+
+=ii=   =Advanced Options=
+
+Bpack can do more than just install things like binaries. The major advantage of compiling software from source is that it can be configured to your wishes. Bpack allows for full configuration. To pass arguments to configure, make and make install script run
+
+	bpack install [package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]"
+
+You can also do this for multiple files by,
+
+	bpack install [package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]" \
+	[package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]"
+
+For example, installing gcc you may do ./configure --prefix=/usr --enable-sharing, make DESTDIR=/opt, make DESTDIR=/usr install, the bpack equivalent of this is
+
+	bpack install gcc --configure="--prefix=/usr --enable-sharing" --make="DESTDIR=/opt" --makeinstall="DESTDIR=/usr"
+
+
+Bpack can also patch packages before installing them. The patch must be downloaded manually (unless it is in the install script)
+
+	bpack install [package] --patch=[patch directory]
+
+Please make sure the directory is a full directory, e.g. /home/user/patches/patch.patch and NOT something like ./patch.
+
+
+
+=iii=   =Making Installation Scripts=
+
+Making installation scripts for bpack is very easy. There is software to do this for you, called bpackgen,
+
+	bpackgen [package] [archive type]
+
+
+
+=iv=   =Making Package Discriptions=
+
+Making your own package discriptions is always a good idea. We may not have all the packages in our list so if you desire to install a package that has no discriptions, you can make your own! Package discriptions are very simple, they are stored in [bpack dir]/packs. They are of the form
+
+	[Version;
+	git url;
+	config options;
+	make options;
+	make install options;
+	dependencies (separated by commas);]
+
+You can leave any of them empty other than version. The file must be saved as package, if there already is a file named as such, please append it to the top of the file.
+
+As an example we shall make a foo-0.0.1 package discription. We have no git url, configure options is --enable-food,make has parameters DESTDIR=/foo and no make install parameters. Also foo depends on bar and bar2. First check if there is a packs/foo , if not create one, and append the following to the top of the file;
+
+	[0.0.1;
+	;
+	--enable-food;
+	DESTDIR=/foo;
+	;
+	bar,bar2;]
+
+Bpack does not care about whitespace so it is used for purely astetic purposes. Please submit any packages we do not have discriptions for!
+
+
+=v=   =Checking Packages=
+
+I have no idea why I had this section :|
+
+
+
+== c ==  ==Removing Packages==
+
+
+=i=   =Basic Removal=
+
+Removing packages with bpack is easy as Mr.T;
+
+	bpack remove [package]
+
+e.g. if you wish to remove gcc (don't do this!),
+	
+	bpack remove gcc
+
+
+=ii=   =Removing Scanned Files=
+
+For scanning the computer see 3.e. The important thing to remember is to CHECK THE SCAN BEFORE REMOVING FILES that are installed. No seriously. Scanned locations may be compleately wrong, it is your duty to check they are sane!!
+
+
+
+=iii=   =Manual Removal=
+
+
+
+
+				=== 4 ===  ===Contributing===
