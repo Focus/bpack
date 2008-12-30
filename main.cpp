@@ -21,20 +21,14 @@ void mrt();
 
 int main(int argc, char *argv[]){
     Config::initialise(argv[0]);
-
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;
     }    
          else if(!strcmp(argv[1], "install")){
-              if(argc > 2)
-                install(argv[2]);
-                //cout << "Install not currently availiable\n";
-         
-              else{
-                     cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
-                     return 0;
-               }
+              
+              preinstall(argv,argc);
+              
          }    
          else if(!strcmp(argv[1],"scan")){
               cout<<"\nScan called";

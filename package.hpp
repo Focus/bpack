@@ -16,6 +16,7 @@ class package
              ~package(){}
              std::string getName() const {return name;}
              std::string getVersion() const {return ver.asString();}
+             version Version() const {return ver;}
              std::vector<std::string> getLocations() const {return locations;}
              bool getScan() const {return scan;}
              void setName(const std::string pname){name=pname;}

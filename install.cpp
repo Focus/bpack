@@ -11,8 +11,22 @@ using namespace std;
 #include "storage.hpp"
 #include "config.hpp"
 
+//Separates the foo-0.2.2 to foo and 0.2.2
+void depVersion(string &dep, version &ver){
+        int pos;
+        pos=dep.find("-",0);
+        if(pos>0){
+                  ver=dep.substr(pos+1,dep.size());
+                  dep=dep.substr(0,pos);
+                  cout<<"\n\n"<<dep<<endl;
+                  cout<<ver;
+                  }
+        
+}
 
-void install(const char* packname)
+
+//Recursively checks for dependencies and installs files (passes them to install script)
+void install(const char* packname,const string configp="",const string makep="",const string makeinstp="")
 {
      string *packdir=new string;
      *packdir=packname;
@@ -48,32 +62,52 @@ void install(const char* packname)
      instructs->push_back("");
      instructs->resize(6);
      separate(text,*instructs,0);
+     //Construct package installation instructions
      packinsty->setName(packname);
      packinsty->setVersion((*instructs)[0]);
      packinsty->setGit((*instructs)[1]);
+     
+     //Check for passed parameters, if none, use default!
+     if(strcmp(configp.c_str(),""))
+     packinsty->setConfig(configp);
+     else
      packinsty->setConfig((*instructs)[2]);
+     
+     if(strcmp(makep.c_str(),""))
+     packinsty->setMake(makep);
+     else
      packinsty->setMake((*instructs)[3]);
+     
+     if(strcmp(makeinstp.c_str(),""))
+     packinsty->setMakeInst(makeinstp);
+     else
      packinsty->setMakeInst((*instructs)[4]);
+     
      packinsty->setDeps(loadLocation((*instructs)[5]));
      
      vector<package> *installed=new vector<package>;
      *installed=getInstalledPackages(Config::getPacklistPath().c_str());
      string y;
         bool gotit;
-
+        version depver;
      while(packinsty->getNextDep(y)){
         for(int i=0;i<installed->size();i++){
                 gotit=0;
+                depVersion(y,depver);
                 //cout<<"\n"<<(*installed)[i].getName()<<endl;
             if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
             {
+             if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
                  cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
                  cout.flush();
 
                  packinsty->removeDep(packinsty->getLoc());
                 gotit=1;
                 break;
-                 
+                }
+                else{
+                     cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
+                     }
             }
             
         }
@@ -95,3 +129,40 @@ void install(const char* packname)
 
 
 
+//Catching parameters passed...
+void preinstall(char* argv[],const int argc){
+          vector<int> files;
+          string configp,makep,makeinstp;
+          if(argc==2){
+                      cerr<<"\nNo packages passed to install!"<<endl;
+                      exit(1);
+                      }
+          for(int i=2;i<argc;i++){
+                  if(strncmp(argv[i],"--",2))
+                  files.push_back(i);
+          }
+          for(int i=0;i<files.size();i++){
+          configp="";
+          makep="";
+          makeinstp="";
+          for(int j=files[i]+1;j<files[i+1];j++){
+                  
+                  if(!strncmp(argv[j],"--config=",9)){
+                        configp=argv[j];
+                        configp=configp.substr(10,configp.size()-10);
+                        cout<<configp;
+                        }
+                  if(!strncmp(argv[j],"--make=",8)){
+                        makep=argv[j];
+                        makep=makep.substr(9,makep.size()-9);
+                        cout<<makep;
+                        }
+                  if(!strncmp(argv[j],"--makeinst=",12)){
+                        makeinstp=argv[j];
+                        makeinstp=makeinstp.substr(13,makeinstp.size()-13);
+                        cout<<makeinstp;
+                        }
+                  }
+                  install(argv[files[i]],configp,makep,makeinstp);
+                  }
+}

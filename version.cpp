@@ -4,7 +4,8 @@
 #include <fstream>
 #include "version.hpp"
 #include <sstream>
-
+//For testing:
+#include <iostream>
 using namespace std;
 //Default is to set 0.0.0
 version::version()
@@ -26,6 +27,7 @@ version::~version(){
 //Adds a version from a string by finding the . and taking integers before it
 void version::setVersion(string ver)
 {
+     numbers.clear();
       vector<int> breaks;
       int temp;
       temp=ver.find(".",0);
@@ -36,6 +38,7 @@ void version::setVersion(string ver)
       for(int i=0;i<breaks.size();i++){
               ver.replace(breaks[i],1," ");
               }
+
       istringstream strin(ver,istringstream::in);
       
       for(int i=0;i<=breaks.size();i++){
