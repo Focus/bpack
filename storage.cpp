@@ -5,6 +5,7 @@
 
 
 using namespace std;
+#include "version.hpp"
 #include "package.hpp"
 #include "storage.hpp"
 

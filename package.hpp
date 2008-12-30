@@ -15,18 +15,19 @@ class package
              package(const packinst inst);
              ~package(){}
              std::string getName() const {return name;}
-             std::string getVersion() const {return version;}
+             std::string getVersion() const {return ver.asString();}
              std::vector<std::string> getLocations() const {return locations;}
-             bool getScan(){return scan;}
+             bool getScan() const {return scan;}
              void setName(const std::string pname){name=pname;}
-             void setVersion(const std::string pname){version=pname;}
+             void setVersion(const std::string pname){ver=pname;}
              void setLocations(const std::vector<std::string> plocations){locations=plocations;}
              void addLocation(const std::string plocation){locations.push_back(plocation);}
-             void setScan(bool pscan){scan=pscan;}
+             void setScan(const bool pscan){scan=pscan;}
              bool write();
              
       private:
-              std::string name,version;
+              std::string name;
+              version ver;
               std::vector<std::string> locations;
               bool scan;
 };

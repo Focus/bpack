@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include "version.hpp"
 #include "packinst.hpp"
 #include "package.hpp"
 #include "config.hpp"
@@ -24,7 +25,7 @@ package::package(const string pname,const vector<string> plocations)
 package::package(const packinst inst)
 {
                        name=inst.getName();
-                       version=inst.getVersion();
+                       ver=inst.getVersion();
                         scan=0;                    
                        
 }
@@ -43,7 +44,7 @@ bool package::write(){
      text << "[";
      text << name;
      text <<";\n";
-     text <<version;
+     text <<ver;
      text <<";\n";
      text << locations[0];
      for (int i=1;i<locations.size();i++){

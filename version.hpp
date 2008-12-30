@@ -25,10 +25,13 @@ class version{
              void operator= (const std::string);
              void setVersion(std::string);
              void setVersion(std::vector<int> vec){numbers=vec;}
+             
             
       private:
              std::vector<int> numbers; 
 };
 
-
+//IO operators
+std::ostream& operator<< (std::ostream&, version&);
+std::ofstream& operator<< (std::ofstream&, version&);
 #endif

@@ -4,6 +4,7 @@
 
 using namespace std;
 #include "packinst.hpp"
+#include "version.hpp"
 #include "package.hpp"
 #include "config.hpp"
 

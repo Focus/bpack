@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 using namespace std;
+#include "version.hpp"
 #include "packinst.hpp"
 #include "package.hpp"
 #include "installscript.hpp"

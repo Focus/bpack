@@ -4,6 +4,7 @@
 #include <vector>
 #include <fstream>
 using namespace std;
+#include "version.hpp"
 #include "package.hpp"
 #include "storage.hpp"
 #include "scan.hpp"
@@ -20,7 +21,6 @@ void mrt();
 
 int main(int argc, char *argv[]){
     Config::initialise(argv[0]);
-
 
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";

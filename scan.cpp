@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 using namespace std;
+#include "version.hpp"
 #include "package.hpp"
 #include "storage.hpp"
 #include "scan.hpp"

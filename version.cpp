@@ -1,5 +1,7 @@
 #include <vector>
 #include <string>
+#include <ostream>
+#include <fstream>
 #include "version.hpp"
 #include <sstream>
 
@@ -110,4 +112,28 @@ bool version::operator>= (const string str) const{
 
 void version::operator= (const string str){
      this->setVersion(str);
+}
+
+string version::asString() const{
+     string str="";
+     ostringstream temp;
+     temp <<(this->asVector())[0];
+     str=temp.str();
+     for(int i=1;i<(this->asVector()).size();i++){
+             temp.str("");
+             temp<<(this->asVector())[i];
+             str=str+"."+temp.str();
+             }
+     return str;
+}
+
+ostream& operator<< (ostream& ioo, version& ver){
+     string str=ver.asString();
+     ioo<<str;
+     //return ioo;
+}
+ofstream& operator<< (ofstream& ioo, version& ver){
+     string str=ver.asString();
+     ioo<<str;
+     //return ioo;
 }
