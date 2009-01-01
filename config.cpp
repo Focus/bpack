@@ -23,5 +23,5 @@ void Config::initialise(char* argv0)
     tarballdir = installdir + "tarballs/";
     packmandir = installdir + "packman/";
     packlistpath = installdir + "packs.list";
-
+    //website="http://bpack.googlecode.com/files/";
 }

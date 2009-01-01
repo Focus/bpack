@@ -18,23 +18,23 @@ void depVersion(string &dep, version &ver){
         if(pos>0){
                   ver=dep.substr(pos+1,dep.size());
                   dep=dep.substr(0,pos);
-                  cout<<"\n\n"<<dep<<endl;
-                  cout<<ver;
                   }
         
 }
 
 
 //Recursively checks for dependencies and installs files (passes them to install script)
-void install(const char* packname,const string configp="",const string makep="",const string makeinstp="")
+void install(string packname,const string configp="",const string makep="",const string makeinstp="")
 {
      string *packdir=new string;
+     version *ver=new version;
+     depVersion(packname,*ver);
      *packdir=packname;
+     
      //IMPORTANT
      *packdir=Config::getPackInstDir()+*packdir;
      packinst *packinsty=new packinst;
      ifstream textfile;
-     cout<<*packdir;
      textfile.open(packdir->c_str());
      delete packdir;
      if(!textfile)
@@ -42,7 +42,10 @@ void install(const char* packname,const string configp="",const string makep="",
           cerr<<"\n\nPackage "<<packname<<" not found. Check the package name or try again after   bpack update \n\n";            
           exit(1);
      }
+     if(*ver=="0.0.0")
      cout<<"\nPackage "<<packname<<" to be installed.\n";
+     else
+     cout<<"\nPackage "<<packname<<"-"<<ver<<" to be installed.\n";
      string text;
      string x;
      while(textfile.good())
@@ -53,15 +56,27 @@ void install(const char* packname,const string configp="",const string makep="",
           
      }
      textfile.close();
-
+     
      cout<<"\nChecking for dependencies....";
-        cout.flush();
+     
 
 
      vector<string> *instructs=new vector<string>;
      instructs->push_back("");
      instructs->resize(6);
-     separate(text,*instructs,0);
+     int start=0;
+     while((start+1<text.size())&&(!(*ver=="0.0.0"))){
+     start=separate(text,*instructs,start);
+     if(*ver==(*instructs)[0])
+     break;
+     
+     }
+     if(! (*ver==(*instructs)[0])){
+          cout<<"\nI couldn't find "<<packname<<"-"<<(*ver)<<".\n\nI will install the latest version I have!\n";
+          install(*packdir);
+          exit(0);
+          }
+     
      //Construct package installation instructions
      packinsty->setName(packname);
      packinsty->setVersion((*instructs)[0]);
@@ -94,7 +109,6 @@ void install(const char* packname,const string configp="",const string makep="",
         for(int i=0;i<installed->size();i++){
                 gotit=0;
                 depVersion(y,depver);
-                //cout<<"\n"<<(*installed)[i].getName()<<endl;
             if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
             {
              if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
@@ -114,13 +128,14 @@ void install(const char* packname,const string configp="",const string makep="",
         if (!gotit)
             {
                 cout<<"\nDependency "<<y<<" needs to be installed.";
-                install(y.c_str()); 
+                install(y); 
             }
      }
         //delete gotit;
      cout<<"\nInstalling "<<packname<<"...\n";
      //Have a packinst!
      installScript(*packinsty);
+     delete ver;
      delete installed;
      delete packinsty;
      delete instructs;
@@ -132,7 +147,8 @@ void install(const char* packname,const string configp="",const string makep="",
 //Catching parameters passed...
 void preinstall(char* argv[],const int argc){
           vector<int> files;
-          string configp,makep,makeinstp;
+          string configp,makep,makeinstp,name;
+          version ver;
           if(argc==2){
                       cerr<<"\nNo packages passed to install!"<<endl;
                       exit(1);
@@ -150,19 +166,20 @@ void preinstall(char* argv[],const int argc){
                   if(!strncmp(argv[j],"--config=",9)){
                         configp=argv[j];
                         configp=configp.substr(10,configp.size()-10);
-                        cout<<configp;
+                        //cout<<configp;
                         }
                   if(!strncmp(argv[j],"--make=",8)){
                         makep=argv[j];
                         makep=makep.substr(9,makep.size()-9);
-                        cout<<makep;
+                        //cout<<makep;
                         }
                   if(!strncmp(argv[j],"--makeinst=",12)){
                         makeinstp=argv[j];
                         makeinstp=makeinstp.substr(13,makeinstp.size()-13);
-                        cout<<makeinstp;
+                        //cout<<makeinstp;
                         }
                   }
-                  install(argv[files[i]],configp,makep,makeinstp);
+                  name=argv[files[i]];
+                  install(name,configp,makep,makeinstp);
                   }
 }

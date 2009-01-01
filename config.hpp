@@ -3,7 +3,7 @@
 class Config{
       
     private:
-        static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir;
+        static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website;
 
 
     public:
@@ -23,6 +23,9 @@ class Config{
 
         // gets the path of the packlist
         static std::string getPacklistPath() {return packlistpath;}
+        
+        //gets the website for bpack
+        //static std::string getSite(){return website;}
         
         static void initialise(char* argv0);
 
