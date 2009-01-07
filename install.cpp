@@ -22,11 +22,56 @@ void depVersion(string &dep, version &ver){
         
 }
 
+//Extracts locations from the copy log
+vector<string> stripCp(string name){
+	vector<string> locs;
+	ifstream *textfile=new ifstream;
+	textfile->open((Config::getLogDir()+name+"-copy.log").c_str());
+	if(!(*textfile)){
+		cerr<<"\nI can't find the copy log!"<<endl;
+		exit(1);
+	}
+	string *text=new string;
+	string *x=new string;
+	while(!textfile->eof())
+	{
+		*textfile >> *x;
+        	if(!textfile->eof())
+        	*text +=*x;
+	}
+	int start=1;
+	//find the locations, they look like	source -> `dest'
+	while(start>0){
+	start=text->find("->",start);
+	locs.push_back(text->substr(text->find("`",start)+1,text->find("'",start)-text->find("`",start)-1));
+	start++;
+	}
+	delete x;
+	delete text;
+	delete textfile;
+	return locs;
+	
+}
+
+//Installs and cleans up packages
+void clean(packinst pack){
+	cout<<"\nCopying files..."<<endl;
+	package *installed=new package;
+	system(("cp -rv "+Config::getPackmanDir()+pack.getName()+"/* / > "+Config::getLogDir()+pack.getName()+"-copy.log").c_str());
+	installed->setLocations(stripCp(pack.getName()));
+	installed->setVersion(pack.getVersion());
+	installed->setName(pack.getName());
+	installed->write();
+	delete installed;
+	cout<<"Clearing up..."<<endl;
+	system(("rm -rf "+Config::getPackmanDir()+pack.getName()+"/").c_str());
+	system(("rm -rf "+Config::getTarballDir()+pack.getName()+"/").c_str());
+}
 
 //Recursively checks for dependencies and installs files (passes them to install script)
 void install(string packname,const string configp="",const string makep="",const string makeinstp="")
 {
-     string *packdir=new string;
+	string *packdir=new string;
      version *ver=new version;
      depVersion(packname,*ver);
      *packdir=packname;
@@ -48,12 +93,11 @@ void install(string packname,const string configp="",const string makep="",const
      cout<<"\nPackage "<<packname<<"-"<<ver<<" to be installed.\n";
      string text;
      string x;
-     while(textfile.good())
+     while(!textfile.eof())
      {
-          textfile >> x;
-                if(!textfile.eof())          
-                text +=x;
-          
+        textfile >> x;
+        if(!textfile.eof())
+        text +=x;
      }
      textfile.close();
      
@@ -65,17 +109,18 @@ void install(string packname,const string configp="",const string makep="",const
      instructs->push_back("");
      instructs->resize(6);
      int start=0;
-     while((start+1<text.size())&&(!(*ver=="0.0.0"))){
+
+     //while((start+1<text.size())&&(!(*ver=="0.0.0"))){
      start=separate(text,*instructs,start);
-     if(*ver==(*instructs)[0])
-     break;
+     //if(*ver==(*instructs)[0])
+     //break;
      
-     }
-     if(! (*ver==(*instructs)[0])){
+     //}
+     /*if((! (*ver==(*instructs)[0]))&& !(*ver=="0.0.0")){
           cout<<"\nI couldn't find "<<packname<<"-"<<(*ver)<<".\n\nI will install the latest version I have!\n";
-          install(*packdir);
+          install(packname);
           exit(0);
-          }
+          }*/
      
      //Construct package installation instructions
      packinsty->setName(packname);
@@ -105,6 +150,7 @@ void install(string packname,const string configp="",const string makep="",const
      string y;
         bool gotit;
         version depver;
+	//check for dependencies
      while(packinsty->getNextDep(y)){
         for(int i=0;i<installed->size();i++){
                 gotit=0;
@@ -134,7 +180,13 @@ void install(string packname,const string configp="",const string makep="",const
         //delete gotit;
      cout<<"\nInstalling "<<packname<<"...\n";
      //Have a packinst!
-     installScript(*packinsty);
+     if(installScript(*packinsty))
+	clean(*packinsty);
+	else{
+	cerr<<"\nError package not installed correctly. Consult the logs and inform us.\nWhat did you expect from an alpha build?"<<endl;
+	exit(1);
+	}
+	
      delete ver;
      delete installed;
      delete packinsty;

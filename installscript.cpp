@@ -32,7 +32,7 @@ bool installScript(packinst inst)
      
      
      // check if installed correctly
-     if(result)
+     if(!result)
          return false;  // don't know if this works
      
      package pack(inst);

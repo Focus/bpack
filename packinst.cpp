@@ -11,6 +11,6 @@ bool packinst::getNextDep(std::string &dep)
      dep=deps[loc];
      loc++;
      return 1;
-     }            
+     }
 }
 

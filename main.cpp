@@ -11,6 +11,7 @@ using namespace std;
 #include "config.hpp"
 #include "install.hpp"
 
+
 //List of functions we need.
 
 void help();
@@ -31,7 +32,6 @@ int main(int argc, char *argv[]){
               
          }    
          else if(!strcmp(argv[1],"scan")){
-              cout<<"\nScan called";
               scan();
               }
          else if(!strcmp(argv[1],"update"))
@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
          else if(!strcmp(argv[1],"--help"))
               help();
          else if(!strcmp(argv[1],"list")){
-              cout << "pi";
+              
               printPackages(getInstalledPackages(Config::getPacklistPath().c_str()));
               //cout << "list not aviliable\n";
               }
@@ -68,11 +68,17 @@ int main(int argc, char *argv[]){
 void help()
 {
      cout<<"\nHelp file...\nUsage: \n\n bpack [action] [parameters]\n\nactions:";
-     cout<<"\n\tinstall [package] \t installs [package]";
+     cout<<"\n\tinstall [package] [arguments] [package] [arguments].... \t installs [package]s with [arguments]s";
      cout<<"\n\tremove [package] \t removes [package]";
      cout<<"\n\tupgrade [package] \t upgrades [package] to the lastest version";
      cout<<"\n\tscan \t scans the computer for installed packages";
      cout<<"\n\tlist \t lists the installed packages that bpack has stored\n";
+	
+	cout<<"\n\ninstall arguments:\n";
+	cout<<"\t--config=\"config arguments\" \t passes config arguments to ./configure (e.g. --config=\"--prefix=/usr\")"<<endl;
+	cout<<"\t--make=\"make arguments\" \t passes make arguments to make (e.g. --make=\"DESTDIR=/usr\")"<<endl;
+	cout<<"\t--makeinst=\"make install arguments\" \t passes make install arguments to make install (e.g. --makeinst=\"DESTDIR=/usr\")"<<endl;
+	cout<<"\tBpack will use defaults, if you do not wish bpack to supply any arguments leave a \"\""<<endl;
      
      cout<<"\n\nThis bpack has Mr.T powers!!\n\n";
 

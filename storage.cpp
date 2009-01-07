@@ -27,36 +27,22 @@ const void checkBreaks (vector<int> breaks){
                 exit(1);
              }
 }
-/*Load package from the text string, start seeking at start
-int loadPackage(const string text,string &name,string &version,string &locations,const int start){
-     vector<int> breaks(5,0);
-     breaks[0]=text.find(";",start);
-     breaks[1]=text.find(";",breaks[0]+1);
-     breaks[2]=text.find(";",breaks[1]+1);
-     breaks[3]=text.find("[",start);
-     breaks[4]=text.find("]",breaks[2]);
-     checkBreaks(breaks);
-     //cout<<"\nThe brakes:\t"<<breaks[0]<<"  "<<breaks[1]<<"  "<<breaks[2]<<"  "<<breaks[3]<<"  "<<breaks[4]<<"\n";
-     name=text.substr(breaks[3]+1,breaks[0]-breaks[3]-1);
-     version=text.substr(breaks[0]+1,breaks[1]-breaks[0]-1);
-     locations=text.substr(breaks[1]+1,breaks[2]-breaks[1]-1);
-     
-    return breaks[4];
-}*/
 
 int separate(const string text,vector<string> &par,const int start){
      int numbreaks=par.size();
      vector<int> breaks(numbreaks+2,0);
     breaks[0]=text.find(";",start);
     for(int i=1;i<numbreaks;i++){
-     breaks[i]=text.find(";",breaks[i-1]+1);   
+     breaks[i]=text.find(";",breaks[i-1]+1);
+	  
         }
      breaks[numbreaks]=text.find("[",start);
-     breaks[numbreaks+1]=text.find("]",breaks[2]);   
+     breaks[numbreaks+1]=text.find("]",breaks[2]);
+   
         checkBreaks(breaks);
      //if(text[breaks[numbreaks]-1]=="!")
      
-     //cout<<"\nThe brakes:\t"<<breaks[0]<<"  "<<breaks[1]<<"  "<<breaks[2]<<"  "<<breaks[3]<<"  "<<breaks[4]<<"\n";
+     
      par[0]=text.substr(breaks[numbreaks]+1,breaks[0]-breaks[numbreaks]-1);
      for(int i=1; i<numbreaks;i++){
      par[i]=text.substr(breaks[i-1]+1,breaks[i]-breaks[i-1]-1);
