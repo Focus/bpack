@@ -1,7 +1,7 @@
-#include <string>
+#include <cstring>
 #include <iostream>
 #include <fstream>
-
+#include <cstdlib>
 using namespace std;
 #include "packinst.hpp"
 #include "version.hpp"
@@ -32,6 +32,7 @@ bool installScript(packinst inst)
      
      
      // check if installed correctly
+	cout<<result<<endl;
      if(!result)
          return false;  // don't know if this works
      

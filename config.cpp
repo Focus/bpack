@@ -1,5 +1,6 @@
 #include <iostream>
-#include <string>
+#include <cstring>
+#include <cstdlib>
 #include "config.hpp"
 
 
@@ -8,7 +9,7 @@
 void Config::initialise(char* argv0)
 {
     std::string apppath(argv0);
-
+	
 
     if (apppath.find('/') == 0) // absolute path 
         Config::installdir = apppath.substr(0, apppath.rfind('/')-1);
@@ -16,7 +17,7 @@ void Config::initialise(char* argv0)
         Config::installdir = getenv("PWD") + std::string("/") + apppath.substr(0, apppath.rfind('/')+1);
                                 // i don't think this will work if run through $PATH
     
-    std::cout << installdir << "\n";
+    //std::cout << installdir << "\n";
 
     scriptdir = installdir + "scripts/";
     packinstdir = installdir + "packs/";

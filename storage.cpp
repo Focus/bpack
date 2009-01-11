@@ -1,8 +1,8 @@
 #include <iostream>
-#include <string>
+#include <cstring>
 #include <vector>
 #include <fstream>
-
+#include <cstdlib>
 
 using namespace std;
 #include "version.hpp"
@@ -12,18 +12,19 @@ using namespace std;
 //Valid breaks? Otherwise quit!
 const void checkBreaks (vector<int> breaks){
      for(int i=0;i+2<breaks.size();i++){
+     		
              if((breaks[i]<=0 || breaks[i] > breaks[breaks.size()-1]))
              {
                 cerr<<"\n1Breaks are not valid, please check the configuration (if needs be delete it and scan again).";
-                system("pause");
                 exit(1);
              }
                                                                                                           
      }
+     
      if((breaks[breaks.size()-2]>=breaks[breaks.size()-1]) || (breaks[breaks.size()-1]-breaks[breaks.size()-3]!=1))
       {
                 cerr<<"\n2Breaks are not valid, please check the configuration (if needs be delete it and scan again).";
-                system("pause");
+ 
                 exit(1);
              }
 }

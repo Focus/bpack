@@ -1,5 +1,5 @@
 #include <vector>
-#include <string>
+#include <cstring>
 #include <ostream>
 #include <fstream>
 #include "version.hpp"

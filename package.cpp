@@ -1,6 +1,7 @@
 #include <iostream>
+#include <cstdlib>
 #include <fstream>
-#include <string>
+#include <cstring>
 #include <vector>
 #include "version.hpp"
 #include "packinst.hpp"

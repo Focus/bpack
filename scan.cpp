@@ -1,7 +1,8 @@
 #include <vector>
 #include <fstream>
-#include <string>
+#include <cstring>
 #include <iostream>
+#include <cstdlib>
 using namespace std;
 #include "version.hpp"
 #include "package.hpp"

@@ -1,8 +1,9 @@
-
-#include <string>
+#include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <sstream>
 using namespace std;
 #include "version.hpp"
 #include "packinst.hpp"
@@ -13,13 +14,16 @@ using namespace std;
 
 //Separates the foo-0.2.2 to foo and 0.2.2
 void depVersion(string &dep, version &ver){
-        int pos;
-        pos=dep.find("-",0);
-        if(pos>0){
+        int pos,temp;
+        pos=dep.find_last_of("-");
+        stringstream *ss= new stringstream;
+        (*ss) << dep.substr(pos+1,pos+2);
+        //If we have a - and the - isnt like hello-me
+        if(pos>0 && !((*ss) >> temp).fail()){
                   ver=dep.substr(pos+1,dep.size());
                   dep=dep.substr(0,pos);
                   }
-        
+        delete ss;
 }
 
 //Extracts locations from the copy log
@@ -76,7 +80,7 @@ void install(string packname,const string configp="",const string makep="",const
      depVersion(packname,*ver);
      *packdir=packname;
      
-     //IMPORTANT
+     //Check the package dir for the information file
      *packdir=Config::getPackInstDir()+*packdir;
      packinst *packinsty=new packinst;
      ifstream textfile;
@@ -152,16 +156,15 @@ void install(string packname,const string configp="",const string makep="",const
         version depver;
 	//check for dependencies
      while(packinsty->getNextDep(y)){
-        for(int i=0;i<installed->size();i++){
+        
+	for(int i=0;i<installed->size();i++){
                 gotit=0;
                 depVersion(y,depver);
             if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
             {
              if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
                  cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
-                 cout.flush();
-
-                 packinsty->removeDep(packinsty->getLoc());
+		packinsty->removeDep(packinsty->getLoc());
                 gotit=1;
                 break;
                 }
@@ -180,8 +183,10 @@ void install(string packname,const string configp="",const string makep="",const
         //delete gotit;
      cout<<"\nInstalling "<<packname<<"...\n";
      //Have a packinst!
-     if(installScript(*packinsty))
+     if(installScript(*packinsty)){
 	clean(*packinsty);
+	cout<<"\n"<<packinsty->getName()<<"-"<<packinsty->getVersion()<<" is installed!"<<endl;
+	}
 	else{
 	cerr<<"\nError package not installed correctly. Consult the logs and inform us.\nWhat did you expect from an alpha build?"<<endl;
 	exit(1);

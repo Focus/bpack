@@ -17,7 +17,7 @@ class packinst{
              std::string getMakeInst() const {return makeinst;}
              int getLoc() const {return loc;}
              bool getNextDep(std::string&);
-             void removeDep(const int deppos){deps.erase(deps.begin()+deppos);}
+             void removeDep(const int deppos){deps.erase(deps.begin()+deppos-1);loc--;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pversion){version=pversion;}
              void setGit(const std::string pgit){git=pgit;}
