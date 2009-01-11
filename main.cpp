@@ -11,9 +11,8 @@ using namespace std;
 #include "config.hpp"
 #include "install.hpp"
 
-
+#include "search.hpp"
 //List of functions we need.
-
 void help();
 void mrt();
 
