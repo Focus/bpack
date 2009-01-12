@@ -49,9 +49,9 @@ void _init (void){
 
 //Overwrite them to extract calls!
 int creat(const char* path,mode_t mode){
-	//int ret= true_open(path,O_CREAT | O_WRONLY | O_TRUNC,mode);
+	int ret= true_open(path,O_CREAT | O_WRONLY | O_TRUNC,mode);
 	printf(path);
-	return 0;
+	return ret;
 }
 
 int open(const char* path,int flags, ...){
