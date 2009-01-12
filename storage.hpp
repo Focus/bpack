@@ -1,9 +1,13 @@
 #ifndef _STORAGE_H
 #define _STORAGE_H
 
-vector<package> getInstalledPackages(const char* location);
-vector<string> loadLocation(const string locations);
-int separate(const string text,vector<string> &par,const int start);
-void printPackages(const vector<package> packagelist);
+#include <vector>
+
+std::vector<package> getInstalledPackages(const char*);
+std::vector<std::string> loadLocation(const std::string);
+int separate(const std::string,std::vector<std::string> &,const int);
+void printPackages(const std::vector<package>);
 
 #endif
+
+

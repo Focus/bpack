@@ -10,7 +10,7 @@ using namespace std;
 #include "scan.hpp"
 #include "config.hpp"
 #include "install.hpp"
-
+#include "remove.hpp"
 #include "search.hpp"
 //List of functions we need.
 void help();
@@ -20,7 +20,7 @@ void mrt();
 
 
 int main(int argc, char *argv[]){
-    Config::initialise(argv[0]);
+	Config::initialise(argv[0]);
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;
@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
               
          else if(!strcmp(argv[1],"remove")){
               if(argc > 2)
-              cout<<"\nRemove called";
+		removePack(argv[1]);
          
               else{
                      cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
