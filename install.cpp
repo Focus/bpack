@@ -11,6 +11,7 @@ using namespace std;
 #include "installscript.hpp"
 #include "storage.hpp"
 #include "config.hpp"
+#include "remove.hpp"
 
 //Separates the foo-0.2.2 to foo and 0.2.2
 void depVersion(string &dep, version &ver){
@@ -30,28 +31,19 @@ void depVersion(string &dep, version &ver){
 vector<string> stripCp(string name){
 	vector<string> locs;
 	ifstream *textfile=new ifstream;
-	textfile->open((Config::getLogDir()+name+"-copy.log").c_str());
+	textfile->open((Config::getLogDir()+"hijack_log.txt").c_str());
 	if(!(*textfile)){
-		cerr<<"\nI can't find the copy log!"<<endl;
+		cerr<<"\nI can't find the install log!"<<endl;
 		exit(1);
 	}
-	string *text=new string;
 	string *x=new string;
 	while(!textfile->eof())
 	{
 		*textfile >> *x;
         	if(!textfile->eof())
-        	*text +=*x;
-	}
-	int start=1;
-	//find the locations, they look like	source -> `dest'
-	while(start>0){
-	start=text->find("->",start);
-	locs.push_back(text->substr(text->find("`",start)+1,text->find("'",start)-text->find("`",start)-1));
-	start++;
+		  locs.push_back(*x);
 	}
 	delete x;
-	delete text;
 	delete textfile;
 	return locs;
 	
@@ -59,17 +51,15 @@ vector<string> stripCp(string name){
 
 //Installs and cleans up packages
 void clean(packinst pack){
-	cout<<"\nCopying files..."<<endl;
+	cout<<"\nAdding install paths..."<<endl;
 	package *installed=new package;
-	system(("cp -rv "+Config::getPackmanDir()+pack.getName()+"/* / > "+Config::getLogDir()+pack.getName()+"-copy.log").c_str());
 	installed->setLocations(stripCp(pack.getName()));
 	installed->setVersion(pack.getVersion());
 	installed->setName(pack.getName());
 	installed->write();
 	delete installed;
 	cout<<"Clearing up..."<<endl;
-	system(("rm -rf "+Config::getPackmanDir()+pack.getName()+"/").c_str());
-	system(("rm -rf "+Config::getTarballDir()+pack.getName()+"/").c_str());
+	erase(Config::getTarballDir()+pack.getName()+"/");
 }
 
 //Recursively checks for dependencies and installs files (passes them to install script)

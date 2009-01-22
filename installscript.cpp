@@ -12,22 +12,25 @@ using namespace std;
 bool installScript(packinst inst)
 {
      // get variables
-     string scriptname, scriptpath, tardir, installdir, logroot;
+  string scriptname, scriptpath, tardir, installdir, logroot,hijack;
      scriptname = inst.getName() + "-" + inst.getVersion() + ".bis";
      scriptpath = Config::getScriptDir() + scriptname;
      tardir = Config::getTarballDir();
      installdir = Config::getPackmanDir() + inst.getName();
      logroot = Config::getLogDir();
-     
+     hijack=Config::getLib();
      int result;
      
      // Check if script exists
      ifstream testscript(scriptpath.c_str());
      if(testscript.fail()){
          cout << "Script " + scriptname + " not found, here is where we look online\n";
-     } else
-         result = system(("bash -e " + scriptpath + " " + tardir + " " + installdir + " " + logroot + " \"" + inst.getConfig() + "\" \""
-                    + inst.getMake() + "\" \"" + inst.getMakeInst() + "\"").c_str());
+     } else{
+       //Preload the hijacker!
+       setenv("LD_PRELOAD",hijack.c_str(),1);
+       result = system(("bash -e " + scriptpath + " " + tardir + " " + installdir + " " + logroot + " \"" + inst.getConfig() + "\" \""
+			  + inst.getMake() + "\" \"" + inst.getMakeInst() + "\"").c_str());
+     }
      testscript.close();
      
      

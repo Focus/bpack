@@ -1,0 +1,1 @@
+gcc -fPIC -c ./hijack.c && ld -shared -soname hijack.so.1 -o hijack.so.1.0 -lc hijack.o -ldl

@@ -4,7 +4,7 @@
 #include "config.hpp"
 
 
- std::string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir;
+std::string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib;
 
 void Config::initialise(char* argv0)
 {
@@ -25,5 +25,6 @@ void Config::initialise(char* argv0)
     packmandir = installdir + "packman/";
     packlistpath = installdir + "packs.list";
 	logdir=installdir+"logs/";
+	lib=installdir+"libs/hijack.so.1.0";
     //website="http://bpack.googlecode.com/files/";
 }
