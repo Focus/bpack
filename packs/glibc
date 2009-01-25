@@ -1,0 +1,6 @@
+[2.9.200081229;
+;
+--disable-profile --enable-add-ons --enable-kernel=2.6.0 --libexecdir=/usr/lib/glibc;
+;
+;
+;]

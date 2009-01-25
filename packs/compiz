@@ -1,0 +1,7 @@
+[0.7.8;
+;
+--sysconfdir=/etc/gnome;
+;
+;
+startupnotification,gconf-2.0;]
+

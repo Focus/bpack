@@ -1,0 +1,6 @@
+[3.2;
+;
+--without-bash-malloc;
+;
+;
+ncurses,glibc;]
