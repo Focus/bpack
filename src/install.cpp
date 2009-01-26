@@ -31,7 +31,7 @@ void depVersion(string &dep, version &ver){
 vector<string> stripCp(string name){
 	vector<string> locs;
 	ifstream *textfile=new ifstream;
-	textfile->open((Config::getLogDir()+"hijack_log.txt").c_str());
+	textfile->open("/tmp/bpack_log.txt");
 	if(!(*textfile)){
 		cerr<<"\nI can't find the install log!"<<endl;
 		exit(1);
@@ -43,6 +43,7 @@ vector<string> stripCp(string name){
         	if(!textfile->eof())
 		  locs.push_back(*x);
 	}
+	erase("/tmp/bpack_log.txt");
 	delete x;
 	delete textfile;
 	return locs;

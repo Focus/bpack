@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <cstring>
+#include <cstdlib>
 #include "version.hpp"
 #include "package.hpp"
 #include "config.hpp"

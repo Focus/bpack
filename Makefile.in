@@ -1,0 +1,102 @@
+CC = @CC@
+CCDEPMODE = @CCDEPMODE@
+CFLAGS = @CFLAGS@
+CPP = @CPP@
+CPPFLAGS = @CPPFLAGS@
+CXX = @CXX@
+CXXCPP = @CXXCPP@
+CXXDEPMODE = @CXXDEPMODE@
+CXXFLAGS = @CXXFLAGS@
+CYGPATH_W = @CYGPATH_W@
+DEFS = @DEFS@
+DEPDIR = @DEPDIR@
+DSYMUTIL = @DSYMUTIL@
+DUMPBIN = @DUMPBIN@
+ECHO_C = @ECHO_C@
+ECHO_N = @ECHO_N@
+ECHO_T = @ECHO_T@
+EGREP = @EGREP@
+EXEEXT = @EXEEXT@
+FGREP = @FGREP@
+GREP = @GREP@
+INSTALL = @INSTALL@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LD = @LD@
+LDFLAGS = @LDFLAGS@
+LIBOBJS = @LIBOBJS@
+LIBS = @LIBS@
+LIBTOOL = @LIBTOOL@
+LIPO = @LIPO@
+LN_S = @LN_S@
+LTLIBOBJS = @LTLIBOBJS@
+MAKEINFO = @MAKEINFO@
+MKDIR_P = @MKDIR_P@
+NM = @NM@
+NMEDIT = @NMEDIT@
+OBJEXT = @OBJEXT@
+OTOOL = @OTOOL@
+OTOOL64 = @OTOOL64@
+PACKAGE = @PACKAGE@
+PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
+PACKAGE_NAME = @PACKAGE_NAME@
+PACKAGE_STRING = @PACKAGE_STRING@
+PACKAGE_TARNAME = @PACKAGE_TARNAME@
+PACKAGE_VERSION = @PACKAGE_VERSION@
+PATH_SEPARATOR = @PATH_SEPARATOR@
+RANLIB = @RANLIB@
+SED = @SED@
+SET_MAKE = @SET_MAKE@
+SHELL = @SHELL@
+STRIP = @STRIP@
+VERSION = 0.1
+bindir = @bindir@
+DESTDIR=/usr/local/bpack-$(VERSION)
+
+bpack: src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp libs/hijack.so.1.0 packs.list
+	$(CXX) $(CXXFLAGS) src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp -o bpack
+
+clean:
+	rm -f src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0
+
+libs/hijack.so.1.0: src/hijack.c
+	$(CC) -fPIC -c src/hijack.c -fno-stack-protector
+	$(LD) -shared -soname hijack.so.1 -o libs/hijack.so.1.0 -lc hijack.o -ldl
+
+packs.list:
+	touch packs.list
+
+install:
+	cp -rf packs $(DESTDIR)
+	cp -rf scripts $(DESTDIR)
+	cp bpack $(DESTDIR)
+	cp -rf libs $(DESTDIR)
+	rm -f $(bindir)/bpack
+	ln -s $(DESTDIR)/bpack $(bindir)/bpack
+	touch $(DESTDIR)/packs.list
+	touch /etc/bpack.conf
+
+tarclean:
+	rm -rf .tarball
+
+tar:
+	mkdir -p .tarball/bpack-$(VERSION)/libs
+	mkdir -p .tarball/bpack-$(VERSION)/src
+	touch .tarball/bpack-$(VERSION)/packs.list
+	cp config.h.in .tarball/bpack-$(VERSION)
+	cp config.sub .tarball/bpack-$(VERSION)
+	cp config.guess .tarball/bpack-$(VERSION)
+	cp install-sh .tarball/bpack-$(VERSION)
+	cp -rf scripts .tarball/bpack-$(VERSION)
+	cp -rf packs .tarball/bpack-$(VERSION)
+	cp src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp src/hijack.c .tarball/bpack-$(VERSION)/src
+	cp src/search.hpp src/remove.hpp src/config.hpp src/installscript.hpp src/storage.hpp src/packinst.hpp src/version.hpp src/install.hpp src/package.hpp src/scan.hpp .tarball/bpack-$(VERSION)/src
+	cp configure .tarball/bpack-$(VERSION)
+	cp Makefile.in .tarball/bpack-$(VERSION)
+	cp README .tarball/bpack-$(VERSION)
+	cp AUTHORS .tarball/bpack-$(VERSION)
+	cp ChangeLog .tarball/bpack-$(VERSION)
+	cd .tarball && tar cfvpj ../bpack-$(VERSION).tar.bz bpack-$(VERSION)
+	
