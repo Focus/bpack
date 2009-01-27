@@ -120,7 +120,7 @@ void install(string packname,const string configp="",const string makep="",const
      //Construct package installation instructions
      packinsty->setName(packname);
      packinsty->setVersion((*instructs)[0]);
-     packinsty->setGit((*instructs)[1]);
+     packinsty->setWget((*instructs)[1]);
      
      //Check for passed parameters, if none, use default!
      if(strcmp(configp.c_str(),""))
@@ -231,3 +231,95 @@ void preinstall(char* argv[],const int argc){
                   install(name,configp,makep,makeinstp);
                   }
 }
+
+//Makes a package and then installs it
+void makePack(string loc,const string configp,const string makep,const string makeinstp){
+
+	cout<<"\n\nMaking a package..."<<endl;
+	int name=loc.find_last_of("/");
+	if(name<=0){
+		cerr<<"\n\n This doesn't look like a internet file to me!"<<endl;
+	exit(1);
+	}
+	
+	int truename=(loc.substr(name+1)).find_last_of(".tar");
+
+	if(truename<=0){
+		cerr<<"\n\nThis is not a tarball!!"<<endl;
+		exit(1);
+	}
+	
+	string fil;
+	version ver;
+	fil=(loc.substr(name+1)).substr(0,truename-4);
+	
+	depVersion(fil,ver);
+	
+
+	//Lets make the end bit now
+	string out=loc;
+	out=out+";\n"+configp+";\n"+makep+";\n"+makeinstp+";\n";
+	string deps;
+	
+	cout<<"\n\nWhat are the dependencies? [Leave empty if you don't know/care] \nSeperate with a , e.g \t gcc,glibc,binutils"<<endl;
+
+	cin>>deps;
+
+	out=out+deps+";]\n\n";
+	ofstream textfile(  (Config::getPackInstDir()+fil).c_str() ,ios::app);
+
+	if(!textfile){
+		cerr<<"\n\nI don't have rights to the package directory!"<<endl;
+	exit(1);
+	}
+
+	textfile<<"[";
+	textfile<<ver;
+	textfile<<";\n";
+	textfile<<out;
+	textfile.close();
+
+	install(fil);
+}
+
+//Look familiar
+void internetinstall(char* argv[],const int argc){
+          vector<int> files;
+          string configp,makep,makeinstp,name;
+          version ver;
+          if(argc==2){
+                      cerr<<"\nNo packages passed to install!"<<endl;
+                      exit(1);
+                      }
+          for(int i=2;i<argc;i++){
+                  if(strncmp(argv[i],"--",2))
+                  files.push_back(i);
+          }
+          for(int i=0;i<files.size();i++){
+          configp="";
+          makep="";
+          makeinstp="";
+          for(int j=files[i]+1;j<files[i+1];j++){
+                  
+                  if(!strncmp(argv[j],"--config=",9)){
+                        configp=argv[j];
+                        configp=configp.substr(10,configp.size()-10);
+                        //cout<<configp;
+                        }
+                  if(!strncmp(argv[j],"--make=",8)){
+                        makep=argv[j];
+                        makep=makep.substr(9,makep.size()-9);
+                        //cout<<makep;
+                        }
+                  if(!strncmp(argv[j],"--makeinst=",12)){
+                        makeinstp=argv[j];
+                        makeinstp=makeinstp.substr(13,makeinstp.size()-13);
+                        //cout<<makeinstp;
+                        }
+                  }
+                  name=argv[files[i]];
+                  makePack(name,configp,makep,makeinstp);
+                  }
+}
+
+

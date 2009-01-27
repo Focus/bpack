@@ -29,7 +29,12 @@ int main(int argc, char *argv[]){
               
               preinstall(argv,argc);
               
-         }    
+         }
+	else if(!strcmp(argv[1], "-i")){
+              
+              internetinstall(argv,argc);
+              
+         }     
          else if(!strcmp(argv[1],"scan")){
               scan();
               }
