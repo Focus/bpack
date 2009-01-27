@@ -55,8 +55,44 @@ VERSION = 0.1
 bindir = @bindir@
 DESTDIR=/usr/local/bpack-$(VERSION)
 
-bpack: src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp libs/hijack.so.1.0 packs.list
-	$(CXX) $(CXXFLAGS) src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp -o bpack
+
+bpack: src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 packs.list
+	$(CXX) $(CXXFLAGS) src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
+
+src/search.o: src/search.cpp src/search.hpp
+	$(CXX) -c $(CXXFLAGS) src/search.cpp -o src/search.o
+
+src/remove.o: src/remove.cpp src/remove.hpp
+	$(CXX) -c $(CXXFLAGS) src/remove.cpp -o src/remove.o
+
+src/main.o: src/main.cpp
+	$(CXX) -c $(CXXFLAGS) src/main.cpp -o src/main.o
+
+src/config.o: src/config.cpp src/config.hpp
+	$(CXX) -c $(CXXFLAGS) src/config.cpp -o src/config.o
+
+src/installscript.o: src/installscript.cpp src/installscript.hpp
+	$(CXX) -c $(CXXFLAGS) src/installscript.cpp -o src/installscript.o
+
+src/storage.o: src/storage.cpp src/storage.hpp
+	$(CXX) -c $(CXXFLAGS) src/storage.cpp -o src/storage.o
+
+src/packinst.o: src/packinst.cpp src/packinst.hpp
+	$(CXX) -c $(CXXFLAGS) src/packinst.cpp -o src/packinst.o
+
+src/version.o: src/version.cpp src/version.hpp
+	$(CXX) -c $(CXXFLAGS) src/version.cpp -o src/version.o
+
+src/install.o: src/install.cpp src/install.hpp
+	$(CXX) -c $(CXXFLAGS) src/install.cpp -o src/install.o
+
+src/package.o: src/package.cpp src/package.hpp
+	$(CXX) -c $(CXXFLAGS) src/package.cpp -o src/package.o
+
+src/scan.o: src/scan.cpp src/scan.hpp
+	$(CXX) -c $(CXXFLAGS) src/scan.cpp -o src/scan.o
+
+
 
 clean:
 	rm -f src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0
@@ -68,7 +104,7 @@ libs/hijack.so.1.0: src/hijack.c
 packs.list:
 	touch packs.list
 
-install:
+install: bpack src/hijack.so.1.0
 	cp -rf packs $(DESTDIR)
 	cp -rf scripts $(DESTDIR)
 	cp bpack $(DESTDIR)
