@@ -11,7 +11,12 @@ class packinst{
              ~packinst(){}
              std::string getName() const {return name;}
              std::string getVersion() const {return version;}
-             std::string getGit() const {return git;}
+
+             // Wget use is deprecated although never implemented
+             std::string getWget() const {return wget;}
+             std::string getArchiveName() const {return archivename;}
+             std::string getArchiveUrl() const {return archiveurl;}
+        
              std::string getConfig() const {return config;}
              std::string getMake() const {return make;}
              std::string getMakeInst() const {return makeinst;}
@@ -20,7 +25,19 @@ class packinst{
              void removeDep(const int deppos){deps.erase(deps.begin()+deppos-1);loc--;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pversion){version=pversion;}
-             void setGit(const std::string pgit){git=pgit;}
+
+             // Wget space is being used for archive url/name
+             void setWget(const std::string pwget)
+             {
+                wget=pwget;int pos;
+                if ((pos = wget.find('/')) != wget.npos){
+                        archiveurl=wget;
+                        archivename = wget.substr(pos);
+                }else{
+                        archiveurl ="";
+                        archivename = wget;
+                }
+             }
              void setConfig(const std::string pconfig){config=pconfig;}
              void setMake(const std::string pmake){make=pmake;}
              void setMakeInst(const std::string pmakeinst){makeinst=pmakeinst;}
@@ -28,7 +45,7 @@ class packinst{
              void addDep(const std::string pdep){deps.push_back(pdep);}   
       
       private:
-              std::string name,version,git,config,make,makeinst;
+              std::string name,version,wget,config,make,makeinst, archiveurl, archivename;
               std::vector<std::string> deps;
               int loc;
       
