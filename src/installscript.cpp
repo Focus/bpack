@@ -32,7 +32,7 @@ bool installScript(packinst inst)
 			return 0;
 		}
 
-		if(!system( ("cd "+tardir+" && wget "+inst.getWget()).c_str()))
+		if(system( ("cd "+tardir+" && wget "+inst.getWget()).c_str())!=0)
 		{
 			cerr<<"\n\nDownload failed!"<<endl;
 			return 0;
