@@ -1,7 +1,7 @@
 #ifndef _SEARCH_H
 #define _SEARCH_H
 
-string search(string, string);
-string dirTree(const string);
+std::string search(std::string, std::string);
+std::string dirTree(const std::string);
 
 #endif

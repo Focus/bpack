@@ -1,6 +1,6 @@
 #ifndef _REMOVE_H
 #define _REMOVE_H
-void removePack(string);
-int erase(string);
-int erase(vector<string>);
+void removePack(std::string);
+int erase(std::string);
+int erase(std::vector<std::string>);
 #endif

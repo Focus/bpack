@@ -2,50 +2,74 @@
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
-using namespace std;
 #include "packinst.hpp"
 #include "version.hpp"
 #include "package.hpp"
 #include "config.hpp"
+#include "search.hpp"
+#include "remove.hpp"
+#include "storage.hpp"
 
+using namespace std;
 
 bool installScript(packinst inst)
 {
-     // get variables
-  string scriptname, scriptpath, tardir, installdir, logroot,hijack;
-     scriptname = inst.getName() + "-" + inst.getVersion() + ".bis";
-     scriptpath = Config::getScriptDir() + scriptname;
-     tardir = Config::getTarballDir();
-     installdir = Config::getPackmanDir() + inst.getName();
-     logroot = Config::getLogDir();
-     hijack=Config::getLib();
-     int result;
-     
-     // Check if script exists
-     ifstream testscript(scriptpath.c_str());
-     if(testscript.fail()){
-         cout << "Script " + scriptname + " not found, here is where we look online\n";
-     } else{
-       //Preload the hijacker!
-       setenv("LD_PRELOAD",hijack.c_str(),1);
-       result = system(("bash -e " + scriptpath + " " + tardir + " " + installdir + " " + logroot + " \"" + inst.getConfig() + "\" \""
-			  + inst.getMake() + "\" \"" + inst.getMakeInst() + "\"").c_str());
-     }
-     testscript.close();
-     
-     
-     // check if installed correctly
-	cout<<result<<endl;
-     if(!result)
-         return false;  // don't know if this works
-     
-     package pack(inst);
+     	// get variables
+  	string  tardir,tar, logroot,hijack;
+     	tardir = Config::getTarballDir();
+     	logroot = Config::getLogDir();
+     	hijack=Config::getLib();
+     	int result;
+	
 
-     pack.addLocation(installdir);
+	//Check if the tarball is there, if not grab it!
+	tar=search(tardir,inst.getName()+"-"+ inst.getVersion()+".tar.*");
+	if(tar==""){
+		cout<<"\nPackage not found locally, I will download it now"<<endl;
 
+		if(inst.getWget()==""){
+			cerr<<"\n\nNo URL specified to download!"<<endl;
+			return 0;
+		}
 
-     
-     pack.write();
-     
-     return true;
+		if(!system( ("cd "+tardir+" && wget "+inst.getWget()).c_str()))
+		{
+			cerr<<"\n\nDownload failed!"<<endl;
+			return 0;
+		}
+
+	
+	}
+	tar=search(tardir,inst.getName()+"-"+inst.getVersion()+".tar.*");
+	//Make a clean directory by removing previous extracts
+	erase(loadLocation(search(tardir+inst.getName()+"-"+inst.getVersion(),"")));
+	//Unpack the tar
+	
+	if(system( ("cd "+tardir+" && tar xf "+tar).c_str())!=0){
+		cerr<<"\n\nUnable to unpack the tarball!"<<endl;
+		return 0;
+	}
+
+	//Run config, make and make install...
+	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && ./configure "+inst.getConfig()).c_str())!=0){
+		cerr<<"\n\nConfiguration failed"<<endl;
+		return 0;
+	}
+
+	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make "+inst.getMake()).c_str())!=0){
+		cerr<<"\n\nMake failed"<<endl;
+		return 0;
+	}
+
+	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
+	setenv("LD_PRELOAD",hijack.c_str(),1);
+	//And install
+	
+	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make install "+inst.getMakeInst()).c_str())!=0){
+		cerr<<"\n\nMake install failed"<<endl;
+		return 0;
+	}
+
+	return 1;
+
 }
