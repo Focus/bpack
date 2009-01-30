@@ -42,7 +42,8 @@ bool installScript(packinst inst)
 	}
 	tar=search(tardir,inst.getName()+"-"+inst.getVersion()+".tar.*");
 	//Make a clean directory by removing previous extracts
-	erase(loadLocation(search(tardir+inst.getName()+"-"+inst.getVersion(),"")));
+	
+	erase(tardir+inst.getName()+"-"+inst.getVersion());
 	//Unpack the tar
 	
 	if(system( ("cd "+tardir+" && tar xf "+tar).c_str())!=0){

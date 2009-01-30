@@ -3,22 +3,42 @@
 #include <vector>
 #include <cstring>
 #include <cstdlib>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include "version.hpp"
 #include "package.hpp"
 #include "config.hpp"
 #include "storage.hpp"
+#include "search.hpp"
 using namespace std;
+int erase(vector<string>);
 
-
+//Lets bury ourselves in recursion
 int erase(string path){
-  if(remove(path.c_str())!=-1)
-    return 1;
-  return 0;
+	struct stat buf;
+	stat(path.c_str(),& buf);
+	if((buf.st_mode & S_IFMT)==S_IFDIR){  //If we have a directory to delete, we need to empty it out first
+		vector<string> locs;
+		locs=loadLocation(search(path,""));
+		//Check if we have a / at the end ( /etc will become /etc/ )
+		if( strcmp((path.substr(path.size()-1)).c_str(),"/"))
+			path=path+"/";
+		//Pile on whats inside the directory
+		for(int i=0;i<locs.size();i++)
+			erase(path+locs[i]);
+		//Remove the directory
+		remove(path.c_str());
+		}
+	else{
+  	if(remove(path.c_str())!=-1)
+    		return 0;
+	}
+	return 1;
 }
 
 int erase(vector<string> paths){
   for(int i=0;i<paths.size();i++){
-    if(remove(paths[i].c_str())==-1)
+    if(erase(paths[i].c_str())==0)
       return 0;
   }
   return 1;
@@ -59,6 +79,4 @@ void removePack(string pack){
   cout<<"\Erasing "<<pack<<"..."<<endl;
   erase(locations);
   
-  
-
 }

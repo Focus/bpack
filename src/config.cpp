@@ -11,12 +11,11 @@ string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarba
 void Config::initialise(char* argv0)
 {
     string apppath(argv0);
-	
 
     if (apppath.find('/') == 0) // absolute path 
         Config::installdir = apppath.substr(0, apppath.rfind('/')-1);
     else                        // relative path
-        Config::installdir = getenv("PWD") + string("/") + apppath.substr(0, apppath.rfind('/')+1);
+        Config::installdir = getenv("PWD") + apppath.substr(1, apppath.rfind('/'));
                                 // i don't think this will work if run through $PATH
     
     //std::cout << installdir << "\n";

@@ -64,8 +64,10 @@ string search(string dir, string name=""){
 	//Loop for listing
 	if(pos<0){
 		while(d=readdir(dp)){
-		ret=ret+d->d_name;
-		ret=ret+",";
+		if(strcmp(d->d_name,".")&&strcmp(d->d_name,"..")){		
+			ret=ret+d->d_name;
+			ret=ret+",";
+			}
 		}
 	closedir(dp);dp=NULL;
 	return ret.substr(0,ret.size()-1);
