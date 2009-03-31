@@ -34,6 +34,26 @@ struct HttpRequest buildreq(char* url)
     return ret;
 }
 
+//FIXME both postdata's need to be escapified
+//postdata can only be text
+void addpostpair(struct HttpRequest req, char *key, char *val)
+{
+    char* newpost = malloc(strlen(key)+strlen(val)+1);
+    sprintf(newpost, "%s=%s", key, val);
+    printf(" Added post pair : %s\n", newpost);
+    
+    if(req.rawpost){
+        char* curpost = req.rawpost;
+        req.rawpost = malloc(strlen(curpost));
+        strcpy(req.rawpost, curpost);
+        req.rawpost[strlen(curpost)];
+        strcpy(req.rawpost+strlen(curpost)+1, newpost);
+    }else{
+        req.rawpost = malloc(strlen(newpost));
+        strcpy(req.rawpost, newpost);
+    }
+}
+
 struct sockaddr_in *getsockaddr(struct HttpRequest req)
 {
     struct hostent *ent;
@@ -75,10 +95,15 @@ int sconnect(struct HttpRequest req)
 char* rawrequest(struct HttpRequest req)
 {
     char* method;
-    char* buffer = malloc(strlen(req.host)+strlen(req.path)+50);
+    char* buffer = malloc(strlen(req.host)+strlen(req.path)+50 + req.rawpost?strlen(req.rawpost):0);
+    if (req.rawpost)
+        req.method = POST;
     switch (req.method){
         case GET:
             method= "GET";
+            break;
+        case POST:
+            method= "POST";
             break;
     }
     sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n", method, req.path, req.host);
@@ -103,7 +128,7 @@ struct HttpResponse buildresponse(char* rawresp,int length)
     return resp;
 }
     
-
+// FIXME could have trouble sending large files
 int httpsend(int socket, struct HttpRequest req)
 {
     char* message = rawrequest(req);
@@ -137,6 +162,7 @@ struct HttpResponse httpreadresponse(int socket, int close)
     return buildresponse(buffer, bufferused);
 }
 
+// connects, sends request and returns response
 struct HttpResponse HttpGet(struct HttpRequest req)
 {
     int socket;
@@ -150,7 +176,7 @@ struct HttpResponse HttpGet(struct HttpRequest req)
 }
 
 // FIXME should accept dir or path and should use filename from response if provided
-int wget(char* url, char* path, char* filename=NULL)
+int wget(char* url, char* dir, char* filename)
 {
     struct HttpRequest hq = buildreq(url);
     struct HttpResponse hr = HttpGet(hq);
@@ -170,9 +196,5 @@ int wget(char* url, char* path, char* filename=NULL)
 }    
     
 
-int main(int argc, char** argv)
-{
-    return !wget(argv[1],argv[2]);
-}
 
 
