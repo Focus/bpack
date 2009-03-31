@@ -264,7 +264,31 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
     }
 }
 
-// TODO make wary of status codes, Transfer-Encoding, chunked transfers
+void printprogress(int cur, int max)
+{
+    float i, fraction = (float)cur / (float)max;
+    int divisor = 1;
+    char* unit;
+
+    if(max < 4096)
+        unit = "B";
+    else if(max < 4194304){
+        unit = "K";
+        divisor = 1024;
+    }else{
+        unit = "M";
+        divisor = 1048576;
+    }
+    
+    printf("[");
+    for(i=0; i<fraction; i+=0.023)
+        printf("#");
+    for(;i<1; i+=0.023)
+        printf(" ");
+    printf("] %7.2f / %7.2f %s | %5.2f\r", (float)cur/divisor, (float)max/divisor, unit, fraction *100);
+}
+
+// TODO make wary of status codes, Transfer-Encoding, chunked transfers http://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.4
 int wget(char* url, char* dir, char* filename, enum LOGMETHOD logtype)
 {
     struct HttpRequest hq = *buildreq(url, logtype);
@@ -283,13 +307,15 @@ int wget(char* url, char* dir, char* filename, enum LOGMETHOD logtype)
     if(hr.clength>0){       // If content-length is specified, retrieve that many octets
         int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
         void *buffer = malloc(bufsize);
-        int transremain = hr.clength;
+        int transread = 0;
         int readlength;
 
         do{
-            transremain -= readlength = read(hr.stream, buffer, bufsize);
+            printprogress(transread, hr.clength);
+            transread += readlength = read(hr.stream, buffer, bufsize);
             fwrite(buffer, 1, readlength, f);
-        }while (transremain > 0);
+        }while (transread < hr.clength);
+        printf("\n");
         free(buffer);
     }
 
