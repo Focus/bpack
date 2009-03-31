@@ -8,61 +8,76 @@
 #include "qhttp.h"
 
 
-//TODO post, asyncronous download
+//TODO large, asyncronous download
 
 // FIXME very picky about url format
-struct HttpRequest buildreq(char* url)
+struct HttpRequest* buildreq(char* url)
 {
-    struct HttpRequest ret;
+    struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 
     if(strchr(url,':')==NULL){
-        ret.port = 80;
-        ret.host = malloc(strchr(url,'/')-url);
-          strncpy(ret.host, url, strchr(url,'/')-url);
+        ret->port = 80;
+        ret->host = malloc(strchr(url,'/')-url+1);
+          strncpy(ret->host, url, strchr(url,'/')-url);
     }else{
-        ret.host = malloc(strchr(url,':')-url);
-          strncpy(ret.host, url, strchr(url,':')-url);
+        ret->host = malloc(strchr(url,':')-url+1);
+          strncpy(ret->host, url, strchr(url,':')-url);
         int tp;
-        char* tmp = malloc(strchr(url,'/')-strchr(url,':'));
+        char* tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
           strncpy(tmp, strchr(url,':'), strchr(url,'/')-strchr(url,':'));
         if (1 != sscanf(tmp, "%d", &tp))
             printf( "qhttp : Error with specified port\n");               // flag something on error
-        ret.port = tp;
+        ret->port = tp;
     }
-    ret.path = malloc(url+strlen(url)-strchr(url,'/'));
-    strcpy(ret.path, strchr(url,'/'));
+    ret->rawheader = "";
+    ret->method = GET;
+    ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
+    strcpy(ret->path, strchr(url,'/'));
     return ret;
 }
 
-//FIXME both postdata's need to be escapified
-//postdata can only be text
-void addpostpair(struct HttpRequest req, char *key, char *val)
+
+// Adds a header to a request
+//   header : string with no new line in the format Content-Encoding: thing/blah
+void addheader(struct HttpRequest *req, char* header)
 {
-    char* newpost = malloc(strlen(key)+strlen(val)+1);
+    char* oldhead = req->rawheader;
+    req->rawheader = malloc(strlen(oldhead)+strlen(header)+2);
+    sprintf(req->rawheader, "%s%s\r\n", oldhead, header);
+}
+
+// Adds a key-value pair to the entity to be posted
+void addpostpair(struct HttpRequest *req, char *key, char *val)
+{
+    char* newpost = malloc(strlen(key)+strlen(val)+2);
     sprintf(newpost, "%s=%s", key, val);
     printf(" Added post pair : %s\n", newpost);
     
-    if(req.rawpost){
-        char* curpost = req.rawpost;
-        req.rawpost = malloc(strlen(curpost));
-        strcpy(req.rawpost, curpost);
-        req.rawpost[strlen(curpost)];
-        strcpy(req.rawpost+strlen(curpost)+1, newpost);
+    if(req->rawpost){
+        char* curpost = req->rawpost;
+        req->rawpost = malloc(strlen(curpost)+strlen(newpost)+2);
+        sprintf(req->rawpost, "%s&%s", curpost, newpost);
     }else{
-        req.rawpost = malloc(strlen(newpost));
-        strcpy(req.rawpost, newpost);
+        req->rawpost = malloc(strlen(newpost)+1);
+        strcpy(req->rawpost, newpost);
     }
+    if(strstr(req->rawheader, "Content-Type:")==NULL)
+        addheader(req, "Content-Type: application/x-www-form-urlencoded");
 }
 
+// Resolves the address for the host named in the request
+//   FIXME doesn't do IP addresses
 struct sockaddr_in *getsockaddr(struct HttpRequest req)
 {
     struct hostent *ent;
     struct sockaddr_in *addr;
 
-    printf("resolving host by name: %s\n", req.host);
+    printf(" resolving host by name: %s\n", req.host);
     ent = gethostbyname (req.host);
     if ( ent ) {
+        //printf("pi %s - %s - %d\n", (char*)&(addr->sin_addr), (char*)&(ent->h_addr), ent->h_length);
         memcpy (&addr->sin_addr, ent->h_addr, ent->h_length);
+        printf("pi\n");
         addr->sin_family = ent->h_addrtype;
         printf("resolved: %s (%s)\n", req.host, inet_ntoa(addr->sin_addr));
     } else {
@@ -75,6 +90,8 @@ struct sockaddr_in *getsockaddr(struct HttpRequest req)
     return addr;
 }
 
+// connects to the host specified in the request
+//   returns : handle to the socket
 int sconnect(struct HttpRequest req)
 {
     struct sockaddr_in saddr = *getsockaddr(req);
@@ -84,39 +101,50 @@ int sconnect(struct HttpRequest req)
     handle = socket( AF_INET, SOCK_STREAM, 0 );
     printf("socket %d opened\n", handle);
     if ( connect( handle, (struct sockaddr *)&saddr, sizeof(saddr))
-         == -1) {
+         <0) {
         printf("connect() failed.\n");
         return -1; 
     }
-    printf("connected.\n");
+    printf("connected on socket %d.\n", handle);
     return handle;
 }
 
-char* rawrequest(struct HttpRequest req)
+
+// Converts a HttpRequest into a raw string to be sent
+// FIXME can't send binarys
+char* rawrequest(struct HttpRequest *req)
 {
     char* method;
-    char* buffer = malloc(strlen(req.host)+strlen(req.path)+50 + req.rawpost?strlen(req.rawpost):0);
-    if (req.rawpost)
-        req.method = POST;
-    switch (req.method){
+    int buffersize = strlen(req->host)+strlen(req->path)+50;
+    char* buffer = malloc(buffersize);
+    if (req->rawpost){
+        req->method = POST;
+        char* h = malloc(30);
+        sprintf(h, "Content-Length: %d", strlen(req->rawpost));
+        addheader(req, h);        
+        buffersize += strlen(req->rawpost);
+    }
+    switch (req->method){
         case GET:
             method= "GET";
             break;
         case POST:
             method= "POST";
             break;
-    }
-    sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n\r\n", method, req.path, req.host);
+    }                
+                //   FIXME path & rawpost needs to be escapified
+    sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n%s\r\n%s", method, req->path, req->host, req->rawheader, req->rawpost);
     return buffer;
 }
 
-//TODO error handling and header extractions
-struct HttpResponse buildresponse(char* rawresp,int length)
+//TODO error handling & rawheader
+struct HttpResponse buildresponse(const char* rawresp, int length)
 {
     struct HttpResponse resp;
-    resp.raw=rawresp;
+    resp.raw=malloc(length);
+    memcpy(resp.raw, rawresp, length);
 
-    printf("building response :\n%s\n\n", "");//rawresp);
+    printf(" building response :\n%s\n\n", "");//rawresp);
 
     resp.streason = malloc(10);
     sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
@@ -129,7 +157,7 @@ struct HttpResponse buildresponse(char* rawresp,int length)
 }
     
 // FIXME could have trouble sending large files
-int httpsend(int socket, struct HttpRequest req)
+int httpsend(int socket, struct HttpRequest *req)
 {
     char* message = rawrequest(req);
     int p=0;
@@ -165,20 +193,28 @@ struct HttpResponse httpreadresponse(int socket, int close)
 // connects, sends request and returns response
 struct HttpResponse HttpGet(struct HttpRequest req)
 {
-    int socket;
-    if((socket=sconnect(req))>0 && httpsend(socket, req))
-        return httpreadresponse(socket,1);
-    else{
+    int socket=sconnect(req);
+    if(socket>=0){
+        printf("connected");
+        if (httpsend(socket, &req))
+            return httpreadresponse(socket,1);
+        else{
+            printf("notconnected\n");
+            struct HttpResponse error;
+            error.stcode = 0; error.streason="ErrorSendingRequest";
+            return error;
+        }
+    }else{
         struct HttpResponse error;
-        error.stcode = 0; error.streason="ErrorSendingRequest";
+        error.stcode = 0; error.streason="ErrorConnecting";
         return error;
     }
 }
 
-// FIXME should accept dir or path and should use filename from response if provided
+
 int wget(char* url, char* dir, char* filename)
 {
-    struct HttpRequest hq = buildreq(url);
+    struct HttpRequest hq = *buildreq(url);
     struct HttpResponse hr = HttpGet(hq);
 
     if (filename==NULL)
