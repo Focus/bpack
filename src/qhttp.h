@@ -1,6 +1,7 @@
 
 
 enum HTTPMETHOD{GET,POST};
+enum LOGMETHOD{LOGNONE,LOGMULTI,LOGSINGLE};
 
 struct HttpRequest
 {
@@ -19,17 +20,15 @@ struct HttpResponse
     int stcode;     // Http response code
     char *streason; // Http reason code
     char *rawheader;// Raw http response header
-    char *rawbody;
-    char *raw;      // Entire response raw
-    int length;     // Length of raw response
     int clength;    // Content-Length
+    int stream;
 };
 
 // downloads the specified file to the directory, use filename = NULL to use the remote filename
-int wget(char* url, char* dir, char* filename);
+int wget(char* url, char* dir, char* filename, enum LOGMETHOD method);
 
 // creates the default request to get the url
-struct HttpRequest* buildreq(char* url);
+struct HttpRequest* buildreq(char* url, enum LOGMETHOD method);
 
 // adds a key-value pair to be posted
 void addpostpair(struct HttpRequest *req, char *key, char *val);
@@ -39,6 +38,6 @@ void addpostpair(struct HttpRequest *req, char *key, char *val);
 void addheader(struct HttpRequest *req, char* header);
 
 // connects, sends request and return response
-struct HttpResponse HttpGet(struct HttpRequest req);
+struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD method);
 
 

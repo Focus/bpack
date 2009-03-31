@@ -8,11 +8,49 @@
 #include "qhttp.h"
 
 
-//TODO large, asyncronous download
+//TODO asyncronous download
 
-// FIXME very picky about url format
-struct HttpRequest* buildreq(char* url)
+
+void logger(enum LOGMETHOD logtype, char* msg)
 {
+    switch (logtype)
+    {
+        case LOGNONE:
+            break;
+        case LOGSINGLE:
+            printf("qhttp : %s\r", msg);
+            break;
+        case LOGMULTI:
+            printf("qhttp : %s\n", msg);
+            break;
+    }
+}
+
+void logger2(enum LOGMETHOD logtype, char* msg, char*msg2)
+{
+    switch (logtype)
+    {
+        case LOGNONE:
+            break;
+        case LOGSINGLE:
+            printf("qhttp : %s%s\r", msg, msg2);
+            break;
+        case LOGMULTI:
+            printf("qhttp : %s%s\n", msg, msg2);
+            break;
+    }
+}
+
+// FIXME should be able to take IP addresses
+struct HttpRequest* buildreq(char* url, enum LOGMETHOD logtype)
+{
+    // ignore http:// if given
+    if(strstr(url, "http://"))
+        url+=7;
+    // error if other protocol supplied
+    else if(strstr(url,"://"))
+        return NULL;
+
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 
     if(strchr(url,':')==NULL){
@@ -25,8 +63,10 @@ struct HttpRequest* buildreq(char* url)
         int tp;
         char* tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
           strncpy(tmp, strchr(url,':'), strchr(url,'/')-strchr(url,':'));
-        if (1 != sscanf(tmp, "%d", &tp))
-            printf( "qhttp : Error with specified port\n");               // flag something on error
+        if (1 != sscanf(tmp, "%d", &tp)){
+            logger2(logtype, "Error with specified port",tmp);               // flag something on error
+            return NULL;
+        }
         ret->port = tp;
     }
     ret->rawheader = "";
@@ -51,7 +91,7 @@ void addpostpair(struct HttpRequest *req, char *key, char *val)
 {
     char* newpost = malloc(strlen(key)+strlen(val)+2);
     sprintf(newpost, "%s=%s", key, val);
-    printf(" Added post pair : %s\n", newpost);
+    //printf(" Added post pair : %s\n", newpost);
     
     if(req->rawpost){
         char* curpost = req->rawpost;
@@ -67,51 +107,51 @@ void addpostpair(struct HttpRequest *req, char *key, char *val)
 
 // Resolves the address for the host named in the request
 //   FIXME doesn't do IP addresses
-struct sockaddr_in *getsockaddr(struct HttpRequest req)
+struct sockaddr *getsockaddr(struct HttpRequest req)
 {
     struct hostent *ent;
-    struct sockaddr_in *addr;
+    struct sockaddr_in *addr = malloc(sizeof(struct sockaddr_in));
 
-    printf(" resolving host by name: %s\n", req.host);
+    //printf(" resolving host by name: %s\n", req.host);
     ent = gethostbyname (req.host);
     if ( ent ) {
-        //printf("pi %s - %s - %d\n", (char*)&(addr->sin_addr), (char*)&(ent->h_addr), ent->h_length);
-        memcpy (&addr->sin_addr, ent->h_addr, ent->h_length);
-        printf("pi\n");
+        printf("resolved: %s (%s)\n", req.host, inet_ntoa(*(struct in_addr*)(ent->h_addr_list[0])));
+        memcpy (&addr->sin_addr, ent->h_addr_list[0], ent->h_length);
         addr->sin_family = ent->h_addrtype;
-        printf("resolved: %s (%s)\n", req.host, inet_ntoa(addr->sin_addr));
     } else {
-        printf("failed to resolve locally.\n");
+        printf(" qhttp : failed to resolve locally.\n");
         return NULL;                          /* failed */
     }
     
     addr->sin_port = htons(req.port);
 
-    return addr;
+    return (struct sockaddr *)addr;
 }
 
 // connects to the host specified in the request
 //   returns : handle to the socket
 int sconnect(struct HttpRequest req)
 {
-    struct sockaddr_in saddr = *getsockaddr(req);
+    struct sockaddr *saddr = getsockaddr(req);
+    if (!saddr)
+        return 0;
     int handle;
 
-    printf("connecting to %s:%u\n", inet_ntoa(saddr.sin_addr), req.port);
+    //printf("connecting to %s:%u\n", inet_ntoa(saddr.sin_addr), req.port);
     handle = socket( AF_INET, SOCK_STREAM, 0 );
-    printf("socket %d opened\n", handle);
-    if ( connect( handle, (struct sockaddr *)&saddr, sizeof(saddr))
+    //printf("socket %d opened\n", handle);
+    if ( connect( handle, saddr, sizeof(*saddr))
          <0) {
-        printf("connect() failed.\n");
+        printf(" qhttp : connect() failed.\n");
         return -1; 
     }
-    printf("connected on socket %d.\n", handle);
+    //printf("connected on socket %d.\n", handle);
     return handle;
 }
 
 
 // Converts a HttpRequest into a raw string to be sent
-// FIXME can't send binarys
+// TODO can't send binarys
 char* rawrequest(struct HttpRequest *req)
 {
     char* method;
@@ -132,27 +172,28 @@ char* rawrequest(struct HttpRequest *req)
             method= "POST";
             break;
     }                
-                //   FIXME path & rawpost needs to be escapified
+                //   TODO path & rawpost needs to be escapified
     sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n%s\r\n%s", method, req->path, req->host, req->rawheader, req->rawpost);
     return buffer;
 }
 
-//TODO error handling & rawheader
-struct HttpResponse buildresponse(const char* rawresp, int length)
+
+struct HttpResponse buildresponsehead(const char* rawresp)
 {
     struct HttpResponse resp;
-    resp.raw=malloc(length);
-    memcpy(resp.raw, rawresp, length);
+    resp.rawheader=malloc(strlen(rawresp));
+    strcpy(resp.rawheader, rawresp);
 
     printf(" building response :\n%s\n\n", "");//rawresp);
 
     resp.streason = malloc(10);
     sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
-    sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
-    
+    if(strstr(rawresp, "Content-Length:"))
+        sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
+    else
+        resp.clength = -1;
 
-    resp.rawbody = malloc(resp.clength);
-    strncpy(resp.rawbody, strstr(rawresp,"\r\n\r\n")+4, resp.clength);
+    
     return resp;
 }
     
@@ -161,7 +202,7 @@ int httpsend(int socket, struct HttpRequest *req)
 {
     char* message = rawrequest(req);
     int p=0;
-    printf("sending %s\n\n", message);
+    //printf("sending %s\n\n", message);
     /*while(p<strlen(message)){
         if(p+=send(socket,message+p,strlen(message)-p,0) < 0){
             printf(" error writing to socket\n");
@@ -173,49 +214,61 @@ int httpsend(int socket, struct HttpRequest *req)
             printf(" error writing to socket\n");
             return 0;
         }
-    printf("sent\n");
+    //printf("sent\n");
     return 1;
 }
 
-struct HttpResponse httpreadresponse(int socket, int close)
-{//TODO should handle responses of arbitrary size
-    int bufsize=1024;        /* a 1K buffer */
+
+struct HttpResponse httpreadresponse(int socket, enum LOGMETHOD logtype)
+{
+    int bufsize=4096;        /* a 4K buffer */
     char *buffer=malloc(bufsize);
 
-    int bufferused = recv(socket, buffer, 1024, 0);     
+    int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
+    bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
 
-    if (close)
-        shutdown(socket, SHUT_RDWR);
+    free(buffer);
+    buffer=malloc(bufsize);
+    bufferused = recv(socket, buffer, bufsize, 0);
+    strstr(buffer, "\r\n\r\n")[0] = 0;
 
-    return buildresponse(buffer, bufferused);
+
+    printf("buffer : %s",buffer);
+    struct HttpResponse ret = buildresponsehead(buffer);
+    ret.stream = socket;
+    return ret;
 }
 
 // connects, sends request and returns response
-struct HttpResponse HttpGet(struct HttpRequest req)
+struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 {
     int socket=sconnect(req);
-    if(socket>=0){
-        printf("connected");
-        if (httpsend(socket, &req))
-            return httpreadresponse(socket,1);
-        else{
-            printf("notconnected\n");
+    if(socket>0){
+        logger2(logtype, "connected to ", req.host);
+        if (httpsend(socket, &req)){
+            logger(logtype, "request sent, awaiting response");
+            struct HttpResponse hr = httpreadresponse(socket, logtype);
+            logger(logtype, "response retrieved");
+            return hr;
+        }else{
+            logger(logtype, "not connected : error sending request");
             struct HttpResponse error;
             error.stcode = 0; error.streason="ErrorSendingRequest";
             return error;
         }
     }else{
+        logger2(logtype, "not connected : error connecting to ", req.host);
         struct HttpResponse error;
         error.stcode = 0; error.streason="ErrorConnecting";
         return error;
     }
 }
 
-
-int wget(char* url, char* dir, char* filename)
+// TODO make wary of status codes, Transfer-Encoding, chunked transfers
+int wget(char* url, char* dir, char* filename, enum LOGMETHOD logtype)
 {
-    struct HttpRequest hq = *buildreq(url);
-    struct HttpResponse hr = HttpGet(hq);
+    struct HttpRequest hq = *buildreq(url, logtype);
+    struct HttpResponse hr = HttpGet(hq, logtype);
 
     if (filename==NULL)
         filename = strrchr(url,'/');
@@ -223,14 +276,29 @@ int wget(char* url, char* dir, char* filename)
     strcpy(path,dir);
     strcat(path,filename);
     
-    printf("saving to %s\n", path);
-    FILE* f = fopen(path,"w");
-    fwrite(hr.rawbody, 1, hr.clength, f);
+
+    FILE* f = fopen(path,"w");    
+    logger2(logtype, "saving to ", path);
+
+    if(hr.clength>0){       // If content-length is specified, retrieve that many octets
+        int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
+        void *buffer = malloc(bufsize);
+        int transremain = hr.clength;
+        int readlength;
+
+        do{
+            transremain -= readlength = read(hr.stream, buffer, bufsize);
+            fwrite(buffer, 1, readlength, f);
+        }while (transremain > 0);
+        free(buffer);
+    }
+
+
+
+    shutdown(hr.stream, SHUT_RDWR);
     fclose(f);
-
-    return 1;
-}    
+    logger(logtype, "saved");
     
-
-
+    return 1;
+}
 
