@@ -12,6 +12,7 @@ using namespace std;
 #include "storage.hpp"
 #include "config.hpp"
 #include "remove.hpp"
+#include "search.hpp"
 
 //Separates the foo-0.2.2 to foo and 0.2.2
 void depVersion(string &dep, version &ver){
@@ -63,134 +64,96 @@ void clean(packinst pack){
 	erase(Config::getTarballDir()+pack.getName()+"/");
 }
 
+
+//Grabs the latest version
+string greatestVer(vector<string> bushsucks){
+
+	if(bushsucks.size()==0)
+		return "";
+	version tempver,highver;
+	highver="0.0.0";
+	string temp,ret;
+	for(int i=0; i< bushsucks.size();i++){
+		temp=bushsucks[i];
+		depVersion(temp,tempver);
+		if(tempver>highver)
+			ret=bushsucks[i];
+	}
+	return ret;
+
+}
 //Recursively checks for dependencies and installs files (passes them to install script)
-void install(string packname,const string configp="",const string makep="",const string makeinstp="")
-{
-	string *packdir=new string;
-     version *ver=new version;
-     depVersion(packname,*ver);
-     *packdir=packname;
-     
-     //Check the package dir for the information file
-     *packdir=Config::getPackInstDir()+*packdir;
-     packinst *packinsty=new packinst;
-     ifstream textfile;
-     textfile.open(packdir->c_str());
-     delete packdir;
-     if(!textfile)
-     {
-          cerr<<"\n\nPackage "<<packname<<" not found. Check the package name or try again after   bpack update \n\n";            
-          exit(1);
-     }
-     if(*ver=="0.0.0")
-     cout<<"\nPackage "<<packname<<" to be installed.\n";
-     else
-     cout<<"\nPackage "<<packname<<"-"<<*ver<<" to be installed.\n";
-     string text;
-     string x;
-     while(!textfile.eof())
-     {
-        textfile >> x;
-        if(!textfile.eof())
-        text +=x;
-     }
-     textfile.close();
-     
-     cout<<"\nChecking for dependencies....";
-     
+void install(string packname, const string configp="", const string makep="", const string makeinstp=""){
 
+	packinst *packageinst=new packinst;
+	version *ver=new version;
+	string *location=new string;
+	depVersion(packname,*ver);
+	if(*ver=="0.0.0"){
+		*location=greatestVer(loadLocation(search(Config::getPackInstDir(),packname+"*")));
+	}
+	else
+		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
+	
+	
+	if(*location==""){
+		cerr<<"Package "<<packname<<" not found, try after doing  bpack update."<<endl;
+		exit(1);
+	}	
+	
+	*packageinst=getPackage(Config::getPackInstDir()+*location);
+	packageinst->setName(packname);
+	packageinst->setVersion(*ver);
 
-     vector<string> *instructs=new vector<string>;
-     instructs->push_back("");
-     instructs->resize(6);
-     int start=0;
-
-     //while((start+1<text.size())&&(!(*ver=="0.0.0"))){
-     start=separate(text,*instructs,start);
-     //if(*ver==(*instructs)[0])
-     //break;
-     
-     //}
-     /*if((! (*ver==(*instructs)[0]))&& !(*ver=="0.0.0")){
-          cout<<"\nI couldn't find "<<packname<<"-"<<(*ver)<<".\n\nI will install the latest version I have!\n";
-          install(packname);
-          exit(0);
-          }*/
-     
-     //Construct package installation instructions
-     packinsty->setName(packname);
-     packinsty->setVersion((*instructs)[0]);
-     packinsty->setWget((*instructs)[1]);
-     
-     //Check for passed parameters, if none, use default!
-     if(strcmp(configp.c_str(),""))
-     packinsty->setConfig(configp);
-     else
-     packinsty->setConfig((*instructs)[2]);
-     
-     if(strcmp(makep.c_str(),""))
-     packinsty->setMake(makep);
-     else
-     packinsty->setMake((*instructs)[3]);
-     
-     if(strcmp(makeinstp.c_str(),""))
-     packinsty->setMakeInst(makeinstp);
-     else
-     packinsty->setMakeInst((*instructs)[4]);
-     
-     packinsty->setDeps(loadLocation((*instructs)[5]));
-     
-     vector<package> *installed=new vector<package>;
-     *installed=getInstalledPackages(Config::getPacklistPath().c_str());
-     string y;
-        bool gotit;
-        version depver;
+	vector<package> *installed=new vector<package>;
+     	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
+     	string y;
+	bool gotit;
+	version depver;
 	//check for dependencies
-     while(packinsty->getNextDep(y)){
+     	while(packageinst->getNextDep(y)){
         
-	for(int i=0;i<installed->size();i++){
-                gotit=0;
-                depVersion(y,depver);
-            if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
-            {
-             if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
-                 cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
-		packinsty->removeDep(packinsty->getLoc());
-                gotit=1;
-                break;
-                }
-                else{
-                     cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
-                     }
-            }
+		for(int i=0;i<installed->size();i++){
+                	gotit=0;
+                	depVersion(y,depver);
+            		if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
+            		{
+             			if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
+                 			cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
+					packageinst->removeDep(packageinst->getLoc());
+                			gotit=1;
+                			break;
+               			}
+                		else{
+                     			cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
+                     		}
+            		}
             
-        }
-        if (!gotit)
-            {
+        	}
+        	if (!gotit)
+            	{
                 cout<<"\nDependency "<<y<<" needs to be installed.";
                 install(y); 
-            }
-     }
-        //delete gotit;
-     cout<<"\nInstalling "<<packname<<"...\n";
-     //Have a packinst!
-     if(installScript(*packinsty)){
-	clean(*packinsty);
-	cout<<"\n"<<packinsty->getName()<<"-"<<packinsty->getVersion()<<" is installed!"<<endl;
+            	}
+     	}
+      
+     	cout<<"\nInstalling "<<packname<<"...\n";
+     	//Have a packinst!
+    	if(installScript(*packageinst)){
+		clean(*packageinst);
+		cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 	}
 	else{
-	cerr<<"\nError package not installed correctly. Consult the logs and inform us.\nWhat did you expect from an alpha build?"<<endl;
-	exit(1);
+		cerr<<"\nError package not installed correctly. Consult the logs and inform us.\nWhat did you expect from an alpha build?"<<endl;
+		exit(1);
 	}
+
 	
-     delete ver;
-     delete installed;
-     delete packinsty;
-     delete instructs;
-     //delete text;
+	delete installed;
+	delete packageinst;
+	delete ver;
+	delete location;
 }
-
-
 
 //Catching parameters passed...
 void preinstall(char* argv[],const int argc){

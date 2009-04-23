@@ -36,17 +36,18 @@ void lineAnalyse(string line, packinst &pack){
 		pack.setMake(value);
 	if(!strcmp(command.c_str(),"makeinst"))
 		pack.setMakeInst(value);
-	/*if(!strcmp(command.c_str(),"deps"))
+	if(!strcmp(command.c_str(),"deps"))
 		pack.setDeps(loadLocation(value));
-	TODO */	
+	if(!strcmp(command.c_str(),"location"))
+		pack.setWget(value);
+		
 }
 
 //Get and return a package installation from file
 //TODO: Check file opened up
-packinst getPackage(const char* location){
-
+packinst getPackage(string location){
 	ifstream textfile;
-	textfile.open(location);
+	textfile.open(location.c_str());
 	packinst pack;
 	string text;
 	while(getline(textfile,text)){

@@ -20,6 +20,7 @@ void mrt();
 
 int main(int argc, char *argv[]){
 	Config::initialise(argv[0]);
+	cout<<Config::getPackInstDir()<<endl;
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;

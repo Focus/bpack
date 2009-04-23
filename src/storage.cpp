@@ -1,13 +1,11 @@
 #include <iostream>
 #include <cstring>
 #include <vector>
-#include <fstream>
 #include <cstdlib>
 
-using namespace std;
 #include "version.hpp"
-#include "package.hpp"
 #include "storage.hpp"
+using namespace std;
 
 //Valid breaks? Otherwise quit!
 const void checkBreaks (vector<int> breaks){
@@ -15,7 +13,7 @@ const void checkBreaks (vector<int> breaks){
      		
              if((breaks[i]<=0 || breaks[i] > breaks[breaks.size()-1]))
              {
-                cerr<<"\n1Breaks are not valid, please check the configuration (if needs be delete it and scan again).";
+                cerr<<"\nBreaks are not valid, please check the configuration (if needs be delete it and scan again).";
                 exit(1);
              }
                                                                                                           
@@ -23,14 +21,14 @@ const void checkBreaks (vector<int> breaks){
      
      if((breaks[breaks.size()-2]>=breaks[breaks.size()-1]) || (breaks[breaks.size()-1]-breaks[breaks.size()-3]!=1))
       {
-                cerr<<"\n2Breaks are not valid, please check the configuration (if needs be delete it and scan again).";
+                cerr<<"\nBreaks are not valid, please check the configuration (if needs be delete it and scan again).";
  
                 exit(1);
              }
 }
 
-int separate(const string text,vector<string> &par,const int start){
-     int numbreaks=par.size();
+int separate(const string text,vector<string> &par,const int start){   
+	int numbreaks=par.size();
      vector<int> breaks(numbreaks+2,0);
     breaks[0]=text.find(";",start);
     for(int i=1;i<numbreaks;i++){

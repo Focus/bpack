@@ -5,13 +5,15 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include "version.hpp"
+#include "storage.hpp"
 class packinst{
       
       public:
              packinst(){loc=0;}
              ~packinst(){}
              std::string getName() const {return name;}
-             std::string getVersion() const {return version;}
+             std::string getVersion() const {return ver.asString();}
 
              // Wget use is deprecated although never implemented
              std::string getWget() const {return wget;}
@@ -25,8 +27,8 @@ class packinst{
              bool getNextDep(std::string&);
              void removeDep(const int deppos){deps.erase(deps.begin()+deppos-1);loc--;}
              void setName(const std::string pname){name=pname;}
-             void setVersion(const std::string pversion){version=pversion;}
-
+             void setVersion(const std::string pversion){ver=pversion;}
+	     void setVersion(const version vers){ver=vers;}
              // Wget space is being used for archive url/name
              void setWget(const std::string pwget)
              {
@@ -46,14 +48,15 @@ class packinst{
              void addDep(const std::string pdep){deps.push_back(pdep);}   
       
       private:
-              std::string name,version,wget,config,make,makeinst, archiveurl, archivename;
+              std::string name,wget,config,make,makeinst, archiveurl, archivename;
+	      version ver;
               std::vector<std::string> deps;
               int loc;
       
       };
 
-packinst getPackage(const char*);
-//packinst getPackage(const std::string location){return getPackage(location.c_str());}
+packinst getPackage(std::string);
+//packinst getPackage(std::string location){return getPackage(location.c_str());}
 
 
 #endif
