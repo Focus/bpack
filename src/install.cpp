@@ -100,11 +100,13 @@ void install(string packname, const string configp="", const string makep="", co
 		cerr<<"Package "<<packname<<" not found, try after doing  bpack update."<<endl;
 		exit(1);
 	}	
-	
+	string *temp=new string;
+	*temp=*location;
+	depVersion(*temp,*ver);
+	delete temp;
 	*packageinst=getPackage(Config::getPackInstDir()+*location);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
-
 	vector<package> *installed=new vector<package>;
      	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
      	string y;
