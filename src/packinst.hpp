@@ -3,7 +3,8 @@
 
 
 #include <vector>
-#include <string>
+#include <cstring>
+#include <fstream>
 class packinst{
       
       public:
@@ -51,6 +52,8 @@ class packinst{
       
       };
 
+packinst getPackage(const char*);
+//packinst getPackage(const std::string location){return getPackage(location.c_str());}
 
 
 #endif
