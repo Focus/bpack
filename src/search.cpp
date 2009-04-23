@@ -33,8 +33,9 @@ string search(string dir, string name=""){
 		cerr<<"\nCannot search!"<<endl;
 		exit(1);
 	}
-	string ret;
+	string ret,rety;
 	ret="";
+	rety="";
 	//string *temp=new string;
 	
 	//Loop for searching
@@ -45,20 +46,19 @@ string search(string dir, string name=""){
 		if(strcmp(ret.c_str(),".") && strcmp(ret.c_str(),"..")){
 		if((findy=ret.find(name))>=0){
 			if(findy>0 && pos==1){
-				closedir(dp);dp=NULL;
-				return ret;
+				rety=rety+ret+",";
 				}
 			if(findy==0 && pos==0 && ret.size()==name.size()){
 				closedir(dp);dp=NULL;
 				return ret;
 				}
 			if(findy==0 && pos==2){
-				closedir(dp);dp=NULL;
-				return ret;
+				rety=rety+ret+",";
 				}
 		}
 	}
 	}
+	return rety;
 	}
 	
 	//Loop for listing

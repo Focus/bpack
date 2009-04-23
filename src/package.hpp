@@ -33,6 +33,8 @@ class package
               bool scan;
 };
 
+std::vector<package> getInstalledPackages(const char*);
+void printPackages(const std::vector<package>);
 
 #endif
 

@@ -85,7 +85,7 @@ void install(string packname,const string configp="",const string makep="",const
      if(*ver=="0.0.0")
      cout<<"\nPackage "<<packname<<" to be installed.\n";
      else
-     cout<<"\nPackage "<<packname<<"-"<<ver<<" to be installed.\n";
+     cout<<"\nPackage "<<packname<<"-"<<*ver<<" to be installed.\n";
      string text;
      string x;
      while(!textfile.eof())

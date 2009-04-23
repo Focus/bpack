@@ -48,9 +48,7 @@ packinst getPackage(const char* location){
 	ifstream textfile;
 	textfile.open(location);
 	packinst pack;
-	char str[2000];
 	string text;
-	//getline(textfile,text);
 	while(getline(textfile,text)){
 		lineAnalyse(text,pack);
 	}
