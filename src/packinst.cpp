@@ -1,3 +1,19 @@
+/*********************************************************************************
+
+The current config works like the example below...
+
+>cat packs/foobar-0.2
+
+config:--prefix=/usr
+make: DESTDIR=/dev/null
+#This is a comment
+conf: crash:allways
+conffile:/etc/foobar.conf
+
+
+*********************************************************************************/
+
+
 #include "packinst.hpp"
 using namespace std;
 //Get the next dependency
@@ -40,6 +56,14 @@ void lineAnalyse(string line, packinst &pack){
 		pack.setDeps(loadLocation(value));
 	if(!strcmp(command.c_str(),"location"))
 		pack.setWget(value);
+	if(!strcmp(command.c_str(),"preinstall"))
+		pack.setPreInstall(value);
+	if(!strcmp(command.c_str(),"postinstall"))
+		pack.setPostInstall(value);
+	if(!strcmp(command.c_str(),"conffile"))
+		pack.setConfFile(value);
+	if(!strcmp(command.c_str(),"conf"))
+		pack.setConf(value);
 		
 }
 
@@ -54,5 +78,6 @@ packinst getPackage(string location){
 		lineAnalyse(text,pack);
 	}
 	textfile.close();
+	//TODO: Add some sanity checks
 	return pack;
 }

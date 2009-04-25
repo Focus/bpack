@@ -1,3 +1,8 @@
+/*********************************************************************************
+
+This function is God. Bow down to it!
+
+*********************************************************************************/
 #include <cstring>
 #include <iostream>
 #include <fstream>
@@ -11,6 +16,7 @@
 #include "storage.hpp"
 
 using namespace std;
+
 
 bool installScript(packinst inst)
 {
@@ -32,6 +38,8 @@ bool installScript(packinst inst)
 			return 0;
 		}
 
+		//TODO: Mike you need to sort this out, how the heck do you use the qhttp.c?
+
 		if(system( ("cd "+tardir+" && wget "+inst.getWget()).c_str())!=0)
 		{
 			cerr<<"\n\nDownload failed!"<<endl;
@@ -42,7 +50,7 @@ bool installScript(packinst inst)
 	}
 	tars=loadLocation(search(tardir,inst.getName()+"-"+inst.getVersion()+".tar.*"));
 	if(tars.size()<=0){
-		cerr<<"Unexpected Error...shit."<<endl;
+		cerr<<"Unexpected Error...shit."<<endl;//This should never happen...
 		return 0;
 	}
 	tar=tars[0];
@@ -53,6 +61,13 @@ bool installScript(packinst inst)
 	if(system( ("cd "+tardir+" && tar xf "+tar).c_str())!=0){
 		cerr<<"\n\nUnable to unpack the tarball!"<<endl;
 		return 0;
+	}
+
+
+	//Run preinstall commands
+	if(inst.getPreInstall()!=""){
+		if( system(  ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && "+inst.getPreInstall() ).c_str() )!=0)
+			cerr<<"\nPre-install command has failed!"<<endl;
 	}
 
 	//Run config, make and make install...
@@ -76,6 +91,19 @@ bool installScript(packinst inst)
 		return 0;
 	}
 
+	//Run postinstall command
+	if(inst.getPostInstall()!=""){
+		if( system(  ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && "+inst.getPostInstall() ).c_str() ) !=0)
+			cerr<<"\nPre-install command has failed!"<<endl;
+	}
+	
+	//Write the config file
+	if(inst.getConf()!=""){
+		if(inst.getConfFile()=="")
+			cerr<<"\nI have a config but no file to write it to!"<<endl;
+		else if(!write(inst.getConf(),inst.getConfFile()))
+			cerr<<"\nCannot write the configuration!! Don't worry, your package has been installed. Configure manually!"<<endl;
+	}
 	return 1;
 
 }

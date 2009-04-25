@@ -1,3 +1,13 @@
+/*********************************************************************************
+
+TODO: Sort out config, it really sucks at the moment.
+A couple of problems with it.
+1) It can't actually find where bpack is running from (try calling bpack from an
+other directory)
+2) It segfaults when you sudo bpack.
+
+*********************************************************************************/
+
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -20,7 +30,6 @@ void mrt();
 
 int main(int argc, char *argv[]){
 	Config::initialise(argv[0]);
-	cout<<Config::getPackInstDir()<<endl;
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;
@@ -69,6 +78,8 @@ int main(int argc, char *argv[]){
          
     return 0;
 }
+
+//This could do with a bit of work...
 void help()
 {
      cout<<"\nHelp file...\nUsage: \n\n bpack [action] [parameters]\n\nactions:";

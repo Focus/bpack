@@ -1,8 +1,12 @@
+
+//This has become a sort of tools library, many of the functions are misnamed and too many headers
+//TODO: See above
+
 #include <iostream>
 #include <cstring>
 #include <vector>
 #include <cstdlib>
-
+#include <fstream>
 #include "version.hpp"
 #include "storage.hpp"
 using namespace std;
@@ -69,7 +73,20 @@ vector<string> loadLocation(const string locations)
                                        
         }
               return locs;
-}
+}
+
+bool write(const string content, const string location){
+
+	ofstream text;
+	text.open(location.c_str());
+     	if(!text)
+		return 0;
+	
+	text<<content;
+	text.close();
+	return 1;
+     	
+}
      
      
      

@@ -1,3 +1,6 @@
+//TODO: Soooooooo many headers...
+
+
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -156,6 +159,17 @@ void install(string packname, const string configp="", const string makep="", co
 	delete ver;
 	delete location;
 }
+
+
+
+/**********************************************************
+I am debating if we should keep these functions below. I
+see no need for them to be honest. Passing config, make
+and make install parameters throught argv is ugly, why
+can't they just make a package. It isn't exactly a fucking
+rocket science.
+**********************************************************/
+
 
 //Catching parameters passed...
 void preinstall(char* argv[],const int argc){
