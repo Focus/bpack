@@ -14,7 +14,9 @@ This function is God. Bow down to it!
 #include "search.hpp"
 #include "remove.hpp"
 #include "storage.hpp"
+extern "C"{
 #include "qhttp.h"
+}
 
 using namespace std;
 

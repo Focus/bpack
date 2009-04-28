@@ -10,7 +10,6 @@
 
 //TODO asyncronous download
 
-
 void logger(enum LOGMETHOD logtype, const char* msg)
 {
     switch (logtype)
@@ -53,7 +52,7 @@ struct HttpRequest* buildreq(const char* url)
 	if(strstr(url,"://")){
 		ret->protocol = (char*)malloc(strstr(url,"://")-url);
 		strncpy(ret->protocol, url, strstr(url,"://")-url);
-		url+=strstr(url,"://")-url;
+		url+=strstr(url,"://")-url+3;
 	} else
 		ret->protocol = "http";	// assume http as default
 		
@@ -89,7 +88,10 @@ struct HttpRequest* buildreq(const char* url)
 		}else
 			tmp = strchr(url,':');
         if (1 != sscanf(tmp, "%d", &tp)){
-            ret->errormsg="Error with specified port";
+            char *msg = (char*)malloc(strlen(tmp)+27);
+            strcpy(msg, "Error with specified port: ");
+            strcat(msg, tmp);
+            ret->errormsg=msg;
             return ret;
         }
         ret->port = tp;
@@ -313,7 +315,8 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     strcpy(path,dir);
 	strcat(path,"/");
     strcat(path,filename);
-	path[strlen(dir)+strlen(filename)]=0;
+	path[strlen(dir)+strlen(filename)+1]=0;
+    printf("%s\n", path);
     
     FILE* f = fopen(path,"w");
 	if(!f){
