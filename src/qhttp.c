@@ -11,7 +11,7 @@
 //TODO asyncronous download
 
 
-void logger(enum LOGMETHOD logtype, char* msg)
+void logger(enum LOGMETHOD logtype, const char* msg)
 {
     switch (logtype)
     {
@@ -26,7 +26,7 @@ void logger(enum LOGMETHOD logtype, char* msg)
     }
 }
 
-void logger2(enum LOGMETHOD logtype, char* msg, char*msg2)
+void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 {
     switch (logtype)
     {
@@ -41,45 +41,83 @@ void logger2(enum LOGMETHOD logtype, char* msg, char*msg2)
     }
 }
 
-// FIXME should be able to take IP addresses
-struct HttpRequest* buildreq(char* url, enum LOGMETHOD logtype)
+
+// creates the default request to get the url
+// on error the returned structure's errormsg field is set, otherwise NULL
+struct HttpRequest* buildreq(const char* url)
 {
-    // ignore http:// if given
-    if(strstr(url, "http://"))
-        url+=7;
-    // error if other protocol supplied
-    else if(strstr(url,"://"))
-        return NULL;
-
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
-
-    if(strchr(url,':')==NULL){
-        ret->port = 80;
-        ret->host = malloc(strchr(url,'/')-url+1);
-          strncpy(ret->host, url, strchr(url,'/')-url);
-    }else{
+	ret->errormsg = NULL;
+	
+	// Sort out protocol
+	if(strstr(url,"://")){
+		ret->protocol = (char*)malloc(strstr(url,"://")-url);
+		strncpy(ret->protocol, url, strstr(url,"://")-url);
+		url+=strstr(url,"://")-url;
+	} else
+		ret->protocol = "http";	// assume http as default
+		
+	if(strcasecmp(ret->protocol, "http")!=0){
+		ret->errormsg = "Unsupported protocol, cannot build request";
+		return ret;
+	}
+	//printf(" : %\n", );
+	
+	// sort out host
+	if(strchr(url,':')){
         ret->host = malloc(strchr(url,':')-url+1);
           strncpy(ret->host, url, strchr(url,':')-url);
-        int tp;
-        char* tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
-          strncpy(tmp, strchr(url,':'), strchr(url,'/')-strchr(url,':'));
+    }else if(strchr(url,'/')){
+        ret->host = malloc(strchr(url,'/')-url+1);
+          strncpy(ret->host, url, strchr(url,'/')-url);
+	}else{
+        ret->host = malloc(strlen(url));
+          strcpy(ret->host, url);
+	}
+	//printf(" : %\n", );
+	
+
+	// Sort out port
+    if(strchr(url,':')==NULL){
+        ret->port = 80;
+    }else{
+        int tp;	// FIXME work without '/'
+        char* tmp;
+		if(strchr(url, '/')){
+			tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
+			  strncpy(tmp, strchr(url,':')+1, strchr(url,'/')-strchr(url,':')-1);
+		}else
+			tmp = strchr(url,':');
         if (1 != sscanf(tmp, "%d", &tp)){
-            logger2(logtype, "Error with specified port",tmp);               // flag something on error
-            return NULL;
+            ret->errormsg="Error with specified port";
+            return ret;
         }
         ret->port = tp;
     }
+	//printf(" : %\n", );
+	
+	
+	// Sort out path
+	
+	if(strchr(url,'/')){
+		ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
+		strcpy(ret->path, strchr(url,'/'));
+	}else
+		ret->path = "/";
+	
+	//printf(" : %\n", );
+	
+	
+	// Sort out general
     ret->rawheader = "";
     ret->method = GET;
-    ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
-    strcpy(ret->path, strchr(url,'/'));
     return ret;
 }
 
 
 // Adds a header to a request
 //   header : string with no new line in the format Content-Encoding: thing/blah
-void addheader(struct HttpRequest *req, char* header)
+void addheader(struct HttpRequest *req, const char* header)
 {
     char* oldhead = req->rawheader;
     req->rawheader = malloc(strlen(oldhead)+strlen(header)+2);
@@ -87,7 +125,7 @@ void addheader(struct HttpRequest *req, char* header)
 }
 
 // Adds a key-value pair to the entity to be posted
-void addpostpair(struct HttpRequest *req, char *key, char *val)
+void addpostpair(struct HttpRequest *req, const char *key, const char *val)
 {
     char* newpost = malloc(strlen(key)+strlen(val)+2);
     sprintf(newpost, "%s=%s", key, val);
@@ -106,7 +144,7 @@ void addpostpair(struct HttpRequest *req, char *key, char *val)
 }
 
 // Resolves the address for the host named in the request
-//   FIXME doesn't do IP addresses
+// returns NULL if it fails to find the host
 struct sockaddr *getsockaddr(struct HttpRequest req)
 {
     struct hostent *ent;
@@ -119,7 +157,6 @@ struct sockaddr *getsockaddr(struct HttpRequest req)
         memcpy (&addr->sin_addr, ent->h_addr_list[0], ent->h_length);
         addr->sin_family = ent->h_addrtype;
     } else {
-        printf(" qhttp : failed to resolve locally.\n");
         return NULL;                          /* failed */
     }
     
@@ -129,10 +166,11 @@ struct sockaddr *getsockaddr(struct HttpRequest req)
 }
 
 // connects to the host specified in the request
-//   returns : handle to the socket
+//   returns : handle to the socket or 0 on failure
 int sconnect(struct HttpRequest req)
 {
     struct sockaddr *saddr = getsockaddr(req);
+	
     if (!saddr)
         return 0;
     int handle;
@@ -151,7 +189,7 @@ int sconnect(struct HttpRequest req)
 
 
 // Converts a HttpRequest into a raw string to be sent
-// TODO can't send binarys
+// TODO can't send binarys, generally only just conforms to http
 char* rawrequest(struct HttpRequest *req)
 {
     char* method;
@@ -177,14 +215,15 @@ char* rawrequest(struct HttpRequest *req)
     return buffer;
 }
 
-
+// Turns the raw header text into a structure
 struct HttpResponse buildresponsehead(const char* rawresp)
 {
     struct HttpResponse resp;
+	resp.errormsg = 0;
     resp.rawheader=malloc(strlen(rawresp));
     strcpy(resp.rawheader, rawresp);
 
-    printf(" building response :\n%s\n\n", "");//rawresp);
+    //printf(" building response :\n%s\n\n", "");//rawresp);
 
     resp.streason = malloc(10);
     sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
@@ -198,28 +237,21 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 }
     
 // FIXME could have trouble sending large files
+// returns 1 on success
 int httpsend(int socket, struct HttpRequest *req)
 {
     char* message = rawrequest(req);
     int p=0;
-    //printf("sending %s\n\n", message);
-    /*while(p<strlen(message)){
-        if(p+=send(socket,message+p,strlen(message)-p,0) < 0){
-            printf(" error writing to socket\n");
-            return 0;
-        }
-        //printf("p=%d, msglen=%d\n",p,strlen(message));
-    }*/
     if(send(socket,message,strlen(message),0) < 0){
             printf(" error writing to socket\n");
             return 0;
         }
-    //printf("sent\n");
     return 1;
 }
 
-
-struct HttpResponse httpreadresponse(int socket, enum LOGMETHOD logtype)
+// Reads the header from an arriving response
+// TODO : error handling, is this valid http?, pretty much afaik
+struct HttpResponse httpreadresponse(int socket)
 {
     int bufsize=4096;        /* a 4K buffer */
     char *buffer=malloc(bufsize);
@@ -233,13 +265,14 @@ struct HttpResponse httpreadresponse(int socket, enum LOGMETHOD logtype)
     strstr(buffer, "\r\n\r\n")[0] = 0;
 
 
-    printf("buffer : %s",buffer);
+    //printf("buffer : %s",buffer);
     struct HttpResponse ret = buildresponsehead(buffer);
     ret.stream = socket;
     return ret;
 }
 
 // connects, sends request and returns response
+// TODO : follow redirects
 struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 {
     int socket=sconnect(req);
@@ -247,39 +280,61 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
         logger2(logtype, "connected to ", req.host);
         if (httpsend(socket, &req)){
             logger(logtype, "request sent, awaiting response");
-            struct HttpResponse hr = httpreadresponse(socket, logtype);
+            struct HttpResponse hr = httpreadresponse(socket);
             logger(logtype, "response retrieved");
             return hr;
         }else{
-            logger(logtype, "not connected : error sending request");
+            logger(LOGMULTI, "not connected : error sending request");
             struct HttpResponse error;
-            error.stcode = 0; error.streason="ErrorSendingRequest";
+            error.stcode = 0; error.streason=error.errormsg ="ErrorSendingRequest";
             return error;
         }
     }else{
-        logger2(logtype, "not connected : error connecting to ", req.host);
+        logger2(LOGMULTI, "not connected : error connecting to ", req.host);
         struct HttpResponse error;
-        error.stcode = 0; error.streason="ErrorConnecting";
+        error.stcode = 0; error.streason =error.errormsg ="ErrorConnecting";
         return error;
     }
 }
 
-// TODO make wary of status codes, Transfer-Encoding, chunked transfers
-int wget(char* url, char* dir, char* filename, enum LOGMETHOD logtype)
+
+// TODO make wary of status codes, Transfer-Encoding, chunked transfers, errors
+// TODO should probably follow redirects
+
+// Simple function to download and save a file like wget basic usage
+// use filename = NULL to use the remote filename, see LOGMETHOD above
+// returns 0 if download was succesful, else an error code or HTTP error 4xx / 5xx
+// TODO : wont come up with a name for files if url has no filename
+int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype)
 {
-    struct HttpRequest hq = *buildreq(url, logtype);
-    struct HttpResponse hr = HttpGet(hq, logtype);
-
-    if (filename==NULL)
+    if (filename==0)
         filename = strrchr(url,'/');
-    char* path = malloc(strlen(dir)+strlen(filename));
+    char* path = malloc(strlen(dir)+strlen(filename)+2);
     strcpy(path,dir);
+	strcat(path,"/");
     strcat(path,filename);
+	path[strlen(dir)+strlen(filename)]=0;
     
+    FILE* f = fopen(path,"w");
+	if(!f){
+		logger2(LOGMULTI, "Error opening file ", path);
+		return 3;
+	}
+	
+    struct HttpRequest hq = *buildreq(url);
+	if(hq.errormsg){
+		logger2(LOGMULTI, "Error building request : ", hq.errormsg);
+		return 2;
+	}
+    struct HttpResponse hr = HttpGet(hq, logtype);
+	if(hr.errormsg){
+		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
+		return 3;
+	}
 
-    FILE* f = fopen(path,"w");    
     logger2(logtype, "saving to ", path);
 
+	// TODO error handling and make nicer
     if(hr.clength>0){       // If content-length is specified, retrieve that many octets
         int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
         void *buffer = malloc(bufsize);
@@ -299,6 +354,6 @@ int wget(char* url, char* dir, char* filename, enum LOGMETHOD logtype)
     fclose(f);
     logger(logtype, "saved");
     
-    return 1;
+    return 0; // success
 }
 

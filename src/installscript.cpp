@@ -14,6 +14,7 @@ This function is God. Bow down to it!
 #include "search.hpp"
 #include "remove.hpp"
 #include "storage.hpp"
+#include "qhttp.h"
 
 using namespace std;
 
@@ -38,9 +39,8 @@ bool installScript(packinst inst)
 			return 0;
 		}
 
-		//TODO: Mike you need to sort this out, how the heck do you use the qhttp.c?
-
-		if(system( ("cd "+tardir+" && wget "+inst.getWget()).c_str())!=0)
+		// There you go, nice and simple bati
+		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGMULTI))
 		{
 			cerr<<"\n\nDownload failed!"<<endl;
 			return 0;
