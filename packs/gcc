@@ -1,6 +1,0 @@
-[4.3.2;
-;
---enable-shared --enable-threads=posix --enable-__cxa_atexit --enable-clocale=gnu --enable-languages=c,c++,ada,fortran,java,objc,treelang;
-;
-;
-mpfr;]
