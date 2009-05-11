@@ -1,6 +1,0 @@
-[4.2.4;
-;
---enable-cxx --enable-mpbsd;
-;
-;
-glibc,binutils;]
