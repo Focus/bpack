@@ -43,16 +43,24 @@ void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 
 // creates the default request to get the url
 // on error the returned structure's errormsg field is set, otherwise NULL
-struct HttpRequest* buildreq(const char* url)
+
+//TODO: I fixed the string issues here but it is very very very ugly!
+struct HttpRequest* buildreq(char* url)
 {
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 	ret->errormsg = NULL;
-	
+	int pos;
 	// Sort out protocol
 	if(strstr(url,"://")){
-		ret->protocol = (char*)malloc(strstr(url,"://")-url);
-		strncpy(ret->protocol, url, strstr(url,"://")-url);
-		url+=strstr(url,"://")-url+3;
+		char* dd;
+		dd=url+(strstr(url,"://")-url+3);
+		pos=strlen(url)-strlen(dd)-3;
+		char temp[pos];
+		strncpy(temp,url,pos);
+		ret->protocol = (char*)malloc(strlen(temp));
+		strcpy(ret->protocol,temp);
+		url=dd;
+		
 	} else
 		ret->protocol = "http";	// assume http as default
 		
@@ -67,8 +75,14 @@ struct HttpRequest* buildreq(const char* url)
         ret->host = malloc(strchr(url,':')-url+1);
           strncpy(ret->host, url, strchr(url,':')-url);
     }else if(strchr(url,'/')){
-        ret->host = malloc(strchr(url,'/')-url+1);
-          strncpy(ret->host, url, strchr(url,'/')-url);
+	char* gg;
+	gg=url+(strstr(url,"/")-url+1);
+	pos=strlen(url)-strlen(gg)-1;
+	char temp2[pos];
+	strncpy(temp2,url,pos);
+	temp2[pos]='\0';
+        ret->host = (char*)malloc(strlen(temp2));
+        strcpy(ret->host, temp2);
 	}else{
         ret->host = malloc(strlen(url));
           strcpy(ret->host, url);
@@ -316,7 +330,6 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	strcat(path,"/");
     strcat(path,filename);
 	path[strlen(dir)+strlen(filename)+1]=0;
-    printf("%s\n", path);
     
     FILE* f = fopen(path,"w");
 	if(!f){

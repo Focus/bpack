@@ -27,7 +27,6 @@ string search(string dir, string name=""){
 	//Begin the search
 	static DIR *dp=NULL;
 	struct dirent *d;
-	cout<<dir<<endl;
 	dp=opendir(dir.c_str());
 	if(dp==NULL){
 		cerr<<"\nCannot search!"<<endl;

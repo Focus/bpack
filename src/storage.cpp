@@ -87,6 +87,21 @@ bool write(const string content, const string location){
 	return 1;
      	
 }
+
+vector<string> read(const string location){
+	ifstream textfile;
+	vector<string> ret;
+	textfile.open(location.c_str());
+	string text;
+	if(!textfile){
+		return ret;
+	}
+	while(getline(textfile,text)){
+		ret.push_back(text);
+	}
+	textfile.close();
+	return ret;
+}
      
      
      
