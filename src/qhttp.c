@@ -44,7 +44,7 @@ void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 // creates the default request to get the url
 // on error the returned structure's errormsg field is set, otherwise NULL
 
-//TODO: I fixed the string issues here but it is very very very ugly!
+//Fixed again the strings, hehehe
 struct HttpRequest* buildreq(char* url)
 {
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
@@ -52,15 +52,10 @@ struct HttpRequest* buildreq(char* url)
 	int pos;
 	// Sort out protocol
 	if(strstr(url,"://")){
-		char* dd;
-		dd=url+(strstr(url,"://")-url+3);
-		pos=strlen(url)-strlen(dd)-3;
-		char temp[pos];
-		strncpy(temp,url,pos);
-		ret->protocol = (char*)malloc(strlen(temp));
-		strcpy(ret->protocol,temp);
-		url=dd;
-		
+		ret->protocol = (char*)malloc(strstr(url,"://")-url);
+		strncpy(ret->protocol, url, strstr(url,"://")-url);
+		(ret->protocol)[strstr(url,"://")-url]='\0';
+		url+=strstr(url,"://")-url+3;
 	} else
 		ret->protocol = "http";	// assume http as default
 		
@@ -72,20 +67,16 @@ struct HttpRequest* buildreq(char* url)
 	
 	// sort out host
 	if(strchr(url,':')){
-        ret->host = malloc(strchr(url,':')-url+1);
-          strncpy(ret->host, url, strchr(url,':')-url);
-    }else if(strchr(url,'/')){
-	char* gg;
-	gg=url+(strstr(url,"/")-url+1);
-	pos=strlen(url)-strlen(gg)-1;
-	char temp2[pos];
-	strncpy(temp2,url,pos);
-	temp2[pos]='\0';
-        ret->host = (char*)malloc(strlen(temp2));
-        strcpy(ret->host, temp2);
+        	ret->host = malloc(strchr(url,':')-url+1);
+          	strncpy(ret->host, url, strchr(url,':')-url);
+		(ret->host)[strchr(url,'/')-url]='\0';
+    	}else if(strchr(url,'/')){
+		ret->host = malloc(strchr(url,'/')-url+1);
+        	strncpy(ret->host, url, strchr(url,'/')-url);
+		(ret->host)[strchr(url,'/')-url]='\0';
 	}else{
-        ret->host = malloc(strlen(url));
-          strcpy(ret->host, url);
+        	ret->host = malloc(strlen(url));
+          	strcpy(ret->host, url);
 	}
 	//printf(" : %\n", );
 	
