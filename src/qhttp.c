@@ -4,7 +4,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-
+#include <errno.h>
 #include "qhttp.h"
 
 
@@ -45,7 +45,7 @@ void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 // on error the returned structure's errormsg field is set, otherwise NULL
 
 //Fixed again the strings, hehehe
-struct HttpRequest* buildreq(char* url)
+struct HttpRequest* buildreq(const char* url)
 {
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 	ret->errormsg = NULL;
@@ -150,44 +150,27 @@ void addpostpair(struct HttpRequest *req, const char *key, const char *val)
         addheader(req, "Content-Type: application/x-www-form-urlencoded");
 }
 
-// Resolves the address for the host named in the request
-// returns NULL if it fails to find the host
-struct sockaddr *getsockaddr(struct HttpRequest req)
-{
-    struct hostent *ent;
-    struct sockaddr_in *addr = malloc(sizeof(struct sockaddr_in));
-
-    //printf(" resolving host by name: %s\n", req.host);
-    ent = gethostbyname (req.host);
-    if ( ent ) {
-        printf("resolved: %s (%s)\n", req.host, inet_ntoa(*(struct in_addr*)(ent->h_addr_list[0])));
-        memcpy (&addr->sin_addr, ent->h_addr_list[0], ent->h_length);
-        addr->sin_family = ent->h_addrtype;
-    } else {
-        return NULL;                          /* failed */
-    }
-    
-    addr->sin_port = htons(req.port);
-
-    return (struct sockaddr *)addr;
-}
-
 // connects to the host specified in the request
 //   returns : handle to the socket or 0 on failure
 int sconnect(struct HttpRequest req)
 {
-    struct sockaddr *saddr = getsockaddr(req);
+    //struct sockaddr *saddr = getsockaddr(req);
+	struct addrinfo hints, *res;
+
+	memset(&hints, 0, sizeof hints);
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+
+	getaddrinfo(req.host, req.protocol, &hints, &res);
 	
-    if (!saddr)
-        return 0;
     int handle;
 
-    //printf("connecting to %s:%u\n", inet_ntoa(saddr.sin_addr), req.port);
-    handle = socket( AF_INET, SOCK_STREAM, 0 );
+    //printf("connecting to %s:%u\n", inet_ntoa(saddr->sin_addr), req.port);
+    handle = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     //printf("socket %d opened\n", handle);
-    if ( connect( handle, saddr, sizeof(*saddr))
+    if ( connect(handle, res->ai_addr, res->ai_addrlen)
          <0) {
-        printf(" qhttp : connect() failed.\n");
+        printf(" qhttp : connect() failed. Reason : %s \n",strerror( errno ));
         return -1; 
     }
     //printf("connected on socket %d.\n", handle);
@@ -205,6 +188,9 @@ char* rawrequest(struct HttpRequest *req)
     if (req->rawpost){
         req->method = POST;
         char* h = malloc(30);
+		//
+		//This segfaults sometimes!!!
+		//
         sprintf(h, "Content-Length: %d", strlen(req->rawpost));
         addheader(req, h);        
         buffersize += strlen(req->rawpost);
@@ -258,25 +244,27 @@ int httpsend(int socket, struct HttpRequest *req)
 
 // Reads the header from an arriving response
 // TODO : error handling, is this valid http?, pretty much afaik
+
 struct HttpResponse httpreadresponse(int socket)
 {
     int bufsize=4096;        /* a 4K buffer */
-    char *buffer=malloc(bufsize);
+    char *buffer=(char*)malloc(bufsize);
 
     int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
     bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
 
-    free(buffer);
-    buffer=malloc(bufsize);
-    bufferused = recv(socket, buffer, bufsize, 0);
-    strstr(buffer, "\r\n\r\n")[0] = 0;
+    //free(buffer);
+    char* newbuffer=(char*)malloc(bufsize);
+    bufferused = recv(socket, newbuffer, bufsize, 0);
+    strstr(newbuffer, "\r\n\r\n")[0] = 0;
 
 
     //printf("buffer : %s",buffer);
-    struct HttpResponse ret = buildresponsehead(buffer);
+    struct HttpResponse ret = buildresponsehead(newbuffer);
     ret.stream = socket;
     return ret;
 }
+
 
 // connects, sends request and returns response
 // TODO : follow redirects
@@ -314,13 +302,16 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 // TODO : wont come up with a name for files if url has no filename
 int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype)
 {
+	
     if (filename==0)
-        filename = strrchr(url,'/');
-    char* path = malloc(strlen(dir)+strlen(filename)+2);
+        filename = strrchr(url,'/')+1;
+		
+	//printf("\n %s \n %s \n %s",url,dir,filename);
+    char* path =(char*)malloc(strlen(dir)+strlen(filename)+2);
     strcpy(path,dir);
-	strcat(path,"/");
+	//strcat(path,"/");
     strcat(path,filename);
-	path[strlen(dir)+strlen(filename)+1]=0;
+	path[strlen(dir)+strlen(filename)]='\0';
     
     FILE* f = fopen(path,"w");
 	if(!f){
@@ -352,7 +343,7 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
             transremain -= readlength = read(hr.stream, buffer, bufsize);
             fwrite(buffer, 1, readlength, f);
         }while (transremain > 0);
-        free(buffer);
+        //free(buffer);
     }
 
 
