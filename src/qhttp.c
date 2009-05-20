@@ -49,6 +49,7 @@ struct HttpRequest* buildreq(const char* url)
 {
     struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 	ret->errormsg = NULL;
+	ret->rawpost=NULL;
 	int pos;
 	// Sort out protocol
 	if(strstr(url,"://")){
@@ -90,6 +91,7 @@ struct HttpRequest* buildreq(const char* url)
 		if(strchr(url, '/')){
 			tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
 			  strncpy(tmp, strchr(url,':')+1, strchr(url,'/')-strchr(url,':')-1);
+			free(tmp);
 		}else
 			tmp = strchr(url,':');
         if (1 != sscanf(tmp, "%d", &tp)){
@@ -97,6 +99,7 @@ struct HttpRequest* buildreq(const char* url)
             strcpy(msg, "Error with specified port: ");
             strcat(msg, tmp);
             ret->errormsg=msg;
+            free(msg);
             return ret;
         }
         ret->port = tp;
@@ -142,12 +145,15 @@ void addpostpair(struct HttpRequest *req, const char *key, const char *val)
         char* curpost = req->rawpost;
         req->rawpost = malloc(strlen(curpost)+strlen(newpost)+2);
         sprintf(req->rawpost, "%s&%s", curpost, newpost);
+		req->rawpost[strlen(curpost)+strlen(newpost)+1]='\0';
     }else{
         req->rawpost = malloc(strlen(newpost)+1);
         strcpy(req->rawpost, newpost);
+		req->rawpost[strlen(newpost)]='\0';
     }
     if(strstr(req->rawheader, "Content-Type:")==NULL)
         addheader(req, "Content-Type: application/x-www-form-urlencoded");
+	free(newpost);
 }
 
 // connects to the host specified in the request
@@ -162,7 +168,7 @@ int sconnect(struct HttpRequest req)
 	hints.ai_socktype = SOCK_STREAM;
 
 	getaddrinfo(req.host, req.protocol, &hints, &res);
-	
+
     int handle;
 
     //printf("connecting to %s:%u\n", inet_ntoa(saddr->sin_addr), req.port);
@@ -194,6 +200,7 @@ char* rawrequest(struct HttpRequest *req)
         sprintf(h, "Content-Length: %d", strlen(req->rawpost));
         addheader(req, h);        
         buffersize += strlen(req->rawpost);
+	free(h);
     }
     switch (req->method){
         case GET:
@@ -239,6 +246,7 @@ int httpsend(int socket, struct HttpRequest *req)
             printf(" error writing to socket\n");
             return 0;
         }
+		free(message);
     return 1;
 }
 
@@ -262,6 +270,8 @@ struct HttpResponse httpreadresponse(int socket)
     //printf("buffer : %s",buffer);
     struct HttpResponse ret = buildresponsehead(newbuffer);
     ret.stream = socket;
+    free(buffer);
+    free(newbuffer);
     return ret;
 }
 
@@ -319,19 +329,19 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		return 3;
 	}
 	
-    struct HttpRequest hq = *buildreq(url);
-	if(hq.errormsg){
-		logger2(LOGMULTI, "Error building request : ", hq.errormsg);
+    struct HttpRequest *hq = buildreq(url);
+	if(hq->errormsg){
+		logger2(LOGMULTI, "Error building request : ", hq->errormsg);
 		return 2;
 	}
-    struct HttpResponse hr = HttpGet(hq, logtype);
+    struct HttpResponse hr = HttpGet(*hq, logtype);
 	if(hr.errormsg){
 		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
 		return 3;
 	}
 
     logger2(logtype, "saving to ", path);
-
+    free(path);
 	// TODO error handling and make nicer
     if(hr.clength>0){       // If content-length is specified, retrieve that many octets
         int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
@@ -343,7 +353,7 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
             transremain -= readlength = read(hr.stream, buffer, bufsize);
             fwrite(buffer, 1, readlength, f);
         }while (transremain > 0);
-        //free(buffer);
+        free(buffer);
     }
 
 
@@ -351,7 +361,14 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     shutdown(hr.stream, SHUT_RDWR);
     fclose(f);
     logger(logtype, "saved");
-    
+    free(hr.rawheader);
+    free(hr.rawheader);
+    free(hr.streason);
+
+    free(hq->path);
+    free(hq->protocol);
+    free(hq->host);
+    free(hq);
     return 0; // success
 }
 

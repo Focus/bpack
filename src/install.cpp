@@ -115,6 +115,8 @@ void install(string packname, const string configp="", const string makep="", co
      	string y;
 	bool gotit;
 	version depver;
+	delete ver;
+	delete location;
 	//check for dependencies
      	while(packageinst->getNextDep(y)){
         
@@ -141,7 +143,7 @@ void install(string packname, const string configp="", const string makep="", co
                 install(y); 
             	}
      	}
-      
+        delete installed;
      	cout<<"\nInstalling "<<packname<<"...\n";
      	//Have a packinst!
     	if(installScript(*packageinst)){
@@ -153,11 +155,7 @@ void install(string packname, const string configp="", const string makep="", co
 		exit(1);
 	}
 
-	
-	delete installed;
 	delete packageinst;
-	delete ver;
-	delete location;
 }
 
 
@@ -209,6 +207,7 @@ void preinstall(char* argv[],const int argc){
                   name=argv[files[i]];
                   install(name,configp,makep,makeinstp);
                   }
+			free(argv);
 }
 
 //Makes a package and then installs it
