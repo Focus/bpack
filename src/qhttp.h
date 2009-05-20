@@ -36,7 +36,7 @@ int wget(const char* sourceurl, const char* destdir, const char* filename, enum 
 
 // creates the default request to get the url
 // on error the returned structure's errormsg field is set, otherwise NULL
-struct HttpRequest* buildreq(char* url);
+struct HttpRequest* buildreq(const char* url);
 
 // adds a key-value pair to be posted to a request
 void addpostpair(struct HttpRequest *req, const char *key, const char *val);
