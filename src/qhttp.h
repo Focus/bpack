@@ -48,4 +48,5 @@ void addheader(struct HttpRequest *req, const char* header);
 // connects, sends request and return response
 struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD method);
 
-
+// read the body of the response and return as string
+char* getBody(struct HttpResponse*);

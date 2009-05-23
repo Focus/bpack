@@ -7,6 +7,8 @@
 #include <errno.h>
 #include "qhttp.h"
 
+#define MIN(x,y) x > y ? x : y
+
 
 //TODO asyncronous download
 
@@ -176,7 +178,7 @@ int sconnect(struct HttpRequest req)
     //printf("socket %d opened\n", handle);
     if ( connect(handle, res->ai_addr, res->ai_addrlen)
          <0) {
-        printf(" qhttp : connect() failed. Reason : %s \n",strerror( errno ));
+        logger2(LOGMULTI, "qhttp : connect() failed. Reason : ",strerror( errno ));
         return -1; 
     }
     //printf("connected on socket %d.\n", handle);
@@ -243,7 +245,7 @@ int httpsend(int socket, struct HttpRequest *req)
     char* message = rawrequest(req);
     int p=0;
     if(send(socket,message,strlen(message),0) < 0){
-            printf(" error writing to socket\n");
+            logger(LOGMULTI, " error writing to socket\n");
             return 0;
         }
 		free(message);
@@ -286,7 +288,7 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
         if (httpsend(socket, &req)){
             logger(logtype, "request sent, awaiting response");
             struct HttpResponse hr = httpreadresponse(socket);
-            logger(logtype, "response retrieved");
+            logger2(logtype, "response retrieved : ", hr.streason);
             return hr;
         }else{
             logger(LOGMULTI, "not connected : error sending request");
@@ -302,6 +304,13 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
     }
 }
 
+int getHeader(struct HttpResponse *resp, char* key, char* value, int size)
+{
+	if(!strstr(resp->rawheader, key)) // does not contain this key
+		return 0;
+	char *start = strchr(strstr(resp->rawheader, key), ':')+1;
+	return strncpy(value, start, MIN(size,strchr(start,'\r')-start) ) != 0;
+}
 
 // TODO make wary of status codes, Transfer-Encoding, chunked transfers, errors
 // TODO should probably follow redirects
@@ -312,10 +321,31 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 // TODO : wont come up with a name for files if url has no filename
 int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype)
 {
+	// build request
+    struct HttpRequest *hq = buildreq(url);
+	if(hq->errormsg){
+		logger2(LOGMULTI, "Error building request : ", hq->errormsg);
+		return 2;
+	}
+	// get
+    struct HttpResponse hr = HttpGet(*hq, logtype);
+	if(hr.errormsg){
+		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
+		return 3;
+	}
 	
-    if (filename==0)
-        filename = strrchr(url,'/')+1;
+	// choose filename
+	char tempname[100];
+	if (filename==0){	// use given filename first
+		if(getHeader(&hr, "Content-Disposition", tempname, 99)){
+			// Get filename from response header
+			filename = strchr(strstr(tempname, "filename"), '"')+1;
+			*strchr(filename, '"') = '\0';
+		}else 	// use filename from url
+			filename = strrchr(url,'/')+1;
+	}
 		
+	// open file to save
 	//printf("\n %s \n %s \n %s",url,dir,filename);
     char* path =(char*)malloc(strlen(dir)+strlen(filename)+2);
     strcpy(path,dir);
@@ -329,16 +359,6 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		return 3;
 	}
 	
-    struct HttpRequest *hq = buildreq(url);
-	if(hq->errormsg){
-		logger2(LOGMULTI, "Error building request : ", hq->errormsg);
-		return 2;
-	}
-    struct HttpResponse hr = HttpGet(*hq, logtype);
-	if(hr.errormsg){
-		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
-		return 3;
-	}
 
     logger2(logtype, "saving to ", path);
     free(path);
@@ -362,7 +382,6 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     fclose(f);
     logger(logtype, "saved");
     free(hr.rawheader);
-    free(hr.rawheader);
     free(hr.streason);
 
     free(hq->path);
@@ -372,3 +391,14 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     return 0; // success
 }
 
+// Another malloc without a free, hopefully will find a better way to do this
+char* getBody(struct HttpResponse *resp)
+{
+	int clength = resp->clength;
+	/*char slength[10]; sprintf(slength, "%d", clength);
+	logger2(LOGMULTI, "Reading body, length : ", slength);*/
+	char *respbody = (char *)malloc(resp->clength+1);
+	respbody[resp->clength]='\0';
+	read(resp->stream, respbody, resp->clength);
+	return respbody;
+}

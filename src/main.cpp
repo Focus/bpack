@@ -22,6 +22,7 @@ using namespace std;
 #include "install.hpp"
 #include "remove.hpp"
 #include "search.hpp"
+#include "update.hpp"
 //List of functions we need.
 void help();
 void mrt();
@@ -48,7 +49,7 @@ int main(int argc, char *argv[]){
               scan();
               }
          else if(!strcmp(argv[1],"update"))
-              cout<<"\nUpdate called";
+              update();
               
          else if(!strcmp(argv[1],"remove")){
               if(argc > 2)
