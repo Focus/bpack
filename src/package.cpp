@@ -64,15 +64,11 @@ void printPackages(const vector<package> packagelist)
      if(packagelist.size()==0)
      return;
      package *currentpack=new package;
+	 cout<<"\nInstalled packages:"<<endl;
      for(int i=0;i<packagelist.size();i++){
              *currentpack=packagelist[i];  
-             cout<<"\nName of the package:\t"<<currentpack->getName()<<"\n";
-                                cout<<"\nVersion of the package:\t"<<currentpack->getVersion()<<"\n";
-                                cout<<"\nLocations of the package:\n"; 
-           for(int ii=0; ii < (currentpack->getLocations()).size(); ii++)   
-                                 { 
-                                              cout << "\t"<<(currentpack->getLocations())[ii] << endl;   
-                                 }
+             cout<<"\t"<<currentpack->getName()<<"-"<<currentpack->getVersion()<<endl;
+
            }
      
      delete currentpack;

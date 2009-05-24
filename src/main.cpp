@@ -22,6 +22,9 @@ using namespace std;
 #include "install.hpp"
 #include "remove.hpp"
 #include "search.hpp"
+#include "terminal.hpp"
+#include "update.hpp"
+
 <<<<<<< .mine
 #include "terminal.hpp"
 #include "update.hpp"
@@ -59,7 +62,7 @@ int main(int argc, char *argv[]){
               
          else if(!strcmp(argv[1],"remove")){
               if(argc > 2)
-		removePack(argv[1]);
+				removePack(argv[1]);
          
               else{
                      cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
