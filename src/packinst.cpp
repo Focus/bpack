@@ -56,7 +56,8 @@ packinst getPackage(string location){
 		//Do a mini loop to get all of the lines in between the commands
 		
 		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
-			value=value+"\n"+(*file)[j];
+			if((*file)[j].length()>0)
+				value=value+"\n"+(*file)[j];
 		}
 		
 		//Do we set anything?
