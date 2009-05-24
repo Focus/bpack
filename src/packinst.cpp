@@ -16,6 +16,7 @@ conffile:/etc/foobar.conf
 
 #include "packinst.hpp"
 using namespace std;
+
 //Get the next dependency
 bool packinst::getNextDep(string &dep)
 {
@@ -29,55 +30,56 @@ bool packinst::getNextDep(string &dep)
      }
 }
 
-//Analyses each line of the config
-void lineAnalyse(string line, packinst &pack){
-	
-	//Strip comments
-	if(line.find_first_of("#")>=0)
-		line=line.substr(0,line.find_first_of("#"));
-	if(line.find_first_of("#")==0)
-		return;
-	int pos=line.find_first_of(":");
-	//If there is no command (i.e. nothing of the form config:)
-	if(pos<=0)
-		return;
-	string command=line.substr(0,pos);
-	string value=line.substr(pos+1);
-	
-
-	//Whole load of options!
-	if(!strcmp(command.c_str(),"config"))
-		pack.setConfig(value);
-	if(!strcmp(command.c_str(),"make"))
-		pack.setMake(value);
-	if(!strcmp(command.c_str(),"makeinst"))
-		pack.setMakeInst(value);
-	if(!strcmp(command.c_str(),"deps"))
-		pack.setDeps(loadLocation(value));
-	if(!strcmp(command.c_str(),"location"))
-		pack.setWget(value);
-	if(!strcmp(command.c_str(),"preinstall"))
-		pack.setPreInstall(value);
-	if(!strcmp(command.c_str(),"postinstall"))
-		pack.setPostInstall(value);
-	if(!strcmp(command.c_str(),"conffile"))
-		pack.setConfFile(value);
-	if(!strcmp(command.c_str(),"conf"))
-		pack.setConf(value);
-		
-}
-
 //Get and return a package installation from file
-//TODO: Check file opened up
 packinst getPackage(string location){
-	ifstream textfile;
-	textfile.open(location.c_str());
 	packinst pack;
-	string text;
-	while(getline(textfile,text)){
-		lineAnalyse(text,pack);
+	vector<string> *file= new vector<string>;
+	*file=read(location);
+	if(file->size()<=0){
+		return pack;
 	}
-	textfile.close();
-	//TODO: Add some sanity checks
+	vector<int> *line=new vector<int>;
+	vector<int> *pos=new vector<int>;
+	for(int i=0;i<file->size();i++){
+		(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
+		if( (*file)[i].find_first_of(":")+1>0  ){
+			pos->push_back((*file)[i].find_first_of(":"));
+			line->push_back(i);
+		}
+	}
+	string command,value;
+	line->push_back(file->size());
+	for(int i=0;i<pos->size();i++){
+		command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
+		value=(*file)[(*line)[i]].substr((*pos)[i]+1);
+		
+		//Do a mini loop to get all of the lines in between the commands
+		
+		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
+			value=value+"\n"+(*file)[j];
+		}
+		
+		//Do we set anything?
+		
+		if(!strcmp(command.c_str(),"config"))
+			pack.setConfig(value);
+		else if(!strcmp(command.c_str(),"make"))
+			pack.setMake(value);
+		else if(!strcmp(command.c_str(),"makeinst"))
+			pack.setMakeInst(value);
+		else if(!strcmp(command.c_str(),"deps"))
+			pack.setDeps(loadLocation(value));
+		else if(!strcmp(command.c_str(),"location"))
+			pack.setWget(value);
+		else if(!strcmp(command.c_str(),"preinstall"))
+			pack.setPreInstall(value);
+		else if(!strcmp(command.c_str(),"postinstall"))
+			pack.setPostInstall(value);
+		else if(!strcmp(command.c_str(),"conffile"))
+			pack.setConfFile(value);
+		else if(!strcmp(command.c_str(),"conf"))
+			pack.setConf(value);
+	}
+	delete line,pos,file;
 	return pack;
 }

@@ -196,9 +196,6 @@ char* rawrequest(struct HttpRequest *req)
     if (req->rawpost){
         req->method = POST;
         char* h = malloc(30);
-		//
-		//This segfaults sometimes!!!
-		//
         sprintf(h, "Content-Length: %d", strlen(req->rawpost));
         addheader(req, h);        
         buffersize += strlen(req->rawpost);

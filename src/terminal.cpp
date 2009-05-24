@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
+#include <errno.h>
 #include "storage.hpp"
 #include "version.hpp"
 #include "install.hpp"
@@ -18,6 +19,7 @@ int makeinstall(string path){
 		*name=path.substr(*pos,path.size()-*pos-2);
 		depVersion(*name,*ver);
 	}
+	erase("/tmp/hijack_log.txt");
 	setenv("LD_PRELOAD",(Config::getLib()).c_str(),1);
 	system("make install");
 	vector<string> *locs=new vector<string>;
@@ -59,14 +61,19 @@ void terminal(){
 
 	string command,path;
 	command="";
+	path=get_current_dir_name();
 	cout<<"\nBpack terminal\nUse exit to quit. The command  make install  will get bpack to track down the calls"<<endl;
 	while(strcmp("exit",command.c_str())){
-		if(strcmp(command.c_str(),"make install"))
+		if(command.find("cd ")+1>0){
+			if(chdir(command.substr(command.find("cd ")+3).c_str())!=0)
+				cout<<strerror(errno)<<endl;
+		}
+		else if(strcmp(command.c_str(),"make install"))
 			system(command.c_str());
 		else{
 			makeinstall(path);
 		}
-		path=getenv("PWD");
+		path=get_current_dir_name();
 		cout<<"[bpack : "<<path<<"] $ ";
 		getline(cin,command);
 		

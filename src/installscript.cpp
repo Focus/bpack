@@ -73,17 +73,18 @@ bool installScript(packinst inst, int bail=-1)
 	}
 
 	//Run config, make and make install...
-	
-	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && ./configure "+inst.getConfig()).c_str())!=0){
-		cerr<<"\n\nConfiguration failed"<<endl;
-		return 0;
+	if(strcmp(inst.getConfig().c_str(),"no")){
+		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && ./configure "+inst.getConfig()).c_str())!=0){
+			cerr<<"\n\nConfiguration failed"<<endl;
+			return 0;
+		}
 	}
-
-	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make "+inst.getMake()).c_str())!=0){
-		cerr<<"\n\nMake failed"<<endl;
-		return 0;
+	if(strcmp(inst.getMake().c_str(),"no")){
+		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make "+inst.getMake()).c_str())!=0){
+			cerr<<"\n\nMake failed"<<endl;
+			return 0;
+		}
 	}
-
 	//Do we need to remove the old package?
 	if(bail==1){
 		cout<<"Removing version "<<inst.getVersion()<<endl;
@@ -95,16 +96,16 @@ bool installScript(packinst inst, int bail=-1)
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
 	setenv("LD_PRELOAD",hijack.c_str(),1);
 	//And install
-	
-	if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make install "+inst.getMakeInst()).c_str())!=0){
-		cerr<<"\n\nMake install failed"<<endl;
-		return 0;
+	if(strcmp(inst.getMakeInst().c_str(),"no")){
+		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make install "+inst.getMakeInst()).c_str())!=0){
+			cerr<<"\n\nMake install failed"<<endl;
+			return 0;
+		}
 	}
-
 	//Run postinstall command
 	if(inst.getPostInstall()!=""){
 		if( system(  ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && "+inst.getPostInstall() ).c_str() ) !=0)
-			cerr<<"\nPre-install command has failed!"<<endl;
+			cerr<<"\nPost-install command has failed!"<<endl;
 	}
 	
 	//Write the config file

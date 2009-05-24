@@ -1,10 +1,6 @@
 /*********************************************************************************
 
-TODO: Sort out config, it really sucks at the moment.
-A couple of problems with it.
-1) It can't actually find where bpack is running from (try calling bpack from an
-other directory)
-2) It segfaults when you sudo bpack.
+Terminal getenv("PWD") segfaults when you run as sudo
 
 *********************************************************************************/
 
@@ -25,12 +21,6 @@ using namespace std;
 #include "terminal.hpp"
 #include "update.hpp"
 
-<<<<<<< .mine
-#include "terminal.hpp"
-#include "update.hpp"
-=======
-#include "update.hpp"
->>>>>>> .r81
 //List of functions we need.
 void help();
 void mrt();
