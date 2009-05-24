@@ -27,7 +27,7 @@ class Config{
         //gets the website for bpack
         //static std::string getSite(){return website;}
   static std::string getLib() {return lib;}
-        static void initialise(char* argv0);
+        static void initialise();
 
 
 

@@ -37,7 +37,7 @@ bool package::write(){
      ofstream text(Config::getPacklistPath().c_str(),ios::app);
      if(!text){
                cerr<<"\nNo premission to write to package list!";
-               exit(1);
+               return 0;;
      }
      text << "\n\n";
      if(scan)
@@ -55,7 +55,7 @@ bool package::write(){
          }
      text<<";]\n";
      text.close();
-     
+     return 1;
 }
 
 //Prints out a vector of packages   

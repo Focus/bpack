@@ -1,3 +1,7 @@
-void depVersion(string &, version &);
-void preinstall(char* argv[],const int);
-void internetinstall(char* argv[],const int);
+#ifndef _INSTALL_H_
+#define _INSTALL_H_
+
+void depVersion(std::string &, version &);
+void install(std::string, int);
+
+#endif

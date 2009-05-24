@@ -45,7 +45,7 @@ int erase(vector<string> paths){
 }
 
 //Removes the package
-void removePack(string pack){
+int removePack(string pack){
   vector<package> *packages=new vector<package>;
   vector<string> locations;
   *packages=getInstalledPackages(Config::getPacklistPath().c_str());
@@ -60,7 +60,7 @@ void removePack(string pack){
 
   if(index<0){
     cerr<<"\nNo package named "<<pack<<" was found.\nI am done here."<<endl;
-    exit(1);
+    return 0;
   }
 
   locations=((*packages)[index]).getLocations();
@@ -72,11 +72,11 @@ void removePack(string pack){
       cout<<"\nYou are the boss, I will carry on."<<endl;
     else{
       cerr<<"\nUser aborted the removal process"<<endl;
-      exit(1);
+      return 0;
     }
   }
   delete packages;
   cout<<"\Erasing "<<pack<<"..."<<endl;
-  erase(locations);
+  return erase(locations);
   
 }

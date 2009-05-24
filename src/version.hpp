@@ -1,6 +1,6 @@
 #ifndef _VERSION_H
 #define _VERSION_H
-
+#include <vector>
 class version{
       public:
              version();

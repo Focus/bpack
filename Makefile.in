@@ -53,14 +53,17 @@ SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = 0.1
 bindir = @bindir@
-DESTDIR=/usr/local/bpack-$(VERSION)
+DESTDIR=/var/bpack/
 
 
-bpack: src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o src/update.o libs/hijack.so.1.0 src/qhttp.o packs.list
-	$(CXX) $(CXXFLAGS) src/qhttp.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o src/update.o -o bpack
+bpack: src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o packs.list
+	$(CXX) $(CXXFLAGS) src/update.o src/qhttp.o src/terminal.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
 
 src/qhttp.o: src/qhttp.c src/qhttp.h
 	$(CC) -c $(CFLAGS) src/qhttp.c -o src/qhttp.o
+
+src/terminal.o: src/terminal.cpp src/terminal.hpp
+	$(CXX) -c $(CXXFLAGS) src/terminal.cpp -o src/terminal.o
 
 src/search.o: src/search.cpp src/search.hpp
 	$(CXX) -c $(CXXFLAGS) src/search.cpp -o src/search.o
@@ -98,10 +101,8 @@ src/scan.o: src/scan.cpp src/scan.hpp
 src/update.o: src/update.cpp src/update.hpp
 	$(CXX) -c $(CXXFLAGS) src/update.cpp -o src/update.o
 
-
-
 clean:
-	rm -f src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0 src/qhttp.o
+	rm -f src/terminal.o src/update.o src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0 src/qhttp.o
 
 libs/hijack.so.1.0: src/hijack.c
 	$(CC) -fPIC -c src/hijack.c -fno-stack-protector
@@ -110,13 +111,12 @@ libs/hijack.so.1.0: src/hijack.c
 packs.list:
 	touch packs.list
 
-install: bpack src/hijack.so.1.0
+install: bpack libs/hijack.so.1.0
+	mkdir -p $(DESTDIR)
 	cp -rf packs $(DESTDIR)
-	cp -rf scripts $(DESTDIR)
-	cp bpack $(DESTDIR)
+	cp -rf tarballs $(DESTDIR)
 	cp -rf libs $(DESTDIR)
-	rm -f $(bindir)/bpack
-	ln -s $(DESTDIR)/bpack $(bindir)/bpack
+	cp -f  bpack $(bindir)/bpack
 	touch $(DESTDIR)/packs.list
 	touch /etc/bpack.conf
 

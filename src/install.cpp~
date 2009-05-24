@@ -86,7 +86,7 @@ string greatestVer(vector<string> bushsucks){
 
 }
 //Recursively checks for dependencies and installs files (passes them to install script)
-void install(string packname, int bail){
+void install(string packname, const string configp="", const string makep="", const string makeinstp=""){
 
 	packinst *packageinst=new packinst;
 	version *ver=new version;
@@ -127,7 +127,7 @@ void install(string packname, int bail){
             		{
              			if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
                  			cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
-							packageinst->removeDep(packageinst->getLoc());
+					packageinst->removeDep(packageinst->getLoc());
                 			gotit=1;
                 			break;
                			}
@@ -140,13 +140,13 @@ void install(string packname, int bail){
         	if (!gotit)
             	{
                 cout<<"\nDependency "<<y<<" needs to be installed.";
-                install(y,bail); 
+                install(y); 
             	}
      	}
         delete installed;
      	cout<<"\nInstalling "<<packname<<"...\n";
      	//Have a packinst!
-    	if(installScript(*packageinst,bail)){
+    	if(installScript(*packageinst)){
 		clean(*packageinst);
 		cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 	}
@@ -155,10 +155,8 @@ void install(string packname, int bail){
 		exit(1);
 	}
 
-	delete packageinst;
+	delete packageinst
 }
-<<<<<<< .mine
-=======
 
 
 
@@ -209,7 +207,6 @@ void preinstall(char* argv[],const int argc){
                   name=argv[files[i]];
                   install(name,configp,makep,makeinstp);
                   }
-			free(argv);
 }
 
 //Makes a package and then installs it
@@ -303,4 +300,3 @@ void internetinstall(char* argv[],const int argc){
 }
 
 
->>>>>>> .r81

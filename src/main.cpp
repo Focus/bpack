@@ -22,7 +22,12 @@ using namespace std;
 #include "install.hpp"
 #include "remove.hpp"
 #include "search.hpp"
+<<<<<<< .mine
+#include "terminal.hpp"
 #include "update.hpp"
+=======
+#include "update.hpp"
+>>>>>>> .r81
 //List of functions we need.
 void help();
 void mrt();
@@ -30,23 +35,24 @@ void mrt();
 
 
 int main(int argc, char *argv[]){
-	Config::initialise(argv[0]);
+	Config::initialise();
     if(argc < 2){
         cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;
     }    
          else if(!strcmp(argv[1], "install")){
+              for(int i=2;i<argc;i++){
+				  
+				install(argv[i],0);
+				
+			}
               
-              preinstall(argv,argc);
-              
-         }
-	else if(!strcmp(argv[1], "-i")){
-              
-              internetinstall(argv,argc);
-              
-         }     
+         }    
          else if(!strcmp(argv[1],"scan")){
               scan();
+              }
+		 else if(!strcmp(argv[1],"terminal")){
+              terminal();
               }
          else if(!strcmp(argv[1],"update"))
               update();
@@ -62,7 +68,11 @@ int main(int argc, char *argv[]){
               
               }
          else if(!strcmp(argv[1],"upgrade"))
-              cout<<"\nUpgrade called";
+              for(int i=2;i<argc;i++){
+				  
+				install(argv[i],1);
+				
+			  }
               
          else if(!strcmp(argv[1],"--help"))
               help();

@@ -21,7 +21,7 @@ extern "C"{
 using namespace std;
 
 
-bool installScript(packinst inst)
+bool installScript(packinst inst, int bail=-1)
 {
      	// get variables
   	string  tardir,tar, logroot,hijack;
@@ -84,6 +84,14 @@ bool installScript(packinst inst)
 		return 0;
 	}
 
+	//Do we need to remove the old package?
+	if(bail==1){
+		cout<<"Removing version "<<inst.getVersion()<<endl;
+		if(!removePack(inst.getName())){
+			cerr<<"Removing old package failed!\nI will carry on"<<endl;
+		}
+	}
+	
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
 	setenv("LD_PRELOAD",hijack.c_str(),1);
 	//And install
