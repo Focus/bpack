@@ -17,9 +17,9 @@ class packinst{
              std::string getVersion() const {return ver.asString();}
 
              // Wget use is deprecated although never implemented
-		//We clearly disagree here, look at installscript.cpp for your TODO...I use getWet there
+			 //We clearly disagree here, look at installscript.cpp for your TODO...I use getWet there
              std::string getWget() const {return wget;}
-		//What are all these?
+			 //What are all these?
              std::string getArchiveName() const {return archivename;}
              std::string getArchiveUrl() const {return archiveurl;}
 
@@ -40,7 +40,7 @@ class packinst{
              void removeDep(const int deppos){deps.erase(deps.begin()+deppos-1);loc--;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pversion){ver=pversion;}
-	     void setVersion(const version vers){ver=vers;}
+			 void setVersion(const version vers){ver=vers;}
              // Wget space is being used for archive url/name
              void setWget(const std::string pwget)
              {

@@ -20,13 +20,12 @@ class Config{
         static std::string getPackmanDir() {return packmandir;}
         // gets log directory
         static std::string getLogDir() {return logdir;}
-
-        // gets the path of the packlist
+		// gets the path of the packlist
         static std::string getPacklistPath() {return packlistpath;}
-        
-        //gets the website for bpack
-        //static std::string getSite(){return website;}
-  static std::string getLib() {return lib;}
+        //Gets the lib directory
+		static std::string getLib() {return lib;}
+		
+		
         static void initialise();
 
 

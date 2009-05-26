@@ -260,16 +260,15 @@ struct HttpResponse httpreadresponse(int socket)
     int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
     bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
 
-    //free(buffer);
+    free(buffer);
     char* newbuffer=(char*)malloc(bufsize);
     bufferused = recv(socket, newbuffer, bufsize, 0);
-    strstr(newbuffer, "\r\n\r\n")[0] = 0;
+    //strstr(newbuffer, "\r\n\r\n")[0] = 0;  What the hell does this do anyway?
 
 
     //printf("buffer : %s",buffer);
     struct HttpResponse ret = buildresponsehead(newbuffer);
     ret.stream = socket;
-    free(buffer);
     free(newbuffer);
     return ret;
 }

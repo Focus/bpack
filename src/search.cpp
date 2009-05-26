@@ -29,7 +29,7 @@ string search(string dir, string name=""){
 	struct dirent *d;
 	dp=opendir(dir.c_str());
 	if(dp==NULL){
-		cerr<<"\nCannot search!"<<endl;
+		cerr<<"\nCannot search "<<dir<<endl;
 		exit(1);
 	}
 	string ret,rety;

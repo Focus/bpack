@@ -21,6 +21,8 @@ using namespace std;
 #include "terminal.hpp"
 #include "update.hpp"
 
+
+
 //List of functions we need.
 void help();
 void mrt();
@@ -30,7 +32,7 @@ void mrt();
 int main(int argc, char *argv[]){
 	Config::initialise();
     if(argc < 2){
-        cerr<<"Usage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
+        cerr<<"Usage:\n bpack [action] [parameters]\nUse --help for more details\n";
         return 0;
     }    
          else if(!strcmp(argv[1], "install")){
@@ -55,7 +57,7 @@ int main(int argc, char *argv[]){
 				removePack(argv[1]);
          
               else{
-                     cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details\n";
+                     cerr<<"\nUsage:\n bpack [action] [parameters]\nUse --help for more details\n";
                      return 0;
                }
               
@@ -77,7 +79,7 @@ int main(int argc, char *argv[]){
          else if(!strcmp(argv[1],"mrt"))
               mrt();
          else
-              cerr<<"\nUsage:\n\n bpack [action] [parameters]\nUse --help for more details!\n";
+              cerr<<"\nUsage:\n bpack [action] [parameters]\nUse --help for more details!\n";
               
          
     return 0;
@@ -86,20 +88,21 @@ int main(int argc, char *argv[]){
 //This could do with a bit of work...
 void help()
 {
+	 cout<<"Bpack - Basic Package Manager, version 0.1(alpha)"<<endl;
+	 cout<<"Copyright (C) 2009  Bati Sengul <batieatworld@gmail.com>"<<endl;
+	 cout<<"                    Mike Bush <mpbush@gmail.com>"<<endl;
+	 cout<<"\n\tHomepage <http://www.bpack.co.uk/>"<<endl;
+
      cout<<"\nHelp file...\nUsage: \n\n bpack [action] [parameters]\n\nactions:";
-     cout<<"\n  install [package] [arguments] [package] [arguments]....    in";
-     cout<<"\n  remove [package]    removes [package]";
-     cout<<"\n  upgrade [package]    upgrades [package] to the lastest version";
-     cout<<"\n  scan    scans the computer for installed packages";
-     cout<<"\n  list    lists the installed packages that bpack has stored\n";
-	
-	cout<<"\n\ninstall arguments:\n";
-	cout<<"    --config=\"config arguments\"    passes config arguments to ./configure (e.g. --config=\"--prefix=/usr\")"<<endl;
-	cout<<"    --make=\"make arguments\"    passes make arguments to make (e.g. --make=\"DESTDIR=/usr\")"<<endl;
-	cout<<"    --makeinst=\"make install arguments\"    passes make install arguments to make install (e.g. --makeinst=\"DESTDIR=/usr\")"<<endl;
-	cout<<"    Bpack will use defaults, if you do not wish bpack to supply any arguments leave a \"\""<<endl;
+     cout<<"\n  install [packages]";
+     cout<<"\n  remove [package]";
+     cout<<"\n  upgrade [packages]";
+     cout<<"\n  update";
+     cout<<"\n  list";
+	 cout<<"\n  --help";
+
      
-     cout<<"\n\nThis bpack has Mr.T powers!!\n\n";
+     cout<<"\n\tThis bpack has Mr.T powers!!\n";
 
 }
 void mrt()

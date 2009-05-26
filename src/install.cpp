@@ -64,12 +64,12 @@ void clean(packinst pack){
 	installed->write();
 	delete installed;
 	cout<<"Clearing up..."<<endl;
-	erase(Config::getTarballDir()+pack.getName()+"/");
+	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");
 }
 
 
 //Grabs the latest version
-string greatestVer(vector<string> bushsucks){
+string greatestVer(vector<string> bushsucks, string realname){
 
 	if(bushsucks.size()==0)
 		return "";
@@ -79,7 +79,7 @@ string greatestVer(vector<string> bushsucks){
 	for(int i=0; i< bushsucks.size();i++){
 		temp=bushsucks[i];
 		depVersion(temp,tempver);
-		if(tempver>highver)
+		if(tempver>highver && !strcmp(temp.c_str(),realname.c_str()))
 			ret=bushsucks[i];
 	}
 	return ret;
@@ -93,7 +93,7 @@ void install(string packname, int bail){
 	string *location=new string;
 	depVersion(packname,*ver);
 	if(*ver=="0.0.0"){
-		*location=greatestVer(loadLocation(search(Config::getPackInstDir(),packname+"*")));
+		*location=greatestVer(loadLocation(search(Config::getPackInstDir(),packname+"*")),packname);
 	}
 	else
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
