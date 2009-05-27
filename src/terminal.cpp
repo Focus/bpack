@@ -38,7 +38,7 @@ int makeinstall(string path){
 	cout<<input<<endl;
 	if(strcmp(input.c_str(),""))
 		name=input;
-	cout<<"\nPlease enter the version of the package [default:"<<ver<<"]  :";
+	cout<<"\nPlease enter the version of the package [default:"<<ver.asString()<<"]  :";
 	getline(cin,input);
 	if(strcmp(input.c_str(),""))
 		ver=input;

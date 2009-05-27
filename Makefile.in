@@ -113,9 +113,9 @@ packs.list:
 
 install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)
-	cp -rf packs $(DESTDIR)
-	cp -rf tarballs $(DESTDIR)
-	cp -rf libs $(DESTDIR)
+	mkdir -p $(DESTDIR)/tarballs
+	mkdir -p $(DESTDIR)/packs
+	mkdir -p $(DESTDIR)/libs
 	cp -f  bpack $(bindir)/bpack
 	touch $(DESTDIR)/packs.list
 	touch /etc/bpack.conf

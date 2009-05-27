@@ -3,6 +3,8 @@
 #include <fstream>
 #include <cstring>
 #include <vector>
+#include <sys/stat.h> 
+#include <sstream>
 #include "storage.hpp"
 #include "version.hpp"
 #include "packinst.hpp"
@@ -58,6 +60,33 @@ bool package::write(){
      return 1;
 }
 
+string packSize(vector<string> locs){
+	
+	double num=0;
+	struct stat st;
+	for(int i=0;i<locs.size();i++){
+		stat(locs[i].c_str(),&st);
+		num=num+st.st_size;
+	}
+	string ret="";
+	std::ostringstream ss;
+	//Try GB then MB then KB
+	if(num/1000000000>=1){
+		ss<<(num/1000000000);
+		ret=ss.str()+" GB";
+	}
+	else if(num/1000000>=1){
+		ss<<(num/1000000);
+		ret=ss.str()+" MB";
+	}
+	else{
+		ss<<(num/1000);
+		ret=ss.str()+" KB";
+	}
+	return ret;
+	
+}
+
 //Prints out a vector of packages   
 void printPackages(const vector<package> packagelist)
 {
@@ -67,7 +96,7 @@ void printPackages(const vector<package> packagelist)
 	 cout<<"\nInstalled packages:"<<endl;
      for(int i=0;i<packagelist.size();i++){
              *currentpack=packagelist[i];  
-             cout<<"\t"<<currentpack->getName()<<"-"<<currentpack->getVersion()<<endl;
+             cout<<"\t"<<currentpack->getName()<<"-"<<currentpack->getVersion()<<"\t"<<packSize(currentpack->getLocations())<<endl;
 
            }
      
