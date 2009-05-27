@@ -3,6 +3,8 @@
 
 #include <string>
 #include "packinst.hpp"
+#include "remove.hpp"
+#include "storage.hpp"
 #include <vector>
 
 class package
@@ -25,6 +27,7 @@ class package
              void addLocation(const std::string plocation){locations.push_back(plocation);}
              void setScan(const bool pscan){scan=pscan;}
              bool write();
+			 bool remove();
              
       private:
               std::string name;

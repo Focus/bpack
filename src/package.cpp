@@ -5,7 +5,6 @@
 #include <vector>
 #include <sys/stat.h> 
 #include <sstream>
-#include "storage.hpp"
 #include "version.hpp"
 #include "packinst.hpp"
 #include "package.hpp"
@@ -58,6 +57,41 @@ bool package::write(){
      text<<";]\n";
      text.close();
      return 1;
+}
+bool package::remove(){
+	
+	vector<string> *file = new vector<string>;
+	*file=read(Config::getPacklistPath());
+	int begin,end;
+	begin=-1;
+	for(int i=0;i<file->size();i++){
+		if((*file)[i].find("["+name+";")!=string::npos){
+			begin=i;
+		}
+		
+		if(begin>0 && (*file)[i].find(";]")!=string::npos){
+			end=i;
+			break;
+		}
+	}
+	ofstream text;
+	text.open(Config::getPacklistPath().c_str(),ios::out);
+    if(!text){
+		delete file;
+		return 0;
+	}
+	
+	for(int i=0; i<begin;i++){
+		text<<(*file)[i]+"\n";
+	}
+	
+	for(int i=end+1; i<file->size(); i++){
+		text<<(*file)[i]+"\n";
+	}
+	
+	text.close();
+	return 1;
+	
 }
 
 string packSize(vector<string> locs){

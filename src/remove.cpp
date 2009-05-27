@@ -16,7 +16,9 @@ int erase(vector<string>);
 //Lets bury ourselves in recursion
 int erase(string path){
 	struct stat buf;
-	stat(path.c_str(),& buf);
+	int exists=stat(path.c_str(),& buf);
+	if(exists) //If the file isn't there, our work is cut out
+		return 1;
 	if((buf.st_mode & S_IFMT)==S_IFDIR){  //If we have a directory to delete, we need to empty it out first
 		vector<string> locs;
 		locs=loadLocation(search(path,""));
@@ -30,15 +32,17 @@ int erase(string path){
 		remove(path.c_str());
 		}
 	else{
-  	if(remove(path.c_str())!=-1)
+  	if(remove(path.c_str())){
+			cerr<<"Erase could not delete "<<path<<"\nReason: "<<strerror(errno)<<endl;
     		return 0;
+		}
 	}
 	return 1;
 }
 
 int erase(vector<string> paths){
   for(int i=0;i<paths.size();i++){
-    if(erase(paths[i].c_str())==0)
+    if(erase(paths[i])==0)
       return 0;
   }
   return 1;
@@ -75,8 +79,13 @@ int removePack(string pack){
       return 0;
     }
   }
-  delete packages;
-  cout<<"\nErasing "<<pack<<"..."<<endl;
-  return erase(locations);
   
+  cout<<"\nErasing "<<pack<<"..."<<endl;
+  if(erase(locations)){
+	(*packages)[index].remove();
+	delete packages;
+	return 1;
+  }
+  delete packages;
+  return 0;
 }

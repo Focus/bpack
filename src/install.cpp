@@ -47,7 +47,7 @@ vector<string> stripCp(string name){
         	if(!textfile->eof())
 		  locs.push_back(*x);
 	}
-	erase("/tmp/bpack_log.txt");
+	erase("/tmp/hijack_log.txt");
 	delete x;
 	delete textfile;
 	return locs;

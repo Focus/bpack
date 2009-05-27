@@ -55,7 +55,7 @@ int main(int argc, char *argv[]){
          else if(!strcmp(argv[1],"remove")){
               for(int i=2;i<argc;i++){
 				  
-				remove(argv[i]);
+				removePack(argv[i]);
 				
 			  }
          }

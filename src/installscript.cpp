@@ -104,6 +104,7 @@ bool installScript(packinst inst, int bail=-1)
 	}
 	
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
+	erase("/tmp/hijack_log.txt");
 	setenv("LD_PRELOAD",hijack.c_str(),1);
 	//And install
 	if(strcmp(inst.getMakeInst().c_str(),"no")){

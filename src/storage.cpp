@@ -77,8 +77,8 @@ vector<string> loadLocation(const string locations)
 bool write(const string content, const string location){
 
 	ofstream text;
-	text.open(location.c_str());
-     	if(!text)
+	text.open(location.c_str(),ios::app);
+    if(!text)
 		return 0;
 	
 	text<<content;
