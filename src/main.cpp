@@ -53,15 +53,12 @@ int main(int argc, char *argv[]){
               update();
               
          else if(!strcmp(argv[1],"remove")){
-              if(argc > 2)
-				removePack(argv[1]);
-         
-              else{
-                     cerr<<"\nUsage:\n bpack [action] [parameters]\nUse --help for more details\n";
-                     return 0;
-               }
-              
-              }
+              for(int i=2;i<argc;i++){
+				  
+				remove(argv[i]);
+				
+			  }
+         }
          else if(!strcmp(argv[1],"upgrade"))
               for(int i=2;i<argc;i++){
 				  
@@ -85,7 +82,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-//This could do with a bit of work...
+//This could do with a bit of work...DONE
 void help()
 {
 	 cout<<"Bpack - Basic Package Manager, version 0.1(alpha)"<<endl;

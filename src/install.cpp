@@ -22,7 +22,7 @@ void depVersion(string &dep, version &ver){
         int pos,temp;
         pos=dep.find_last_of("-");
         stringstream *ss= new stringstream;
-        (*ss) << dep.substr(pos+1,pos+2);
+        (*ss) << dep.substr(pos+1,1);
         //If we have a - and the - isnt like hello-me
         if(pos>0 && !((*ss) >> temp).fail()){
                   ver=dep.substr(pos+1,dep.size());
@@ -119,7 +119,7 @@ void install(string packname, int bail){
 	delete location;
 	//Check if the package is installed
 	for(int i=0;i<installed->size();i++){
-		if( !strcmp( ((*installed)[i].getName()).c_str(), (packageinst->getName()).c_str()) && packageinst->getVersion()>=(*installed)[i].getVersion()){
+		if( !strcmp( ((*installed)[i].getName()).c_str(), (packageinst->getName()).c_str()) && packageinst->getVersion()<=(*installed)[i].getVersion()){
 			cout<<"\nThe package is installed with the current or more recent version"<<endl;
 			exit(0);
 		}

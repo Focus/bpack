@@ -13,11 +13,12 @@ using namespace std;
 int makeinstall(string path){
 	int *pos= new int;
 	*pos=path.find_last_of("/");
-	string *name=new string;
-	version *ver=new version;
+	string name,input,input2;
+	input="";
+	version ver;
 	if(*pos>0){
-		*name=path.substr(*pos,path.size()-*pos-2);
-		depVersion(*name,*ver);
+		name=path.substr(*pos,path.size()-*pos-2);
+		depVersion(name,ver);
 	}
 	erase("/tmp/hijack_log.txt");
 	setenv("LD_PRELOAD",(Config::getLib()).c_str(),1);
@@ -30,30 +31,25 @@ int makeinstall(string path){
 		setenv("LD_PRELOAD","",1);
 		delete locs;
 		delete pos;
-		delete name;
-		delete ver;
 		return 0;
 	}
-	string *input=new string;
-	cout<<"\nPlease enter the name of the package [default:"<<*name<<"]  :";
-	getline(cin,*input);
-	if(input!=NULL)
-		*name=*input;
-	cout<<"\nPlease enter the version of the package [default:"<<*ver<<"]  :";
-	getline(cin,*input);
-	if(input!=NULL)
-		*ver=*input;
+	cout<<"\nPlease enter the name of the package [default:"<<name<<"]  :";
+	getline(cin,input);
+	cout<<input<<endl;
+	if(strcmp(input.c_str(),""))
+		name=input;
+	cout<<"\nPlease enter the version of the package [default:"<<ver<<"]  :";
+	getline(cin,input);
+	if(strcmp(input.c_str(),""))
+		ver=input;
 	package *pack=new package;
-	pack->setName(*name);
+	pack->setName(name);
 	pack->setLocations(*locs);
-	pack->setVersion(ver->asString());
+	pack->setVersion(ver.asString());
 	pack->write();
 	delete pack;
 	delete locs;
-	delete input;
 	delete pos;
-	delete name;
-	delete ver;
 	return 1;
 }
 

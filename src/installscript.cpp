@@ -21,19 +21,32 @@ extern "C"{
 using namespace std;
 
 
+string tarName(string url){
+	
+	int pos=url.find_last_of("/");
+	if( pos<=0 )
+		return "";
+	return url.substr(pos+1);
+}
+
 bool installScript(packinst inst, int bail=-1)
 {
-     	// get variables
+    // get variables
   	string  tardir,tar, logroot,hijack;
-     	tardir = Config::getTarballDir();
-     	logroot = Config::getLogDir();
-     	hijack=Config::getLib();
-     	int result;
+    tardir = Config::getTarballDir();
+    logroot = Config::getLogDir();
+    hijack=Config::getLib();
+    int result;
 	
-
+	
 	//Check if the tarball is there, if not grab it!
-	vector<string> tars=loadLocation(search(tardir,inst.getName()+"-"+ inst.getVersion()+".tar.*"));
-	if(tars.size()<=0){
+	vector<string> *tars=new vector<string>;
+	vector<string> *tars2=new vector<string>;
+	*tars=loadLocation(search(tardir,inst.getName()+"-"+ inst.getVersion()+".tar.*"));
+	*tars2=loadLocation(search(tardir,tarName(inst.getWget())));
+	if(tars2->size()>0)
+		tar=(*tars2)[0];
+	else if(tars->size()<=0){
 		cout<<"\nPackage not found locally, I will download it now"<<endl;
 
 		if(inst.getWget()==""){
@@ -41,23 +54,20 @@ bool installScript(packinst inst, int bail=-1)
 			return 0;
 		}
 
-		// There you go, nice and simple bati
+		
 		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGMULTI))
 		{
 			cerr<<"\n\nDownload failed!"<<endl;
 			return 0;
 		}
-
+		
+		tar=tarName(inst.getWget());
 	
 	}
-	tars=loadLocation(search(tardir,inst.getName()+"-"+inst.getVersion()+".tar.*"));
-	if(tars.size()<=0){
-		cerr<<"Unexpected Error...shit."<<endl;//This should never happen...
-		return 0;
-	}
-	tar=tars[0];
+	else
+		tar=(*tars)[0];
+	delete tars,tars2;
 	//Make a clean directory by removing previous extracts
-	
 	erase(tardir+inst.getName()+"-"+inst.getVersion());
 	//Unpack the tar
 	if(system( ("cd "+tardir+" && tar xf "+tar).c_str())!=0){

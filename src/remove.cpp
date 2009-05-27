@@ -76,7 +76,7 @@ int removePack(string pack){
     }
   }
   delete packages;
-  cout<<"\Erasing "<<pack<<"..."<<endl;
+  cout<<"\nErasing "<<pack<<"..."<<endl;
   return erase(locations);
   
 }
