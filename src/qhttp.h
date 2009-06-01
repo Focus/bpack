@@ -28,6 +28,8 @@ struct HttpResponse
 	char *errormsg; // points to an error description if there is one
 };
 
+	
+
 // Simple function to download and save a file like wget basic usage
 // use filename = NULL to use the remote filename, see LOGMETHOD above
 // returns 0 if download was succesful, else an error code or HTTP error 4xx / 5xx

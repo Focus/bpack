@@ -99,8 +99,8 @@ string packSize(vector<string> locs){
 	double num=0;
 	struct stat st;
 	for(int i=0;i<locs.size();i++){
-		stat(locs[i].c_str(),&st);
-		num=num+st.st_size;
+		if(!stat(locs[i].c_str(),&st))
+			num=num+st.st_size;
 	}
 	string ret="";
 	std::ostringstream ss;

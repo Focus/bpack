@@ -1,11 +1,13 @@
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
 #include "config.hpp"
 #include "storage.hpp"
 using namespace std;
 
 string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib;
+int Config::quitlevel;
 
 
 void Config::initialise()
@@ -25,7 +27,7 @@ void Config::initialise()
     	packlistpath = installdir + "packs.list";
 		logdir=installdir+"logs/";
 		lib=installdir+"libs/hijack.so.1.0";
-		
+		Config::quitlevel=0;
 		
 		//Load the config
 		vector<string> *file= new vector<string>;
@@ -58,24 +60,13 @@ void Config::initialise()
 		
 			//Do we set anything?
 		
-			/*if(!strcmp(command.c_str(),"config"))
-				pack.setConfig(value);
-			else if(!strcmp(command.c_str(),"make"))
-				pack.setMake(value);
-			else if(!strcmp(command.c_str(),"makeinst"))
-				pack.setMakeInst(value);
-			else if(!strcmp(command.c_str(),"deps"))
-				pack.setDeps(loadLocation(value));
-			else if(!strcmp(command.c_str(),"location"))
-				pack.setWget(value);
-			else if(!strcmp(command.c_str(),"preinstall"))
-				pack.setPreInstall(value);
-			else if(!strcmp(command.c_str(),"postinstall"))
-				pack.setPostInstall(value);
-			else if(!strcmp(command.c_str(),"conffile"))
-				pack.setConfFile(value);
-			else if(!strcmp(command.c_str(),"conf"))
-				pack.setConf(value);*/
+			if(!strcmp(command.c_str(),"quitlevel")){
+				stringstream ss;
+				(ss) << value;
+				if( ((ss) >> Config::quitlevel).fail() )
+					Config::quitlevel=0;
+				//delete ss;
+			}
 		}
 		delete line,pos,file;
     	

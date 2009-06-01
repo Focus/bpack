@@ -3,8 +3,8 @@
 class Config{
       
     private:
-  static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib;
-
+		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib;
+		static int quitlevel;
 
     public:
 
@@ -24,7 +24,8 @@ class Config{
         static std::string getPacklistPath() {return packlistpath;}
         //Gets the lib directory
 		static std::string getLib() {return lib;}
-		
+		//Gets the quit level
+		static int getQuit() {return quitlevel;}
 		
         static void initialise();
 

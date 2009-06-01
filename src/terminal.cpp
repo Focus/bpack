@@ -23,12 +23,12 @@ int makeinstall(string path){
 	erase("/tmp/hijack_log.txt");
 	setenv("LD_PRELOAD",(Config::getLib()).c_str(),1);
 	system("make install");
+	setenv("LD_PRELOAD","",1);
 	vector<string> *locs=new vector<string>;
 	*locs=read("/tmp/hijack_log.txt");
 	if(locs->size() <= 0){
 		erase("/tmp/hijack_log.txt");
 		cout<<"\nThe log was empty. No tracking done!!\n"<<endl;
-		setenv("LD_PRELOAD","",1);
 		delete locs;
 		delete pos;
 		return 0;

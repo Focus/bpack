@@ -56,14 +56,17 @@ bindir = @bindir@
 DESTDIR=/var/bpack/
 
 
-bpack: src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o packs.list
-	$(CXX) $(CXXFLAGS) src/update.o src/qhttp.o src/terminal.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
+bpack: src/error.o src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o packs.list
+	$(CXX) $(CXXFLAGS) src/error.o src/update.o src/qhttp.o src/terminal.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
 
 src/qhttp.o: src/qhttp.c src/qhttp.h
 	$(CC) -c $(CFLAGS) src/qhttp.c -o src/qhttp.o
 
 src/terminal.o: src/terminal.cpp src/terminal.hpp
 	$(CXX) -c $(CXXFLAGS) src/terminal.cpp -o src/terminal.o
+
+src/error.o: src/error.cpp src/error.hpp
+	$(CXX) -c $(CXXFLAGS) src/error.cpp -o src/error.o
 
 src/search.o: src/search.cpp src/search.hpp
 	$(CXX) -c $(CXXFLAGS) src/search.cpp -o src/search.o
@@ -102,7 +105,7 @@ src/update.o: src/update.cpp src/update.hpp
 	$(CXX) -c $(CXXFLAGS) src/update.cpp -o src/update.o
 
 clean:
-	rm -f src/terminal.o src/update.o src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0 src/qhttp.o
+	rm -f src/terminal.o src/update.o src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0 src/qhttp.o src/error.o
 
 libs/hijack.so.1.0: src/hijack.c
 	$(CC) -fPIC -c src/hijack.c -fno-stack-protector

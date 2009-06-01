@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <unistd.h>
 #include "qhttp.h"
 
 #define MIN(x,y) x > y ? x : y
@@ -62,7 +63,7 @@ struct HttpRequest* buildreq(const char* url)
 	} else
 		ret->protocol = "http";	// assume http as default
 		
-	if(strcasecmp(ret->protocol, "http")!=0){
+	if(strcasecmp(ret->protocol, "http")!=0 && strcasecmp(ret->protocol, "ftp")!=0){
 		ret->errormsg = "Unsupported protocol, cannot build request";
 		return ret;
 	}
@@ -86,7 +87,10 @@ struct HttpRequest* buildreq(const char* url)
 
 	// Sort out port
     if(strchr(url,':')==NULL){
-        ret->port = 80;
+		if(strcasecmp(ret->protocol, "http")==0)
+			ret->port = 80;
+		else
+			ret->port=21;
     }else{
         int tp;	// FIXME work without '/'
         char* tmp;
@@ -162,27 +166,52 @@ void addpostpair(struct HttpRequest *req, const char *key, const char *val)
 //   returns : handle to the socket or 0 on failure
 int sconnect(struct HttpRequest req)
 {
-    //struct sockaddr *saddr = getsockaddr(req);
-	struct addrinfo hints, *res;
+   int sd;
+   struct sockaddr_in pin;
+   struct hostent *hp;
+   if ((hp = gethostbyname(req.host)) == 0) {
+      perror("gethostbyname");
+      //return -1;
+   }
 
-	memset(&hints, 0, sizeof hints);
-	hints.ai_family = AF_UNSPEC;
-	hints.ai_socktype = SOCK_STREAM;
+   memset(&pin, 0, sizeof(pin));
+   pin.sin_family = AF_INET;
+   pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+   pin.sin_port = htons(req.port);
+   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      perror("socket");
+      return -1;
+   }
+   if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
+      perror("connect");
+      return -1;
+   }
+   return sd;
+}
 
-	getaddrinfo(req.host, req.protocol, &hints, &res);
+//Simple connect function
+int fconnect(char* ip,int port){
+	int sd;
+   struct sockaddr_in pin;
+   struct hostent *hp;
+   if ((hp = gethostbyaddr(ip,strlen(ip),AF_INET)) == NULL) {
+      perror("gethostbyaddr");
+      return -1;
+   }
 
-    int handle;
-
-    //printf("connecting to %s:%u\n", inet_ntoa(saddr->sin_addr), req.port);
-    handle = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-    //printf("socket %d opened\n", handle);
-    if ( connect(handle, res->ai_addr, res->ai_addrlen)
-         <0) {
-        logger2(LOGMULTI, "qhttp : connect() failed. Reason : ",strerror( errno ));
-        return -1; 
-    }
-    //printf("connected on socket %d.\n", handle);
-    return handle;
+   memset(&pin, 0, sizeof(pin));
+   pin.sin_family = AF_INET;
+   pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+   pin.sin_port = htons(port);
+   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+      perror("socket");
+      return -1;
+   }
+   if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
+      perror("connect");
+      return -1;
+   }
+   return sd;
 }
 
 
@@ -249,6 +278,22 @@ int httpsend(int socket, struct HttpRequest *req)
     return 1;
 }
 
+//Simple function to send a message to the server
+int ftpsend(int socket, char* command){
+	
+	char* message=(char*)malloc(strlen(command)+strlen(" \r\n"));
+	sprintf(message,"%s\r\n",command);
+	printf("\n%s \n",message);
+	if(send(socket,message,strlen(message),0) < 0){
+			printf("%s \n",strerror(errno));
+            logger(LOGMULTI, " error writing to socket\n");
+            return 0;
+        }
+		free(message);
+    return 1;
+	
+}
+
 // Reads the header from an arriving response
 // TODO : error handling, is this valid http?, pretty much afaik
 
@@ -263,7 +308,14 @@ struct HttpResponse httpreadresponse(int socket)
     free(buffer);
     char* newbuffer=(char*)malloc(bufsize);
     bufferused = recv(socket, newbuffer, bufsize, 0);
-    //strstr(newbuffer, "\r\n\r\n")[0] = 0;  What the hell does this do anyway?
+	
+	int i;
+    for(i=(strlen(newbuffer) - 1);i>0;i--) {
+		if(newbuffer[i]=='.' || newbuffer[i]=='\r') { 
+			newbuffer[i+1]='\0';
+			break;
+		}
+	}
 
 
     //printf("buffer : %s",buffer);
@@ -273,31 +325,177 @@ struct HttpResponse httpreadresponse(int socket)
     return ret;
 }
 
+//Pass the socket for profit
+char* ftpreadresponse(int socket)
+{
+    int bufsize=5120;
+	int i,n=-1;
+
+	char* buffer=malloc(bufsize);
+	if( recv(socket, buffer, bufsize, 0)==-1){
+		perror("recv");
+		exit(0);
+	}
+	buffer[bufsize-1]='\n';
+	//The server gives shit loads of stuff I don't want. Get rid of them all
+	//if it is of the form 223-something, then it is bullshit, we want 223 something!
+	for(i=0;i<strlen(buffer);i++){
+		if(buffer[i]=='\n')
+			n=i;
+		if(buffer[i]==' ' && i-n==4)
+			break;
+	}
+	char* ret;
+	if(n!=bufsize-1){
+		ret=malloc(bufsize-n-1);
+		for(i=n+1;i<bufsize;i++){
+			ret[i]=buffer[i];
+			if(ret[i]=='\r'){
+				ret[i]='\0';
+				break;
+			}
+		}
+	}else
+		ret=strdup(buffer);
+	free(buffer);
+	printf("***%s***\n",ret);
+	return ret;
+}
+
+int ftpConvertAddy(char * buf, char * hostname, int * port) {
+   unsigned int i,t=0;
+   int flag=0,decCtr=0,tport1,tport2;
+   char tmpPort[6];
+   //example data in quotes below:
+   //"227 Listening on (149,122,52,162,4,20)"
+   //4 * 256 + 20 = 1044
+   for(i=0;i<strlen(buf);i++) {
+      if(buf[i]=='(') {
+         flag = 1;
+         i++;
+      }
+      if(buf[i]==')') {
+         hostname[t]='\0';
+         break;
+      }
+      if(flag==1) {
+         if(buf[i] != ',') {
+            hostname[t]=buf[i];
+            t++;
+         } else {
+            hostname[t]='.';
+            t++;
+         }
+      }
+   }
+   t=0;
+   for(i=0;i<strlen(hostname);i++) {
+      if(hostname[i]=='.')
+         decCtr++;
+      if(decCtr==4 && hostname[i]!='.') {
+         tmpPort[t]=hostname[i];
+         t++;
+         if(hostname[i+1]=='.') {
+            tmpPort[t]='\0';
+            tport1=atoi(tmpPort);
+            t=0;
+         }
+      }
+      if(decCtr==5 && hostname[i]!='.') { 
+         tmpPort[t]=hostname[i];
+         t++;
+         if(hostname[i+1]=='\0') {
+            tmpPort[t]='\0';
+            tport2=atoi(tmpPort);
+            t=0;
+         }
+      }
+   }
+   *port = tport1 * 256 + tport2;
+   decCtr=0;
+   for(i=0;i<strlen(hostname);i++) {
+      if(hostname[i]=='.') {
+         decCtr++;
+      }
+      if(decCtr>3)
+         hostname[i]='\0';
+   }
+   return 0;
+}
+
+void ftpLogin(int socket){
+	
+	
+}
 
 // connects, sends request and returns response
 // TODO : follow redirects
 struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 {
     int socket=sconnect(req);
-    if(socket>0){
-        logger2(logtype, "connected to ", req.host);
-        if (httpsend(socket, &req)){
-            logger(logtype, "request sent, awaiting response");
-            struct HttpResponse hr = httpreadresponse(socket);
-            logger2(logtype, "response retrieved : ", hr.streason);
-            return hr;
-        }else{
-            logger(LOGMULTI, "not connected : error sending request");
-            struct HttpResponse error;
-            error.stcode = 0; error.streason=error.errormsg ="ErrorSendingRequest";
-            return error;
-        }
-    }else{
-        logger2(LOGMULTI, "not connected : error connecting to ", req.host);
-        struct HttpResponse error;
-        error.stcode = 0; error.streason =error.errormsg ="ErrorConnecting";
-        return error;
-    }
+	if(strcasecmp(req.protocol, "http")==0){//http
+		if(socket>0){
+			logger2(logtype, "connected to ", req.host);
+			if (httpsend(socket, &req)){
+				logger(logtype, "request sent, awaiting response");
+				struct HttpResponse hr = httpreadresponse(socket);
+				logger2(logtype, "response retrieved : ", hr.streason);
+				return hr;
+			}else{
+				logger(LOGMULTI, "not connected : error sending request");
+				struct HttpResponse error;
+				error.stcode = 0; error.streason=error.errormsg ="ErrorSendingRequest";
+				return error;
+			}
+		}else{
+			logger2(LOGMULTI, "not connected : error connecting to ", req.host);
+			struct HttpResponse error;
+			error.stcode = 0; error.streason =error.errormsg ="ErrorConnecting";
+			return error;
+		}
+	}
+	else{ //ftp
+		if(socket>0){
+			char* ip;
+			logger2(logtype, "connected to ", req.host);
+			char* buffer;
+			ftpreadresponse(socket);
+			ftpsend(socket,"USER anonymous");
+			sleep(3);
+			ftpreadresponse(socket);
+			ftpsend(socket,"PASS anonymous");
+			ftpreadresponse(socket);
+			ftpsend(socket,"TYPE I");
+			ftpreadresponse(socket);
+			ftpsend(socket,"PASV");
+			buffer=ftpreadresponse(socket);
+			char* retrmsg=malloc(strlen(req.path)+6);
+			sprintf(retrmsg,"SIZE %s",req.path);
+			ftpsend(socket,retrmsg);
+			ftpreadresponse(socket);
+			int port;
+			char *host=buffer;
+			ftpConvertAddy(buffer,host,&port);
+			int filesocket=fconnect(host,port);
+			sprintf(retrmsg,"RETR %s",req.path);
+			ftpsend(socket,retrmsg);
+			ftpreadresponse(socket);
+			ftpsend(socket,retrmsg);
+			ftpreadresponse(filesocket);
+			free(retrmsg);
+			free(buffer);
+			printf("%s : %d\n",host,port);
+			exit(0);
+			
+		}else{
+			logger2(LOGMULTI, "not connected : error connecting to ", req.host);
+			struct HttpResponse error;
+			error.stcode = 0; error.streason =error.errormsg ="ErrorConnecting";
+			return error;
+		}
+	
+	
+	}
 }
 
 int getHeader(struct HttpResponse *resp, char* key, char* value, int size)

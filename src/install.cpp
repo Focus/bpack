@@ -7,7 +7,7 @@
 #include <vector>
 #include <fstream>
 #include <sstream>
-using namespace std;
+#include "error.hpp"
 #include "version.hpp"
 #include "packinst.hpp"
 #include "package.hpp"
@@ -16,6 +16,7 @@ using namespace std;
 #include "config.hpp"
 #include "remove.hpp"
 #include "search.hpp"
+using namespace std;
 
 //Separates the foo-0.2.2 to foo and 0.2.2
 void depVersion(string &dep, version &ver){
@@ -36,10 +37,8 @@ vector<string> stripCp(string name){
 	vector<string> locs;
 	ifstream *textfile=new ifstream;
 	textfile->open("/tmp/hijack_log.txt");
-	if(!(*textfile)){
-		cerr<<"\nI can't find the install log!"<<endl;
-		exit(1);
-	}
+	if(!(*textfile))
+		err("I can't find the install log!",2);
 	string *x=new string;
 	while(!textfile->eof())
 	{
@@ -99,10 +98,8 @@ void install(string packname, int bail){
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
 	
 	
-	if(*location==""){
-		cerr<<"Package "<<packname<<" not found, try after doing  bpack update."<<endl;
-		exit(1);
-	}	
+	if(*location=="")
+		err("Package "+packname+" not found, try after doing  bpack update.",2);	
 	string *temp=new string;
 	*temp=*location;
 	depVersion(*temp,*ver);
@@ -158,10 +155,9 @@ void install(string packname, int bail){
 		clean(*packageinst);
 		cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 	}
-	else{
-		cerr<<"\nError package not installed correctly. Consult the logs and inform us.\nWhat did you expect from an alpha build?"<<endl;
-		exit(1);
-	}
+	else
+		err("Error package not installed correctly. Consult the logs and inform us.",2);
+			
 
 	delete packageinst;
 }

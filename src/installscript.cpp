@@ -14,6 +14,7 @@ This function is God. Bow down to it!
 #include "search.hpp"
 #include "remove.hpp"
 #include "storage.hpp"
+#include "error.hpp"
 extern "C"{
 #include "qhttp.h"
 }
@@ -50,15 +51,13 @@ bool installScript(packinst inst, int bail=-1)
 		cout<<"\nPackage not found locally, I will download it now"<<endl;
 
 		if(inst.getWget()==""){
-			cerr<<"\n\nNo URL specified to download!"<<endl;
-			return 0;
+			err("No URL specified to download!",2);
 		}
 
 		
 		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGMULTI))
 		{
-			cerr<<"\n\nDownload failed!"<<endl;
-			return 0;
+			err("Download failed!",1);
 		}
 		
 		tar=tarName(inst.getWget());
@@ -70,37 +69,38 @@ bool installScript(packinst inst, int bail=-1)
 	//Make a clean directory by removing previous extracts
 	erase(tardir+inst.getName()+"-"+inst.getVersion());
 	//Unpack the tar
-	if(system( ("cd "+tardir+" && tar xf "+tar).c_str())!=0){
-		cerr<<"\n\nUnable to unpack the tarball!"<<endl;
-		return 0;
+	if(chdir(tardir.c_str())!=0){
+		err("Cannot cd to "+tardir,2,1);
+	}
+	if(system( ("tar xf "+tar).c_str())!=0){
+		err("Unable to unpack the tarball!",2);
 	}
 
-
+	if(chdir( (tardir+inst.getName()+"-"+inst.getVersion()).c_str())!=0){
+		err("Cannot cd to "+tardir,0,1);
+		return 0;
+	}
 	//Run preinstall commands
 	if(inst.getPreInstall()!=""){
-		if( system(  ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && "+inst.getPreInstall() ).c_str() )!=0)
-			cerr<<"\nPre-install command has failed!"<<endl;
+		if( system( inst.getPreInstall().c_str() )!=0)
+			err("Pre-install command has failed!");
 	}
 
 	//Run config, make and make install...
 	if(strcmp(inst.getConfig().c_str(),"no")){
-		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && ./configure "+inst.getConfig()).c_str())!=0){
-			cerr<<"\n\nConfiguration failed"<<endl;
-			return 0;
-		}
+		if(system( ("./configure "+inst.getConfig()).c_str())!=0)
+			err("Configuration failed",2);
 	}
 	if(strcmp(inst.getMake().c_str(),"no")){
-		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make "+inst.getMake()).c_str())!=0){
-			cerr<<"\n\nMake failed"<<endl;
-			return 0;
-		}
+		if(system( ("make "+inst.getMake()).c_str())!=0)
+			err("Make failed",2);
 	}
 	//Do we need to remove the old package?
 	if(bail==1){
 		cout<<"Removing version "<<inst.getVersion()<<endl;
-		if(!removePack(inst.getName())){
-			cerr<<"Removing old package failed!\nI will carry on"<<endl;
-		}
+		if(!removePack(inst.getName()))
+			err("Removing old package failed!",1);
+		
 	}
 	
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
@@ -108,23 +108,21 @@ bool installScript(packinst inst, int bail=-1)
 	setenv("LD_PRELOAD",hijack.c_str(),1);
 	//And install
 	if(strcmp(inst.getMakeInst().c_str(),"no")){
-		if(system( ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && make install "+inst.getMakeInst()).c_str())!=0){
-			cerr<<"\n\nMake install failed"<<endl;
-			return 0;
-		}
+		if(system( ("make install "+inst.getMakeInst()).c_str())!=0)
+			err("Make install failed",1);
 	}
 	//Run postinstall command
 	if(inst.getPostInstall()!=""){
-		if( system(  ("cd "+tardir+inst.getName()+"-"+inst.getVersion()+" && "+inst.getPostInstall() ).c_str() ) !=0)
-			cerr<<"\nPost-install command has failed!"<<endl;
+		if( system(inst.getPostInstall().c_str()) !=0)
+			err("Post-install command has failed!");
 	}
 	
 	//Write the config file
 	if(inst.getConf()!=""){
 		if(inst.getConfFile()=="")
-			cerr<<"\nI have a config but no file to write it to!"<<endl;
+			err("I have a config but no file to write it to!");
 		else if(!write(inst.getConf(),inst.getConfFile()))
-			cerr<<"\nCannot write the configuration!! Don't worry, your package has been installed. Configure manually!"<<endl;
+			err("Cannot write the configuration!! Don't worry, your package has been installed. Configure manually!");
 	}
 	return 1;
 
