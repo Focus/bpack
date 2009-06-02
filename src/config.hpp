@@ -3,7 +3,7 @@
 class Config{
       
     private:
-		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib;
+		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll;
 		static int quitlevel;
 
     public:
@@ -27,6 +27,7 @@ class Config{
 		//Gets the quit level
 		static int getQuit() {return quitlevel;}
 		
+		static std::string getColl(){return coll;}
         static void initialise();
 
 

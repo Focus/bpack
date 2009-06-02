@@ -79,7 +79,7 @@ void collection::saveall(string path)
 void update()
 {
 	// Get list of collections we are using
-	string testurl("http://bpack.co.uk/repos.php?coll=test");
+	string testurl("http://bpack.co.uk/repos.php?coll="+Config::getColl());
 	
 	// get current list of packs for each collection
 	collection test(testurl);

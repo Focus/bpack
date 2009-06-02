@@ -54,6 +54,36 @@ int main(int argc, char *argv[]){
               }
          else if(!strcmp(argv[1],"update"))
               update();
+			  
+		 else if(!strcmp(argv[1],"clean")){
+			 //Clean all
+			 if(argc==2){
+				 cout<<"Cleaning up tarballs..."<<endl;
+				 vector<string> tars=loadLocation(search(Config::getTarballDir()));
+				 for(int i=0;i<tars.size();i++)
+					 tars[i]=Config::getTarballDir()+tars[i];
+				 erase(tars);
+				 cout<<"Cleaning up packs..."<<endl;
+				 vector<string> packs=loadLocation(search(Config::getPackInstDir()));
+				 for(int i=0;i<packs.size();i++)
+					packs[i]=Config::getPackInstDir()+packs[i];
+				 erase(packs);
+			 }
+			 else if(!strcmp(argv[2],"cache")){
+				 cout<<"Cleaning up tarballs..."<<endl;
+				 vector<string> tars=loadLocation(search(Config::getTarballDir()));
+				 for(int i=0;i<tars.size();i++)
+					 tars[i]=Config::getTarballDir()+tars[i];
+				 erase(tars);
+			 }
+			 else if(!strcmp(argv[2],"packs")){
+				 cout<<"Cleaning up packs..."<<endl;
+				 vector<string> packs=loadLocation(search(Config::getPackInstDir()));
+				 for(int i=0;i<packs.size();i++)
+					packs[i]=Config::getPackInstDir()+packs[i];
+				 erase(packs);
+			 }
+		 }
               
          else if(!strcmp(argv[1],"remove")){
               for(int i=2;i<argc;i++){
@@ -99,6 +129,9 @@ void help()
      cout<<"\n  upgrade [packages]";
      cout<<"\n  update";
      cout<<"\n  list";
+	 cout<<"\n	clean";
+	 cout<<"\n	clean cache";
+	 cout<<"\n	clean packs";
 	 cout<<"\n  --help";
 
      

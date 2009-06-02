@@ -6,7 +6,7 @@
 #include "storage.hpp"
 using namespace std;
 
-string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib;
+string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll;
 int Config::quitlevel;
 
 
@@ -20,6 +20,7 @@ void Config::initialise()
 			else
 				Config::installdir=env+"/";
 		}
+		coll="test";
     	scriptdir = installdir + "scripts/";
     	packinstdir = installdir + "packs/";
     	tarballdir = installdir + "tarballs/";
@@ -67,6 +68,8 @@ void Config::initialise()
 					Config::quitlevel=0;
 				//delete ss;
 			}
+			if(!strcmp(command.c_str(),"collection"))
+				Config::coll=value;
 		}
 		delete line,pos,file;
     	
