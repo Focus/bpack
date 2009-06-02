@@ -33,7 +33,6 @@ void mrt();
 
 
 int main(int argc, char *argv[]){
-	//wget("ftp://ftp.gnu.org/gnu/g++.README","/tmp",0,LOGMULTI);
 	Config::initialise();
     if(argc < 2){
         cerr<<"Usage:\n bpack [action] [parameters]\nUse --help for more details\n";

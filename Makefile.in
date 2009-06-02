@@ -55,7 +55,6 @@ VERSION = 0.1
 bindir = @bindir@
 DESTDIR=/var/bpack/
 
-
 bpack: src/error.o src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o packs.list
 	$(CXX) $(CXXFLAGS) src/error.o src/update.o src/qhttp.o src/terminal.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
 

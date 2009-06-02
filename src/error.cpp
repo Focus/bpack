@@ -8,7 +8,7 @@ void err(std::string message, int level,bool errnoset){
 	if(level==0)
 		return;
 	if(level==2)
-		std::cerr<<"Fatal Error"<<std::endl;
+		std::cerr<<"\nFatal Error"<<std::endl;
 	if(level<Config::getQuit())
 		return;
 	if( (Config::getQuit()<0 && -Config::getQuit()>=level) || level==1 ){

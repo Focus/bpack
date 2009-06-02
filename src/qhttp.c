@@ -10,6 +10,18 @@
 
 #define MIN(x,y) x > y ? x : y
 
+//pass an integer %
+process(const char* name,int per){
+	per=per/4;
+	printf("\r%s : [",name);
+	int i;
+	for(i=0;i<per;i++)
+		printf("#");
+	for(i=per;i<25;i++)
+		printf("-");
+		
+	printf("] %d",per*4);
+}
 
 //TODO asyncronous download
 
@@ -191,10 +203,11 @@ int sconnect(struct HttpRequest req)
 
 //Simple connect function
 int fconnect(char* ip,int port){
-	int sd;
+   int sd;
    struct sockaddr_in pin;
    struct hostent *hp;
-   if ((hp = gethostbyaddr(ip,strlen(ip),AF_INET)) == NULL) {
+   long addr=inet_addr(ip);
+   if ((hp = gethostbyaddr((char*) &addr,sizeof(addr),AF_INET)) == NULL) {
       perror("gethostbyaddr");
       return -1;
    }
@@ -283,13 +296,12 @@ int ftpsend(int socket, char* command){
 	
 	char* message=(char*)malloc(strlen(command)+strlen(" \r\n"));
 	sprintf(message,"%s\r\n",command);
-	printf("\n%s \n",message);
 	if(send(socket,message,strlen(message),0) < 0){
 			printf("%s \n",strerror(errno));
             logger(LOGMULTI, " error writing to socket\n");
             return 0;
         }
-		free(message);
+	free(message);
     return 1;
 	
 }
@@ -336,6 +348,8 @@ char* ftpreadresponse(int socket)
 		perror("recv");
 		exit(0);
 	}
+	if(buffer==NULL)
+		return NULL;
 	buffer[bufsize-1]='\n';
 	//The server gives shit loads of stuff I don't want. Get rid of them all
 	//if it is of the form 223-something, then it is bullshit, we want 223 something!
@@ -358,7 +372,6 @@ char* ftpreadresponse(int socket)
 	}else
 		ret=strdup(buffer);
 	free(buffer);
-	printf("***%s***\n",ret);
 	return ret;
 }
 
@@ -423,9 +436,63 @@ int ftpConvertAddy(char * buf, char * hostname, int * port) {
    return 0;
 }
 
-void ftpLogin(int socket){
+struct HttpResponse ftpLogin(int socket){
+	//char* greeting,user,pass,type;
+	struct HttpResponse hr;
+	char* greeting=ftpreadresponse(socket);
+	if(strncmp(greeting,"2",1)){
+		hr.errormsg=malloc(strlen(greeting));
+		strcpy(hr.errormsg,greeting);
+		free(greeting);
+		return hr;
+	}
+	free(greeting);
 	
 	
+	ftpsend(socket,"USER anonymous");
+	sleep(1);
+	char* user=ftpreadresponse(socket);
+	if(user==NULL){
+		//Do something...
+	}
+	else if(strncmp(user,"2",1)){
+		hr.errormsg=malloc(strlen(user));
+		strcpy(hr.errormsg,user);
+		free(user);
+		return hr;
+	}
+	if(user!=NULL)
+		free(user);
+		
+	
+	ftpsend(socket,"PASS anonymous");
+	char* pass=ftpreadresponse(socket);
+	if(pass!=NULL) //Don't think checking the pass is worth it
+		free(pass);
+	
+	
+	ftpsend(socket,"TYPE I");
+	char* type=ftpreadresponse(socket);
+	if(type==NULL){
+		//Do something...
+	}
+	else if(strncmp(type,"2",1)){
+		hr.errormsg=strdup(type);
+		free(type);
+		return hr;
+	}
+	if(type!=NULL)
+		free(type);
+	return hr;
+	
+}
+
+int ftpGetFileSize(char* buffer){
+	int size,code;
+	sscanf(buffer,"%d %d",&code,&size);
+	if(code!=213)
+		return -1;
+	return size;
 }
 
 // connects, sends request and returns response
@@ -459,33 +526,54 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			char* ip;
 			logger2(logtype, "connected to ", req.host);
 			char* buffer;
-			ftpreadresponse(socket);
-			ftpsend(socket,"USER anonymous");
-			sleep(3);
-			ftpreadresponse(socket);
-			ftpsend(socket,"PASS anonymous");
-			ftpreadresponse(socket);
-			ftpsend(socket,"TYPE I");
-			ftpreadresponse(socket);
-			ftpsend(socket,"PASV");
-			buffer=ftpreadresponse(socket);
+			struct HttpResponse hr=ftpLogin(socket); //Does the Login to the ftp server
+			if(hr.errormsg)
+				return hr;
+			
+			//Grabs the size of the file we want
 			char* retrmsg=malloc(strlen(req.path)+6);
 			sprintf(retrmsg,"SIZE %s",req.path);
 			ftpsend(socket,retrmsg);
-			ftpreadresponse(socket);
+			char* size=ftpreadresponse(socket);
+			if( (hr.clength=ftpGetFileSize(size))==-1){
+				hr.errormsg=malloc(strlen("Cannot obtain size!"));
+				hr.errormsg="Cannot obtain size!";
+				if(size!=NULL)
+					free(size);
+				return hr;
+			}
+			if(size!=NULL)
+				free(size);
+				
+				
+			/* Tell the server to be passive
+			 * We will connect to the server as this is much better bet with firewalls and stuff
+			 * Server sends back ip+port of the form (x1,x2,x3,x4,x5,x6)
+			 * ip=x1.x2.x3.x4	port=x5*249+x6
+			 */
+			ftpsend(socket,"PASV");
+			buffer=ftpreadresponse(socket);
 			int port;
 			char *host=buffer;
 			ftpConvertAddy(buffer,host,&port);
+			if(buffer!=NULL)
+				free(buffer);
+				
+			//Connect to that ip, this is where the server will send the data through
 			int filesocket=fconnect(host,port);
+			if(filesocket==0){
+				printf("Connecting to %s at %d failed\n",host,port);
+				exit(0);
+			}
+			
+			//Tell the server we want the file
 			sprintf(retrmsg,"RETR %s",req.path);
 			ftpsend(socket,retrmsg);
-			ftpreadresponse(socket);
-			ftpsend(socket,retrmsg);
-			ftpreadresponse(filesocket);
 			free(retrmsg);
-			free(buffer);
-			printf("%s : %d\n",host,port);
-			exit(0);
+			//sleep(1);
+			ftpreadresponse(socket);
+			hr.stream=filesocket;
+			return hr;
 			
 		}else{
 			logger2(LOGMULTI, "not connected : error connecting to ", req.host);
@@ -531,10 +619,13 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	// choose filename
 	char tempname[100];
 	if (filename==0){	// use given filename first
-		if(getHeader(&hr, "Content-Disposition", tempname, 99)){
-			// Get filename from response header
-			filename = strchr(strstr(tempname, "filename"), '"')+1;
-			*strchr(filename, '"') = '\0';
+		if(!strcmp(hq->protocol,"http")){
+			if(getHeader(&hr, "Content-Disposition", tempname, 99)){
+				// Get filename from response header
+				filename = strchr(strstr(tempname, "filename"), '"')+1;
+				*strchr(filename, '"') = '\0';
+			}else 	// use filename from url
+				filename = strrchr(url,'/')+1;
 		}else 	// use filename from url
 			filename = strrchr(url,'/')+1;
 	}
@@ -561,12 +652,16 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
         int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
         void *buffer = malloc(bufsize);
         int transremain = hr.clength;
-        int readlength;
-
+        int readlength,per;
+		per=0;
         do{
-            transremain -= readlength = read(hr.stream, buffer, bufsize);
+            transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
+			if(per!=100-transremain*100/hr.clength)
+				process(filename,100-transremain*100/hr.clength);
             fwrite(buffer, 1, readlength, f);
+			per=100-transremain*100/hr.clength;
         }while (transremain > 0);
+		printf("\n");
         free(buffer);
     }
 
@@ -575,8 +670,10 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     shutdown(hr.stream, SHUT_RDWR);
     fclose(f);
     logger(logtype, "saved");
-    free(hr.rawheader);
-    free(hr.streason);
+	if(hr.rawheader!=NULL)
+		free(hr.rawheader);
+	if(hr.streason!=NULL)
+		free(hr.streason);
 
     free(hq->path);
     free(hq->protocol);
