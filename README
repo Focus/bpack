@@ -16,19 +16,25 @@ README  Version 0.1
 
    a.	Installing packages
       i.	Basic installation
-      ii.	Advanced options
-      iii.	Making installation scrips
-      iv.	Making package discriptions
-      v.	Checking packages
+      ii.	Terminal
+      iii.	Making packages
    b.	Removing packages
       i.	Basic removal
       ii.	Removing scanned files
       iii.	Manual removal
    c.	Upgrading packages
    d.	Running updates
-   e.	Scanning the computer for pre-installed packages
+   e.   Listing installed packages
+   f.   Clean
+   g.	Scanning the computer for pre-installed packages
 
-4.	=Contributing=
+4.	=Configuration=
+
+   a.   /etc/bpack.conf
+   b.   Package making
+   c.   Collections
+
+5.	=Contributing=
 
    a.	Development
    b.	Donating
@@ -42,8 +48,7 @@ README  Version 0.1
 
 == a ==  ==Pre-requisites==
 
-Bpack currently requires a working linux/unix system. It also requires gcc, glibc, binutils and wget, also you may want to get git. Bpack does not really need wget if you grab all the tar balls your self and point bpack towards them (look at 3.a.ii).
-
+Bpack currently requires a working linux/unix system. It also requires gcc, and glibc.
 
 
 == b ==  ==Instructions==
@@ -95,68 +100,13 @@ Multiple packages can be installed from a single call by listing packages, e.g. 
 	bpack install gcc wget ncurses
 
 
+=ii=   =Terminal=
 
-=ii=   =Advanced Options=
+Bpack also comes with a terminal. If you wish to compile things yourself, run the command
 
-Bpack can do more than just install things like binaries. The major advantage of compiling software from source is that it can be configured to your wishes. Bpack allows for full configuration. To pass arguments to configure, make and make install script run
+	bpack terminal
 
-	bpack install [package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]"
-
-You can also do this for multiple files by,
-
-	bpack install [package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]" \
-	[package] --configure="[arguments]" --make="[arguments]" --makeinstall="[arguments]"
-
-For example, installing gcc you may do ./configure --prefix=/usr --enable-sharing, make DESTDIR=/opt, make DESTDIR=/usr install, the bpack equivalent of this is
-
-	bpack install gcc --configure="--prefix=/usr --enable-sharing" --make="DESTDIR=/opt" --makeinstall="DESTDIR=/usr"
-
-
-Bpack can also patch packages before installing them. The patch must be downloaded manually (unless it is in the install script)
-
-	bpack install [package] --patch=[patch directory]
-
-Please make sure the directory is a full directory, e.g. /home/user/patches/patch.patch and NOT something like ./patch.
-
-
-
-=iii=   =Making Installation Scripts=
-
-Making installation scripts for bpack is very easy. There is software to do this for you, called bpackgen,
-
-	bpackgen [package] [archive type]
-
-
-
-=iv=   =Making Package Discriptions=
-
-Making your own package discriptions is always a good idea. We may not have all the packages in our list so if you desire to install a package that has no discriptions, you can make your own! Package discriptions are very simple, they are stored in [bpack dir]/packs. They are of the form
-
-	[Version;
-	git url;
-	config options;
-	make options;
-	make install options;
-	dependencies (separated by commas);]
-
-You can leave any of them empty other than version. The file must be saved as package, if there already is a file named as such, please append it to the top of the file.
-
-As an example we shall make a foo-0.0.1 package discription. We have no git url, configure options is --enable-food,make has parameters DESTDIR=/foo and no make install parameters. Also foo depends on bar and bar2. First check if there is a packs/foo , if not create one, and append the following to the top of the file;
-
-	[0.0.1;
-	;
-	--enable-food;
-	DESTDIR=/foo;
-	;
-	bar,bar2;]
-
-Bpack does not care about whitespace so it is used for purely astetic purposes. Please submit any packages we do not have discriptions for!
-
-
-=v=   =Checking Packages=
-
-I have no idea why I had this section :|
-
+to get the bpack terminal. With this terminal you can exacute commands as usual (e.g. cd, make, ls) but bpack will trace your make install call and make it a package for you.
 
 
 == c ==  ==Removing Packages==
@@ -171,6 +121,8 @@ Removing packages with bpack is easy as Mr.T;
 e.g. if you wish to remove gcc (don't do this!),
 	
 	bpack remove gcc
+
+As with the install call, remove can take multiple packages to remove.
 
 
 =ii=   =Removing Scanned Files=
@@ -189,7 +141,7 @@ If you do not trust bpack or want to uninstall packages manually for some other 
 
 If you wish to upgrade a package to a later version, please call bpack with,
 	
-	bpack upgrade [package] [arguments]
+	bpack upgrade [package]
 
 Bpack will first try to make the later version of the package, and then remove files, then try to install them. This call may be somewhat dangerous, as in the calls of some core packages.
 
@@ -203,7 +155,33 @@ To get all the latest packages and scripts you should update bpack regularly. To
 We may not have every package that you need. You may wish to manually install any packages we don't have or even better make scripts and send them to us!
 
 
-== e ==  ==Scanning the computer for pre-installed packages==
+== e ==  ==Listing installed packages==
+
+Running the following command
+
+	bpack list
+
+will show the user the packages bpack has under control and the size they take up.
+
+
+== f ==  ==Clean==
+
+The command
+
+	bpack clean cache
+
+will clear the tarballs and any files bpack has untared. You can use
+
+	bpack clean packs
+
+to clean out the packages (e.g. in the case of switching collections). The call
+
+	bpack clean
+
+will do both of the above calls.
+
+
+== g ==  ==Scanning the computer for pre-installed packages==
 
 Bpack has its own feature for scanning through the root directory for packages that may have been installed without bpack. Though this method may sound sane to you, rest assured it is not! This method will almost surely not be fool proof, you need to check packs.list afterwards. But do not worry, incase you forget, bpack will remind you when you try to remove or upgrade a scanned package. To call the scan function use,
 
@@ -211,13 +189,64 @@ Bpack has its own feature for scanning through the root directory for packages t
 
 
 
-				=== 4 ===  ===Contributing===
+				=== 5 ===  ===Contributing===
+
+
+== a ==  ==/etc/bpack.conf==
+
+Bpack will read all the configuration from this file, other than the enviroment variable BPACK_DIR which if set, bpack will use as it's base directory (by default this is /var/bpack). The format of the configuration is as follows;
+
+	option:value
+
+Currently these are the available options and values
+
+	Option		Values			Explanation
+
+	quitlevel	0,1,2,-1,-2		In the negatives, bpack will ask more instead of quiting, in the possitives bpack will quit more than usual.
+	collection	a collection name	The default collection to get packages from.
+
+
+== b ==  ==Package making==
+
+The package format for bpack is very simple so users should not be affraid of making their own. Just like the conf file, the format is
+
+	option:value
+
+Bpack will read the lines untill the next option (ignoring the empty lines) so multiline values are welcome. The only required option is location. Here is a list of options and what they do;
+
+
+	Option		Action
+
+	location	The url for the tarball, incase it needs to be downloaded
+	deps		Dependencies seperated by commas
+	config		Parameters to be passed to ./configure (e.g. --prefix=/usr)
+	make		Paramerers to be passed to make
+	makeinst	Parameters to be passed to makeinst
+	preinstall	Things to exacute before the install in the unpacked tar directory
+	postinstall	Things to exacute after the install in the unpacked tar directory
+	conf		The contents of the configuration file, make sure you set conffile if you use this option
+	conffile	The location of the configuration file
+
+Many of these can be left out. To stop bpack from running ./configure, make or make install, pass the value  no  to config, make or makeinst.
+
+The package must be saved under bpack_dir/packs/ and the format for the file name is
+
+	name-version
+
+
+== b ==  ==Package making==
+
+Share your bpack experiance with others and create a collection. A collection is a bunch of packages (you can nick packages from other people) that the user will recieve when they update. For more information, register at http://www.bpack.co.uk .
+
+
+
+				=== 5 ===  ===Contributing===
 
 
 
 == a ==  ==Development==
 
-We always need more people to help develop bpack. If you are a programmer, talk to us about joining in the project. We welcome any bug fixes, ideas, comments, criticism or patches. If you have packages or scripts that you made yourself, do send them in. If you cannot program you can help us by making scripts and packages and testing unstable versions of bpack.
+We always need more people to help develop bpack. If you are a programmer, talk to us about joining in the project. We welcome any bug fixes, ideas, comments, criticism or patches. If you have packages that you made yourself, do send them in. If you do not program you can help us by making packages and testing unstable versions of bpack.
 
 Feel free to come and talk to us ;)
 
