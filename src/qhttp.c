@@ -11,16 +11,17 @@
 #define MIN(x,y) x > y ? x : y
 
 //pass an integer %
-process(const char* name,int per){
+process(const char* name,float per){
 	per=per/4;
-	printf("\r%s : [",name);
+	printf("%s : [",name);
 	int i;
 	for(i=0;i<per;i++)
 		printf("#");
 	for(i=per;i<25;i++)
 		printf("-");
 		
-	printf("] %d",per*4);
+	printf("] %d%%\r",(int)per*4);
+	fflush(stdout);
 }
 
 //TODO asyncronous download
@@ -265,15 +266,19 @@ struct HttpResponse buildresponsehead(const char* rawresp)
     strcpy(resp.rawheader, rawresp);
 
     //printf(" building response :\n%s\n\n", "");//rawresp);
-
     resp.streason = malloc(10);
     sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
     if(strstr(rawresp, "Content-Length:"))
         sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
-    else
+    else if(strstr(rawresp, "Content-length:"))
+        sscanf(strstr(rawresp, "Content-length:"),"Content-length: %d",&(resp.clength));
+	else if(strstr(rawresp, "content-length:"))
+        sscanf(strstr(rawresp, "content-length:"),"content-length: %d",&(resp.clength));
+	else{
         resp.clength = -1;
-
-    
+		resp.errormsg=malloc(strlen(("Cannot find content length")));
+		resp.errormsg="Cannot find content length";
+	}
     return resp;
 }
     
@@ -652,14 +657,17 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
         int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
         void *buffer = malloc(bufsize);
         int transremain = hr.clength;
-        int readlength,per;
+        int readlength;
+		float per;
 		per=0;
         do{
             transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
-			if(per!=100-transremain*100/hr.clength)
+			if(100-(float)transremain*100/(float)hr.clength-per>=4|| 100-(float)transremain*100/(float)hr.clength==100){
 				process(filename,100-transremain*100/hr.clength);
+				per=100-(float)transremain*100/(float)hr.clength;
+			}
             fwrite(buffer, 1, readlength, f);
-			per=100-transremain*100/hr.clength;
+			
         }while (transremain > 0);
 		printf("\n");
         free(buffer);

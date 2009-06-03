@@ -9,7 +9,7 @@ using namespace std;
 string tree;
 
 //Searches the directory for a file, if left empty returns whats in the directory with ,
-string search(string dir, string name=""){
+string search(string dir, string name){
 	int pos=0;
 	if(!strcmp(name.c_str(),""))
 		pos=-1;
