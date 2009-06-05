@@ -108,7 +108,13 @@ bool installScript(packinst inst, int bail=-1)
 		if( system( inst.getPreInstall().c_str() )!=0)
 			err("Pre-install command has failed!");
 	}
-
+	
+	//Set compiler flags
+	if(Config::getCflags().length()>0)
+		setenv("CFLAGS",Config::getCflags().c_str(),1);
+	if(Config::getCxxflags().length()>0)
+		setenv("CXXFLAGS",Config::getCxxflags().c_str(),1);
+	
 	//Run config, make and make install...
 	if(strcmp(inst.getConfig().c_str(),"no")){
 		if(system( ("./configure "+inst.getConfig()).c_str())!=0)

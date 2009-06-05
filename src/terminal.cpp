@@ -44,6 +44,11 @@ int makeinstall(string path){
 		depVersion(name,ver);
 	}
 	erase("/tmp/hijack_log.txt");
+	//Set compiler flags
+	if(Config::getCflags().length()>0)
+		setenv("CFLAGS",Config::getCflags().c_str(),1);
+	if(Config::getCxxflags().length()>0)
+		setenv("CXXFLAGS",Config::getCxxflags().c_str(),1);
 	setenv("LD_PRELOAD",(Config::getLib()).c_str(),1);
 	system("make install");
 	setenv("LD_PRELOAD","",1);

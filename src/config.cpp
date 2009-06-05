@@ -28,7 +28,7 @@
 #include "storage.hpp"
 using namespace std;
 
-string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll;
+string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll,Config::cflags,Config::cxxflags;
 int Config::quitlevel;
 
 
@@ -51,6 +51,8 @@ void Config::initialise()
 		logdir=installdir+"logs/";
 		lib=installdir+"libs/hijack.so.1.0";
 		Config::quitlevel=0;
+		cflags="";
+		cxxflags="";
 		
 		//Load the config
 		vector<string> *file= new vector<string>;
@@ -90,8 +92,12 @@ void Config::initialise()
 					Config::quitlevel=0;
 				//delete ss;
 			}
-			if(!strcmp(command.c_str(),"collection"))
+			else if(!strcmp(command.c_str(),"collection"))
 				Config::coll=value;
+			else if(!strcmp(command.c_str(),"CFLAGS") || !strcmp(command.c_str(),"cflags"))
+				Config::cflags=value;
+			else if(!strcmp(command.c_str(),"CXXFLAGS") || !strcmp(command.c_str(),"cxxflags"))
+				Config::cxxflags=value;
 		}
 		delete line,pos,file;
     	
