@@ -41,8 +41,87 @@ This function is God. Bow down to it!
 extern "C"{
 #include "qhttp.h"
 }
-
+#define MIN(x,y) x < y ? x : y
+#define MAX(x,y) x > y ? x : y
 using namespace std;
+
+//Returns 1 on success
+bool configuration(string config,string location){
+	
+	
+	vector<string> *add=new vector<string>;
+	vector<string> *rem=new vector<string>;
+	string *temp=new string;
+	int pos;
+	*temp=config;
+	//First get the things we need to add
+	while((pos=temp->find('+'))!=string::npos && pos!=temp->length()-1){
+		*temp=temp->substr(pos+1);
+		if(temp->find("+")==string::npos && temp->find("-")==string::npos)//this must be the last item
+			add->push_back(*temp);
+		else if(temp->find("+")==string::npos)//Get the bit in between the + and the -
+			add->push_back(temp->substr(0,temp->find("-")-1));
+		else if(temp->find("-")==string::npos)//Get bit in between the + and +
+			add->push_back(temp->substr(0,temp->find("+")-1));
+		else 
+			add->push_back(temp->substr(0,MIN(temp->find_first_of("+"),temp->find_first_of("-"))-1));
+
+
+	}
+	*temp=config;
+	//Now the things we need to remove
+	while((pos=temp->find("-"))!=string::npos && pos!=temp->length()-1){
+		*temp=temp->substr(pos+1);
+		
+		if(temp->find("+")==string::npos && temp->find("-")==string::npos)//this must be the last item
+			rem->push_back(*temp);
+		else if(temp->find("+")==string::npos)//Get the bit in between the - and the -
+			rem->push_back(temp->substr(0,temp->find("-")-1));
+		else if(temp->find("-")==string::npos)//Get bit in between the - and +
+			rem->push_back(temp->substr(0,temp->find("+")-1));
+		else 
+			rem->push_back(temp->substr(0,MIN(temp->find("+"),temp->find("-"))-1));
+	}
+	
+	delete temp;
+
+	vector<string> *current=new vector<string>;
+	*current=read(location);
+	if(current->size()<=0){
+		delete current;
+		string *newconfig=new string;
+		*newconfig="";
+		for(int i=0;i<add->size();i++)
+			*newconfig=*newconfig+(*add)[i]+"\n";
+		if(write(*newconfig,location)){
+			delete newconfig;
+			return 1;
+		}
+		delete newconfig;
+		return 0;
+	}
+
+	for(int i=0;i<rem->size();i++){
+		if(!strncmp((*current)[i].c_str(),(*rem)[i].c_str(),(*rem)[i].length()))
+			current->erase(current->begin()+i);	
+	}
+	delete rem;
+	for(int i=0;i<add->size();i++)
+		current->push_back((*add)[i]);
+	
+	delete add;
+	string *newconf=new string;
+	*newconf="";
+	for(int i=0;i<current->size();i++)
+		*newconf=*newconf+(*current)[i]+"\n";
+	delete current;
+	if(write(*newconf,location,1)){
+		delete newconf;
+		return 1;
+	}
+	delete newconf;
+	return 0;
+}
 
 
 string tarName(string url){
@@ -150,7 +229,7 @@ bool installScript(packinst inst, int bail=-1)
 	if(inst.getConf()!=""){
 		if(inst.getConfFile()=="")
 			err("I have a config but no file to write it to!");
-		else if(!write(inst.getConf(),inst.getConfFile()))
+		else if(!configuration(inst.getConf(),inst.getConfFile()))
 			err("Cannot write the configuration!! Don't worry, your package has been installed. Configure manually!");
 	}
 	return 1;

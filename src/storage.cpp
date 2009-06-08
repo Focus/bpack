@@ -31,6 +31,7 @@
 #include <fstream>
 #include "version.hpp"
 #include "storage.hpp"
+#include "error.hpp"
 using namespace std;
 
 //Valid breaks? Otherwise quit!
@@ -97,10 +98,13 @@ vector<string> loadLocation(const string locations)
               return locs;
 }
 
-bool write(const string content, const string location){
+bool write(const string content, const string location,bool overwrite){
 
 	ofstream text;
-	text.open(location.c_str(),ios::app);
+	if(overwrite)
+		text.open(location.c_str(),ios::trunc);
+	else
+		text.open(location.c_str(),ios::app);
     if(!text)
 		return 0;
 	
@@ -125,5 +129,43 @@ vector<string> read(const string location){
 	return ret;
 }
      
-     
+
+//If statement macro
+string macroif(vector<string> statement){
+	
+}
+
+//Reads the macros
+string macro(string command){
+
+	string *wk=new string;
+	string *temp=new string;
+	vector<string> *statement=new vector<string>; 
+	string ret;
+	*temp=command;
+	int pos;
+	while( (pos=temp->find("{"))!=string::npos && pos!=temp->length()-1 ){
+		*temp=temp->substr(pos+1);
+		cout<<*temp<<endl;
+		if(temp->find("}")==string::npos)
+			err("The macro is bad");
+		else{
+			*wk=temp->substr(0,temp->find("}"));
+			cout<<*wk<<endl;
+			int i=0;
+			//Get rid of any spaces after the {
+			while((*wk)[i]==' ' && i<wk->length()){
+				*wk=wk->substr(1);
+				i++;
+			}
+			while( (i=wk->find(" "))!=string::npos && i+1<wk->length()){
+				statement->push_back(wk->substr(0,i));
+				*wk=wk->substr(i+1);
+			}
+			if(!strcmp( (*statement)[0].c_str(),"if"))
+				cout<<macroif(*statement);
+		}
+	}
+	return "";
+}	
      
