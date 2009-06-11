@@ -192,13 +192,18 @@ vector<package> getInstalledPackages(const char* location){
                                 currentpack->setName(passy[0]);
                                 currentpack->setVersion(passy[1]);
 				*locs=loadLocation(passy[2]);
-				if(locs->size()>0 && (*locs)[0].find_first_of("/")!=0)
-
-                                currentpack->setLocations(loadLocation(passy[2]));
+				if(locs->size()>0 && (*locs)[0].find_first_of("/")!=0){//If it is a meta package
+					for(int i=0;i<locs->size();i++)
+						currentpack->addLocations(getInstalledPackage((*locs)[i]).getLocations());
+				}
+				else
+                                	currentpack->setLocations(*locs);
+				
                                 start++;
                                 packagelist.push_back(*currentpack);
                                 }
      delete currentpack;
+     delete locs;
 
      return packagelist;
      }

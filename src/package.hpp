@@ -49,6 +49,10 @@ class package
              void setVersion(const std::string pname){ver=pname;}
              void setLocations(const std::vector<std::string> plocations){locations=plocations;}
              void addLocation(const std::string plocation){locations.push_back(plocation);}
+	     void addLocations(const std::vector<std::string> plocations){
+		     for(int i=0;i<plocations.size();i++)
+			     locations.push_back(plocations[i]);
+	     }
              void setScan(const bool pscan){scan=pscan;}
              bool write();
 			 bool remove();
