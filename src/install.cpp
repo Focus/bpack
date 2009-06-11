@@ -56,7 +56,7 @@ void depVersion(string &dep, version &ver){
 }
 
 //Extracts locations from the copy log
-vector<string> stripCp(string name){
+vector<string> stripCp(){
 	vector<string> locs;
 	ifstream *textfile=new ifstream;
 	textfile->open("/tmp/hijack_log.txt");
@@ -80,7 +80,14 @@ vector<string> stripCp(string name){
 void clean(packinst pack){
 	cout<<"\nAdding install paths..."<<endl;
 	package *installed=new package;
-	installed->setLocations(stripCp(pack.getName()));
+	if(pack.getMeta()){
+		packinst *temp=new packinst;
+		*temp=getPackage(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion());
+		installed->setLocations(temp->getDeps());
+		delete temp;
+	}
+	else
+		installed->setLocations(stripCp());
 	installed->setVersion(pack.getVersion());
 	installed->setName(pack.getName());
 	installed->write();
@@ -174,13 +181,19 @@ void install(string packname, int bail){
         delete installed;
      	cout<<"\nInstalling "<<packname<<"...\n";
      	//Have a packinst!
-    	if(installScript(*packageinst,bail)){
+	if(!packageinst->getMeta()){
+    		if(installScript(*packageinst,bail)){
+			clean(*packageinst);
+			cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
+		}
+	
+		else
+			err("Error package not installed correctly. Consult the logs and inform us.",2);
+	}			
+	else{
+		configuration(packageinst->getConf(),packageinst->getConfFile());
 		clean(*packageinst);
-		cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 	}
-	else
-		err("Error package not installed correctly. Consult the logs and inform us.",2);
-			
-
 	delete packageinst;
 }
+

@@ -74,8 +74,8 @@ bool version::operator== (const version ver) const
 {
      vector<int> vecver=ver.asVector();
      int size;
-     if(vecver.size()>=numbers.size())
-         size=numbers.size();
+     if(vecver.size()!=numbers.size())
+         return 0;
      else
          size=vecver.size();
          

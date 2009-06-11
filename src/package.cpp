@@ -32,7 +32,6 @@
 #include "packinst.hpp"
 #include "package.hpp"
 #include "config.hpp"
-
 using namespace std;
 
 package::package(const string pname)
@@ -52,7 +51,7 @@ package::package(const packinst inst)
 {
                        name=inst.getName();
                        ver=inst.getVersion();
-                        scan=0;                    
+                       scan=0;                    
                        
 }
 
@@ -81,6 +80,7 @@ bool package::write(){
      text.close();
      return 1;
 }
+//TODO version checks!
 bool package::remove(){
 	
 	vector<string> *file = new vector<string>;
@@ -148,7 +148,7 @@ string packSize(vector<string> locs){
 void printPackages(const vector<package> packagelist)
 {
      if(packagelist.size()==0)
-     return;
+     	return;
      package *currentpack=new package;
 	 cout<<"\nInstalled packages:"<<endl;
      for(int i=0;i<packagelist.size();i++){
@@ -184,13 +184,16 @@ vector<package> getInstalledPackages(const char* location){
      }
 
      textfile.close();
-
+     vector<string> *locs=new vector<string>;
      int start=0;
      while(start+1<text.length()){
                                  
                                 start=separate(text,passy,start);
                                 currentpack->setName(passy[0]);
                                 currentpack->setVersion(passy[1]);
+				*locs=loadLocation(passy[2]);
+				if(locs->size()>0 && (*locs)[0].find_first_of("/")!=0)
+
                                 currentpack->setLocations(loadLocation(passy[2]));
                                 start++;
                                 packagelist.push_back(*currentpack);
@@ -199,3 +202,49 @@ vector<package> getInstalledPackages(const char* location){
 
      return packagelist;
      }
+
+/************************************************************************
+ * Gets a package with the given name
+ * ************************************************************************/
+
+package getInstalledPackage(const string in){
+	string *name=new string;
+	version *ver=new version;
+	*name=in;
+	depVersion(*name,*ver);
+     	vector<string> passy(3,"");
+     	ifstream textfile;
+     	package pack;
+     	textfile.open(Config::getPacklistPath().c_str());
+
+
+	if(!textfile){
+               	cerr<<"\nNo configuration here, I'm so lost!.\n";
+               	exit(1);
+     	}
+
+     	string *x=new string;
+     	string *text=new string;
+     	while(!textfile.eof())
+     	{	
+        	textfile >> *x;
+        	if(!textfile.eof())
+        		*text +=*x;
+	}
+	delete x;
+     	textfile.close();
+	cout<<ver->asString()<<endl<<((*ver)=="1.0.5")<<endl<<((*ver)=="0.0.0")<<endl;
+	int start=0;
+	while(start+1<text->length()){
+		start=separate(*text,passy,start);
+		if(!strcmp(passy[0].c_str(),name->c_str()) && ((*ver)==passy[1] || (*ver)=="0.0.0")){
+			pack.setName(passy[0]);
+			pack.setVersion(passy[1]);
+			pack.setLocations(loadLocation(passy[2]));
+			break;
+		}
+		start++;
+	}
+	delete text;
+	return pack;
+}

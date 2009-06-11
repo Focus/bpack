@@ -29,7 +29,8 @@
 #include "remove.hpp"
 #include "storage.hpp"
 #include <vector>
-
+#include "install.hpp"
+#include "config.hpp"
 class package
 {
       
@@ -42,7 +43,7 @@ class package
              std::string getName() const {return name;}
              std::string getVersion() const {return ver.asString();}
              version Version() const {return ver;}
-             std::vector<std::string> getLocations() const {return locations;}
+             std::vector<std::string> getLocations() const{return locations;} 
              bool getScan() const {return scan;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pname){ver=pname;}
@@ -61,7 +62,7 @@ class package
 
 std::vector<package> getInstalledPackages(const char*);
 void printPackages(const std::vector<package>);
-
+package getInstalledPackage(std::string);
 #endif
 
 

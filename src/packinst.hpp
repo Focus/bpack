@@ -53,8 +53,10 @@ class packinst{
              std::string getConfig() const {return config;}
              std::string getMake() const {return make;}
              std::string getMakeInst() const {return makeinst;}
+	     std::vector<std::string> getDeps(){return deps;}
              int getLoc() const {return loc;}
              bool getNextDep(std::string&);
+	     bool getMeta(){return meta;}
 	
              void setPreInstall(const std::string pinst){preinstall=pinst;}
              void setConf(const std::string pname){conf=pname;}
@@ -63,7 +65,14 @@ class packinst{
              void removeDep(const int deppos){deps.erase(deps.begin()+deppos-1);loc--;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pversion){ver=pversion;}
-			 void setVersion(const version vers){ver=vers;}
+	     void setVersion(const version vers){ver=vers;}
+	     void setMeta(std::string value){
+		     if(!strcmp(value.c_str(),"1") || !strcmp(value.c_str(),"yes") || !strcmp(value.c_str(),"y"))
+			     meta=1;
+		     else
+			     meta=0;
+	     }
+	     void setMeta(bool value){meta=value;}
              // Wget space is being used for archive url/name
              void setWget(const std::string pwget)
              {
@@ -87,6 +96,7 @@ class packinst{
 	      version ver;
               std::vector<std::string> deps;
               int loc;
+	      bool meta;
       
       };
 

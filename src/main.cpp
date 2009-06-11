@@ -42,6 +42,7 @@ extern "C"{
 
 
 
+
 //List of functions we need.
 void help();
 void mrt();
@@ -50,10 +51,10 @@ void mrt();
 
 int main(int argc, char *argv[]){
 	Config::initialise();
-    if(argc < 2){
-        cerr<<"Usage:\n bpack [action] [parameters]\nUse --help for more details\n";
-        return 0;
-    }    
+	if(argc < 2){
+        	cerr<<"Usage:\n bpack [action] [parameters]\nUse --help for more details\n";
+        	return 0;
+    	}    
          else if(!strcmp(argv[1], "install")){
               for(int i=2;i<argc;i++){
 				  
@@ -145,10 +146,10 @@ void help()
      cout<<"\n  upgrade [packages]";
      cout<<"\n  update";
      cout<<"\n  list";
-	 cout<<"\n	clean";
-	 cout<<"\n	clean cache";
-	 cout<<"\n	clean packs";
-	 cout<<"\n  --help";
+     cout<<"\n  clean";
+     cout<<"\n  clean cache";
+     cout<<"\n  clean packs";
+     cout<<"\n  --help";
 
      
      cout<<"\n\tThis bpack has Mr.T powers!!\n";

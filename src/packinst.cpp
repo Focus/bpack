@@ -59,6 +59,7 @@ packinst getPackage(string location){
 	vector<string> *file= new vector<string>;
 	*file=read(location);
 	if(file->size()<=0){
+		delete file;
 		return pack;
 	}
 	vector<int> *line=new vector<int>;
@@ -103,6 +104,8 @@ packinst getPackage(string location){
 			pack.setConfFile(value);
 		else if(!strcmp(command.c_str(),"conf"))
 			pack.setConf(value);
+		else if(!strcmp(command.c_str(),"meta"))
+			pack.setMeta(value);
 	}
 	delete line,pos,file;
 	return pack;
