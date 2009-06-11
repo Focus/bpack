@@ -42,6 +42,7 @@
 using namespace std;
 
 //Separates the foo-0.2.2 to foo and 0.2.2
+//TODO: Lame name
 void depVersion(string &dep, version &ver){
         int pos,temp;
         pos=dep.find_last_of("-");
@@ -51,7 +52,7 @@ void depVersion(string &dep, version &ver){
         if(pos>0 && !((*ss) >> temp).fail()){
                   ver=dep.substr(pos+1,dep.size());
                   dep=dep.substr(0,pos);
-                  }
+	}
         delete ss;
 }
 
@@ -67,13 +68,12 @@ vector<string> stripCp(){
 	{
 		*textfile >> *x;
         	if(!textfile->eof())
-		  locs.push_back(*x);
+			locs.push_back(*x);
 	}
 	erase("/tmp/hijack_log.txt");
 	delete x;
 	delete textfile;
 	return locs;
-	
 }
 
 //Installs and cleans up packages

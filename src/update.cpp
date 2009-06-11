@@ -36,12 +36,15 @@ extern "C"{
 }
 #include <map>
 
+//TODO: check the current packages on update
+//TODO: download a single package
+
 using namespace std;
 
 class collection
 {
 	private:
-		map<std::string, std::string> packs;
+		map<std::string, std::string> packs;//What is this? please explain
 	public:
 		collection(string url);
 		void operator-=(vector<string> &rempacks);
