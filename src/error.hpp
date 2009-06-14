@@ -22,5 +22,5 @@
  * 			
  */
 void err(std::string message, int level=0,bool errnoset=0);
-
+bool ask(std::string);
 #endif

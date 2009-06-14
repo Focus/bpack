@@ -21,12 +21,7 @@
  */
 
 
-#include <vector>
-#include <cstring>
-#include <ostream>
-#include <fstream>
 #include "version.hpp"
-#include <sstream>
 using namespace std;
 
 //Default is to set 0.0.0

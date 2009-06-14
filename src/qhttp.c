@@ -629,7 +629,7 @@ int getHeader(struct HttpResponse *resp, char* key, char* value, int size)
 // use filename = NULL to use the remote filename, see LOGMETHOD above
 // returns 0 if download was succesful, else an error code or HTTP error 4xx / 5xx
 // TODO : wont come up with a name for files if url has no filename
-int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype)
+int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype, int overwrite)
 {
 	// build request
     struct HttpRequest *hq = buildreq(url);
@@ -665,19 +665,31 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	//strcat(path,"/");
     strcat(path,filename);
 	path[strlen(dir)+strlen(filename)]='\0';
-    
-    FILE* f = fopen(path,"w");
-	if(!f){
-		logger2(LOGMULTI, "Error opening file ", path);
-		return 3;
-	}
-	
+    if(overwrite==1){ 
+    	FILE* f = fopen(path,"w");
+		if(!f){
+			logger2(LOGMULTI, "Error opening file ", path);
+			return 3;
+		}
+    }
+    else if(overwrite==-1){
+    	FILE* f = fopen("/tmp/.bpack_pack","w");
+		if(!f){
+			logger(LOGMULTI, "Error opening /tmp/.bpack_pack");
+			return 3;
+		}
+		remove("/tmp/.bpack_pack");//Tell the kernel we want this disposed when we are done
+    }
+
 
     logger2(logtype, "saving to ", path);
-    free(path);
+	struct stat st;
+	int exists=stat(path.c_str(), &st);
+
 	// TODO error handling and make nicer
-    if(hr.clength>0){       // If content-length is specified, retrieve that many octets
-        int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
+	//If the content length is specified and overwrite is allowed or the file isn't there we just write to path
+    if(hr.clength>0 && (overwrite==1 || exists!=0 ) ){
+		int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
         void *buffer = malloc(bufsize);
         int transremain = hr.clength;
         int readlength;
@@ -695,9 +707,59 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		printf("\n");
         free(buffer);
     }
-
-
-
+	else if(hr.clength>0 && overwrite==-1){//TODO: finish this!
+		int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
+        void *buffer = malloc(bufsize);
+        int transremain = hr.clength;
+        int readlength;
+		float per;
+		per=0;
+        do{
+            transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
+			if(100-(float)transremain*100/(float)hr.clength-per>=4|| 100-(float)transremain*100/(float)hr.clength==100){
+				process(filename,100-transremain*100/hr.clength);
+				per=100-(float)transremain*100/(float)hr.clength;
+			}
+            fwrite(buffer, 1, readlength, f);
+			
+        }while (transremain > 0);
+	printf("\n");
+        free(buffer);
+	}
+	else if(hr.clength<=0){
+		logger(MULTILOG,"Error no content length!");
+		remove(path);
+		free(path);
+		shutdown(hr.stream, SHUT_RDWR);
+		fclose(f);
+		logger(logtype, "saved");
+		if(hr.rawheader!=NULL)
+			free(hr.rawheader);
+		if(hr.streason!=NULL)
+			free(hr.streason);
+		free(hq->path);
+		free(hq->protocol);
+		free(hq->host);
+		free(hq);
+		return 3;
+	}
+	else{
+		logger(MULTILOG,"Error file already exists!");
+		free(path);
+		shutdown(hr.stream, SHUT_RDWR);
+		fclose(f);
+		logger(logtype, "saved");
+		if(hr.rawheader!=NULL)
+			free(hr.rawheader);
+		if(hr.streason!=NULL)
+			free(hr.streason);
+		free(hq->path);
+		free(hq->protocol);
+		free(hq->host);
+		free(hq);
+		return 3;
+	}
+    free(path);
     shutdown(hr.stream, SHUT_RDWR);
     fclose(f);
     logger(logtype, "saved");

@@ -25,3 +25,16 @@ void err(std::string message, int level,bool errnoset){
 	}
 	exit(1);
 }
+
+bool ask(std::string question){
+	std::cout<<question<<" [y]es  [n]o : ";
+	std::string *input=new std::string;
+	std::cin>>*input;
+	std::cout<<std::endl;
+	if( (!strcmp( (input->substr(0,1)).c_str(),"y")) || (!strcmp(  (input->substr(0,1)).c_str(),"Y"))){
+		delete input;
+		return 1;
+		}
+	delete input;
+	return 0;
+}

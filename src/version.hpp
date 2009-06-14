@@ -23,7 +23,12 @@
 
 #ifndef _VERSION_H
 #define _VERSION_H
+
 #include <vector>
+#include <cstring>
+#include <sstream>
+#include <ofstream>
+
 class version{
       public:
              version();

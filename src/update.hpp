@@ -24,6 +24,9 @@
 #ifndef _UPDATE_H_
 #define _UPDATE_H_
 
+#include <cstring>
+
 void update();
+int dlPack(std::string);
 
 #endif

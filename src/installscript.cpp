@@ -26,10 +26,6 @@
 This function is God. Bow down to it!
 
 *********************************************************************************/
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
 #include "packinst.hpp"
 #include "version.hpp"
 #include "package.hpp"

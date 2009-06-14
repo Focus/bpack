@@ -24,12 +24,6 @@
 //TODO: Soooooooo many headers...
 
 
-#include <cstdlib>
-#include <cstring>
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <sstream>
 #include "error.hpp"
 #include "version.hpp"
 #include "packinst.hpp"
@@ -128,8 +122,10 @@ void install(string packname, int bail){
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
 	
 	
-	if(*location=="")
-		err("Package "+packname+" not found, try after doing  bpack update.",2);	
+	if(*location==""){
+		if(!dlPack(packname))
+			err("Package "+packname+" not found, try after doing  bpack update.",2);	
+	{
 	string *temp=new string;
 	*temp=*location;
 	depVersion(*temp,*ver);

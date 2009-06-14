@@ -31,9 +31,10 @@
 #include "config.hpp"
 #include "remove.hpp"
 #include "package.hpp"
+#include "error.hpp"
 using namespace std;
 
-int makeinstall(string path){
+int makeinstall(string path,string command="make install"){
 	int *pos= new int;
 	*pos=path.find_last_of("/");
 	string name,input,input2;
@@ -50,7 +51,7 @@ int makeinstall(string path){
 	if(Config::getCxxflags().length()>0)
 		setenv("CXXFLAGS",Config::getCxxflags().c_str(),1);
 	setenv("LD_PRELOAD",(Config::getLib()).c_str(),1);
-	system("make install");
+	system(command.c_str());
 	setenv("LD_PRELOAD","",1);
 	vector<string> *locs=new vector<string>;
 	*locs=read("/tmp/hijack_log.txt");
@@ -94,9 +95,13 @@ void terminal(){
 		}
 		else if(strcmp(command.c_str(),"make install"))
 			system(command.c_str());
-		else{
+		else if(command.find("\trac")!=string::npos)
+			makeinstall(path,command.substr(command.find("\trac")));
+		//else if(command.find("\get")!=string::npos)
+			
+		else
 			makeinstall(path);
-		}
+		
 		path=get_current_dir_name();
 		cout<<"[bpack : "<<path<<"] $ ";
 		getline(cin,command);

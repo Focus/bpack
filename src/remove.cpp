@@ -54,11 +54,11 @@ int erase(string path){
 			erase(path+locs[i]);
 		//Remove the directory
 		remove(path.c_str());
-		}
+	}
 	else{
   		if(remove(path.c_str())){
 			err("Erase could not delete "+path,0,1);
-    			return 0;
+    		return 0;
 		}
 	}
 	return 1;
