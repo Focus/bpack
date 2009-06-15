@@ -21,15 +21,9 @@
  */
 
 
-#include <vector>
-#include <cstring>
-#include <ostream>
-#include <fstream>
 #include "version.hpp"
-#include <sstream>
-//For testing:
-#include <iostream>
 using namespace std;
+
 //Default is to set 0.0.0
 version::version()
 {
@@ -156,10 +150,9 @@ string version::asString() const{
 ostream& operator<< (ostream& ioo, version& ver){
      string str=ver.asString();
      ioo<<str;
-     //return ioo;
 }
-ofstream& operator<< (ofstream& ioo, version& ver){
+ofstream& operator<< (version& ver, ofstream& ioo){
      string str=ver.asString();
-     ioo<<str;
-     //return ioo;
+     str<<ioo;
 }
+

@@ -20,6 +20,10 @@
  *      MA 02110-1301, USA.
  */
 
+/*********************************************************************
+ * Should we keep this? It seems pretty useless. Though it is very 
+ * quick and I'll feel bad if we do!
+ * ******************************************************************/
 
 #include <vector>
 #include <fstream>

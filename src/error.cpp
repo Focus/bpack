@@ -15,10 +15,26 @@ void err(std::string message, int level,bool errnoset){
 		std::string *input=new std::string;
 		std::cout<<"Do you want to carry on? [y]es  [n]o : ";
 		std::cin>>*input;
-		if( (!strcmp( (input->substr(0,1)).c_str(),"y")) || (!strcmp(  (input->substr(0,1)).c_str(),"Y")))
+		if( (!strcmp( (input->substr(0,1)).c_str(),"y")) || (!strcmp(  (input->substr(0,1)).c_str(),"Y"))){
+			delete input;
 			return;
+		}
+		delete input;
 		std::cerr<<"\nAborted"<<std::endl;
 		exit(1);
 	}
 	exit(1);
+}
+
+bool ask(std::string question){
+	std::cout<<question<<" [y]es  [n]o : ";
+	std::string *input=new std::string;
+	std::cin>>*input;
+	std::cout<<std::endl;
+	if( (!strcmp( (input->substr(0,1)).c_str(),"y")) || (!strcmp(  (input->substr(0,1)).c_str(),"Y"))){
+		delete input;
+		return 1;
+		}
+	delete input;
+	return 0;
 }

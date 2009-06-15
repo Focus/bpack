@@ -26,10 +26,6 @@
 This function is God. Bow down to it!
 
 *********************************************************************************/
-#include <cstring>
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
 #include "packinst.hpp"
 #include "version.hpp"
 #include "package.hpp"
@@ -134,14 +130,12 @@ string tarName(string url){
 
 bool installScript(packinst inst, int bail=-1)
 {
-    // get variables
-  	string  tardir,tar, logroot,hijack;
-    tardir = Config::getTarballDir();
-    logroot = Config::getLogDir();
-    hijack=Config::getLib();
-    int result;
-	
-	
+	// get variables
+	string  tardir,tar, logroot,hijack;
+	tardir = Config::getTarballDir();
+	logroot = Config::getLogDir();
+	hijack=Config::getLib();
+	int result;
 	//Check if the tarball is there, if not grab it!
 	vector<string> *tars=new vector<string>;
 	vector<string> *tars2=new vector<string>;

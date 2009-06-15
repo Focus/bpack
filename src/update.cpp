@@ -22,10 +22,10 @@
 
 
 #include <vector>
+#include <iostream>
 #include <cstring>
 #include <string>
 #include <sstream>
-#include <iostream>
 #include "version.hpp"
 #include "update.hpp"
 #include "config.hpp"
@@ -36,17 +36,20 @@ extern "C"{
 }
 #include <map>
 
+//TODO: check the current packages on update
+
 using namespace std;
 
 class collection
 {
 	private:
-		map<std::string, std::string> packs;
+		map<std::string, std::string> packs;//What is this? please explain
 	public:
 		collection(string url);
 		void operator-=(vector<string> &rempacks);
 		void operator+=(const collection &coll);
 		void saveall(string path);
+		void add(string);
 };
 
 collection::collection(string url)
@@ -88,12 +91,19 @@ void collection::operator+=(const collection &coll)
 	
 }
 
-void collection::saveall(string path)
+void collection::add(string pack){
+	packs.push_back(pack);
+}
+//returns 1 on success
+int collection::saveall(string path)
 {
 	cout << "Downloading " << packs.size() << " packs\n";
 	map<string,string>::iterator it;
-	for ( it=packs.begin() ; it != packs.end(); it++ )
-		wget(it->second.c_str(), path.c_str(), 0, LOGMULTI);
+	for ( it=packs.begin() ; it != packs.end(); it++ ){
+		if(wget(it->second.c_str(), path.c_str(), 0, LOGMULTI,-1)!=0)
+			return 0;
+	}
+	return 1;
 }
 
 
@@ -109,9 +119,9 @@ void update()
 	// Superimpose all packs
 	collection all = test;
 	
-    // Get all local packs
+	// Get all local packs
 	string packdir(Config::getPackInstDir());
-    vector<string> packs=loadLocation(search(packdir,""));
+    	vector<string> packs=loadLocation(search(packdir,""));
 	//cout << packs[0] << packs[1] << "\n";
 	
 	// remove all the packs we have from all, we dont need to download them
@@ -119,5 +129,14 @@ void update()
 	
 	// download and save all packs
 	all.saveall(Config::getPackInstDir());
+
+}
+
+//Downloads a single package
+int dlPack(string package){
+
+	collection coll("http://bpack.co.uk/repos.php?coll="+Config::getColl());
+	coll.add(package);
+	return coll.saveall(Config::getPackInstDir());
 
 }

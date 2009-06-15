@@ -23,11 +23,16 @@
 
 #ifndef _CONFIG_H
 #define _CONFIG_H
+
+#include <string>
+#include <iostream>
+#include <errno.h>
+
 class Config{
       
     private:
-		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll,cflags,cxxflags;
-		static int quitlevel;
+	static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll,cflags,cxxflags;
+	static int quitlevel;
 
     public:
 
@@ -43,17 +48,17 @@ class Config{
         static std::string getPackmanDir() {return packmandir;}
         // gets log directory
         static std::string getLogDir() {return logdir;}
-		// gets the path of the packlist
+	// gets the path of the packlist
         static std::string getPacklistPath() {return packlistpath;}
         //Gets the lib directory
-		static std::string getLib() {return lib;}
-		//Gets the quit level
-		static int getQuit() {return quitlevel;}
-		//Gets flags
-		static std::string getCflags(){return cflags;}
-		static std::string getCxxflags(){return cxxflags;}
-		
-		static std::string getColl(){return coll;}
+	static std::string getLib() {return lib;}
+	//Gets the quit level
+	static int getQuit() {return quitlevel;}
+	//Gets flags
+	static std::string getCflags(){return cflags;}
+	static std::string getCxxflags(){return cxxflags;}
+	//		
+	static std::string getColl(){return coll;}
         static void initialise();
 
 

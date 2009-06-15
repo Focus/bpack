@@ -32,6 +32,7 @@
 #include "package.hpp"
 #include "config.hpp"
 #include "storage.hpp"
+#include "error.hpp"
 #include "search.hpp"
 using namespace std;
 int erase(vector<string>);
@@ -53,10 +54,10 @@ int erase(string path){
 			erase(path+locs[i]);
 		//Remove the directory
 		remove(path.c_str());
-		}
+	}
 	else{
-  	if(remove(path.c_str())){
-			cerr<<"Erase could not delete "<<path<<"\nReason: "<<strerror(errno)<<endl;
+  		if(remove(path.c_str())){
+			err("Erase could not delete "+path,0,1);
     		return 0;
 		}
 	}
@@ -86,23 +87,13 @@ int removePack(string pack){
   }
 
   if(index<0){
-    cerr<<"\nNo package named "<<pack<<" was found.\nI am done here."<<endl;
+    err("No package named "<<pack<<" was found.");
     return 0;
   }
 
   locations=((*packages)[index]).getLocations();
-  if( ((*packages)[index]).getScan()){
-    string input;
-    cout<<"\n\nThis package was scanned, are you really sure you want to remove this? [y]es/[n]o:";
-    cin>>input;
-    if( (!strcmp( (input.substr(0,1)).c_str(),"y")) || (!strcmp(  (input.substr(0,1)).c_str(),"Y")))
-      cout<<"\nYou are the boss, I will carry on."<<endl;
-    else{
-      cerr<<"\nUser aborted the removal process"<<endl;
-      return 0;
-    }
-  }
-  
+  if( ((*packages)[index]).getScan())
+    err("This package was scanned, are you really sure you want to remove this?",1);
   cout<<"\nErasing "<<pack<<"..."<<endl;
   if(erase(locations)){
 	(*packages)[index].remove();

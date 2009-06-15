@@ -42,7 +42,7 @@ class packinst{
              // Wget use is deprecated although never implemented
 			 //We clearly disagree here, look at installscript.cpp for your TODO...I use getWet there
              std::string getWget() const {return wget;}
-			 //What are all these?
+	     //What are all these?
              std::string getArchiveName() const {return archivename;}
              std::string getArchiveUrl() const {return archiveurl;}
 
@@ -101,8 +101,6 @@ class packinst{
       };
 
 packinst getPackage(std::string);
-//packinst getPackage(std::string location){return getPackage(location.c_str());}
-
 
 #endif
 

@@ -34,71 +34,66 @@ int Config::quitlevel;
 
 void Config::initialise()
 {
-    	Config::installdir="/var/bpack/";
-		if(getenv("BPACK_DIR")&&strcmp(getenv("BPACK_DIR"),"")){	
-			string env(getenv("BPACK_DIR"));							
-			if(env[env.size()-1]=='/')
-				Config::installdir=env;
-			else
-				Config::installdir=env+"/";
-		}
-		coll="test";
+	Config::installdir="/var/bpack/";
+	if(getenv("BPACK_DIR")&&strcmp(getenv("BPACK_DIR"),"")){
+		string env(getenv("BPACK_DIR"));
+		if(env[env.size()-1]=='/')
+			Config::installdir=env;
+		else
+			Config::installdir=env+"/";
+	}
+	coll="test";//Currently default, we need to change this to official soon!
     	scriptdir = installdir + "scripts/";
     	packinstdir = installdir + "packs/";
     	tarballdir = installdir + "tarballs/";
     	packmandir = installdir + "packman/";
     	packlistpath = installdir + "packs.list";
-		logdir=installdir+"logs/";
-		lib=installdir+"libs/hijack.so.1.0";
-		Config::quitlevel=0;
-		cflags="";
-		cxxflags="";
-		
-		//Load the config
-		vector<string> *file= new vector<string>;
-		*file=read("/etc/bpack.conf");
-		if(file->size()<=0){
-			delete file;
-			return;
+	logdir=installdir+"logs/";
+	lib=installdir+"libs/hijack.so.1.0";
+	Config::quitlevel=0;
+	cflags="";
+	cxxflags="";
+	//Load the config
+	vector<string> *file= new vector<string>;
+	*file=read("/etc/bpack.conf");
+	if(file->size()<=0){
+		delete file;
+		return;
+	}
+	vector<int> *line=new vector<int>;
+	vector<int> *pos=new vector<int>;
+	for(int i=0;i<file->size();i++){
+		(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
+		if( (*file)[i].find_first_of(":")+1>0  ){
+			pos->push_back((*file)[i].find_first_of(":"));
+			line->push_back(i);
 		}
-		vector<int> *line=new vector<int>;
-		vector<int> *pos=new vector<int>;
-		for(int i=0;i<file->size();i++){
-			(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
-			if( (*file)[i].find_first_of(":")+1>0  ){
-				pos->push_back((*file)[i].find_first_of(":"));
-				line->push_back(i);
-			}
+	}
+	string command,value;
+	line->push_back(file->size());
+	for(int i=0;i<pos->size();i++){
+		command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
+		value=(*file)[(*line)[i]].substr((*pos)[i]+1);
+		//Do a mini loop to get all of the lines in between the commands
+		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
+			if((*file)[j].length()>0)
+				value=value+"\n"+(*file)[j];
 		}
-		string command,value;
-		line->push_back(file->size());
-		for(int i=0;i<pos->size();i++){
-			command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
-			value=(*file)[(*line)[i]].substr((*pos)[i]+1);
-		
-			//Do a mini loop to get all of the lines in between the commands
-		
-			for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
-				if((*file)[j].length()>0)
-					value=value+"\n"+(*file)[j];
-			}
-		
-			//Do we set anything?
-		
-			if(!strcmp(command.c_str(),"quitlevel")){
-				stringstream ss;
-				(ss) << value;
-				if( ((ss) >> Config::quitlevel).fail() )
-					Config::quitlevel=0;
-				//delete ss;
-			}
-			else if(!strcmp(command.c_str(),"collection"))
-				Config::coll=value;
-			else if(!strcmp(command.c_str(),"CFLAGS") || !strcmp(command.c_str(),"cflags"))
-				Config::cflags=value;
-			else if(!strcmp(command.c_str(),"CXXFLAGS") || !strcmp(command.c_str(),"cxxflags"))
-				Config::cxxflags=value;
+		//Do we set anything?
+		if(!strcmp(command.c_str(),"quitlevel")){
+			stringstream ss;
+			(ss) << value;
+			if( ((ss) >> Config::quitlevel).fail() )
+				Config::quitlevel=0;
+			//delete ss;
 		}
-		delete line,pos,file;
+		else if(!strcmp(command.c_str(),"collection"))
+			Config::coll=value;
+		else if(!strcmp(command.c_str(),"CFLAGS") || !strcmp(command.c_str(),"cflags"))
+			Config::cflags=value;
+		else if(!strcmp(command.c_str(),"CXXFLAGS") || !strcmp(command.c_str(),"cxxflags"))
+			Config::cxxflags=value;
+	}
+	delete line,pos,file;
     	
 }
