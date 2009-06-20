@@ -87,7 +87,7 @@ int removePack(string pack){
   }
 
   if(index<0){
-    err("No package named "<<pack<<" was found.");
+    err("No package named "+pack+" was found.");
     return 0;
   }
 

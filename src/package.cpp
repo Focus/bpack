@@ -69,7 +69,7 @@ bool package::write(){
      text << "[";
      text << name;
      text <<";\n";
-     text <<ver;
+     text <<ver.asString();
      text <<";\n";
      text << locations[0];
      for (int i=1;i<locations.size();i++){

@@ -27,7 +27,7 @@
 #include <vector>
 #include <cstring>
 #include <sstream>
-#include <ofstream>
+//#include <ofstream>
 
 class version{
       public:

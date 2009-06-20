@@ -29,6 +29,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "qhttp.h"
 
 #define MIN(x,y) x > y ? x : y
@@ -665,26 +666,27 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	//strcat(path,"/");
     strcat(path,filename);
 	path[strlen(dir)+strlen(filename)]='\0';
-    if(overwrite==1){ 
-    	FILE* f = fopen(path,"w");
-		if(!f){
-			logger2(LOGMULTI, "Error opening file ", path);
-			return 3;
-		}
-    }
-    else if(overwrite==-1){
-    	FILE* f = fopen("/tmp/.bpack_pack","w");
+	FILE* f;
+    if(overwrite==-1){
+    	f = fopen("/tmp/.bpack_pack","w");
 		if(!f){
 			logger(LOGMULTI, "Error opening /tmp/.bpack_pack");
 			return 3;
 		}
 		remove("/tmp/.bpack_pack");//Tell the kernel we want this disposed when we are done
     }
+    else{ 
+    	f = fopen(path,"w");
+		if(!f){
+			logger2(LOGMULTI, "Error opening file ", path);
+			return 3;
+		}
+    }
 
 
     logger2(logtype, "saving to ", path);
-	struct stat st;
-	int exists=stat(path.c_str(), &st);
+	struct stat sta;
+	int exists=stat(path, &sta);
 
 	// TODO error handling and make nicer
 	//If the content length is specified and overwrite is allowed or the file isn't there we just write to path
@@ -727,7 +729,7 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
         free(buffer);
 	}
 	else if(hr.clength<=0){
-		logger(MULTILOG,"Error no content length!");
+		logger(LOGMULTI,"Error no content length!");
 		remove(path);
 		free(path);
 		shutdown(hr.stream, SHUT_RDWR);
@@ -744,7 +746,7 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		return 3;
 	}
 	else{
-		logger(MULTILOG,"Error file already exists!");
+		logger(LOGMULTI,"Error file already exists!");
 		free(path);
 		shutdown(hr.stream, SHUT_RDWR);
 		fclose(f);

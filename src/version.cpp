@@ -151,8 +151,4 @@ ostream& operator<< (ostream& ioo, version& ver){
      string str=ver.asString();
      ioo<<str;
 }
-ofstream& operator<< (version& ver, ofstream& ioo){
-     string str=ver.asString();
-     str<<ioo;
-}
 

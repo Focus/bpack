@@ -107,6 +107,7 @@ clean:
 	rm -f src/terminal.o src/update.o src/search.o src/remove.o src/main.o src/config.o	src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o bpack libs/hijack.so.1.0 src/qhttp.o src/error.o
 
 libs/hijack.so.1.0: src/hijack.c
+	mkdir libs/
 	$(CC) -fPIC -c src/hijack.c -fno-stack-protector
 	$(LD) -shared -soname hijack.so.1 -o libs/hijack.so.1.0 -lc hijack.o -ldl
 

@@ -151,7 +151,7 @@ bool installScript(packinst inst, int bail=-1)
 		}
 
 		
-		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGNONE))
+		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGNONE,1))
 		{
 			err("Download failed!",1);
 		}

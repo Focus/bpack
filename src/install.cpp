@@ -33,6 +33,7 @@
 #include "config.hpp"
 #include "remove.hpp"
 #include "search.hpp"
+#include "update.hpp"
 using namespace std;
 
 //Separates the foo-0.2.2 to foo and 0.2.2
@@ -124,8 +125,8 @@ void install(string packname, int bail){
 	
 	if(*location==""){
 		if(!dlPack(packname))
-			err("Package "+packname+" not found, try after doing  bpack update.",2);	
-	{
+			err("Package "+packname+" not found.",2);	
+	}	
 	string *temp=new string;
 	*temp=*location;
 	depVersion(*temp,*ver);
@@ -154,8 +155,7 @@ void install(string packname, int bail){
 		for(int i=0;i<installed->size();i++){
                 	gotit=0;
                 	depVersion(y,depver);
-            		if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str()))
-            		{
+            		if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str())){
              			if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
                  			cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
 							packageinst->removeDep(packageinst->getLoc());
@@ -168,10 +168,9 @@ void install(string packname, int bail){
             		}
             
         	}
-        	if (!gotit)
-            	{
-                cout<<"\nDependency "<<y<<" needs to be installed.";
-                install(y,bail); 
+        	if (!gotit){
+			cout<<"\nDependency "<<y<<" needs to be installed.";
+                	install(y,bail); 
             	}
      	}
         delete installed;

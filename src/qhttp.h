@@ -57,7 +57,7 @@ struct HttpResponse
 // Currently segfaults if no filename is provided in filename or url
 //Overwrite values, 1 for overwriting, -1 for asking, 0 for no overwriting
 // 0 will look at the differences of the two files and then tell the user
-int wget(const char* sourceurl, const char* destdir, const char* filename, enum LOGMETHOD method, int overwrite=1);
+int wget(const char* sourceurl, const char* destdir, const char* filename, enum LOGMETHOD method, int overwrite );
 
 // creates the default request to get the url
 // on error the returned structure's errormsg field is set, otherwise NULL

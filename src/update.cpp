@@ -44,16 +44,19 @@ class collection
 {
 	private:
 		map<std::string, std::string> packs;//What is this? please explain
+		string url;
 	public:
 		collection(string url);
 		void operator-=(vector<string> &rempacks);
 		void operator+=(const collection &coll);
 		void saveall(string path);
 		void add(string);
+		int empty();
 };
 
-collection::collection(string url)
+collection::collection(string purl)
 {
+	url=purl;
 	// build request for collection
 	struct HttpRequest req = *buildreq(url.c_str());
 	// add headers such as User-Agent and Accept
@@ -77,6 +80,13 @@ collection::collection(string url)
 	}
 }
 
+//Is the collection empty?
+int collection::empty(){
+	if(packs.size()>0)
+		return 0;
+	return 1;
+}
+
 // removes from this collection any packs in the vector
 void collection::operator-=(vector<string> &rempacks)
 {
@@ -92,21 +102,37 @@ void collection::operator+=(const collection &coll)
 }
 
 void collection::add(string pack){
-	packs.push_back(pack);
+	struct HttpRequest req = *buildreq(url.c_str());
+	// add headers such as User-Agent and Accept
+	// get
+	struct HttpResponse resp = HttpGet(req, LOGMULTI);
+	// Error handling, on error none of the lower priority collections can be used, higher ones can however
+	// Read list
+	string respbody(getBody(&resp));
+	// error handle
+	// check respbody is a valid collection listing
+	
+	//cout << respbody << "\n";
+	stringstream coll(respbody, stringstream::in);
+	string packroot;
+	coll >> packroot;
+	while(!coll.eof()){
+		string id, name;
+		coll >> id >> name;
+		if(!strcmp(name.c_str(),pack.c_str()))
+			packs.insert(pair<string,string>(name, packroot+id));
+		//cout << name << packroot+id << "\n";
+	}
 }
 //returns 1 on success
-int collection::saveall(string path)
+void collection::saveall(string path)
 {
 	cout << "Downloading " << packs.size() << " packs\n";
 	map<string,string>::iterator it;
-	for ( it=packs.begin() ; it != packs.end(); it++ ){
-		if(wget(it->second.c_str(), path.c_str(), 0, LOGMULTI,-1)!=0)
-			return 0;
-	}
-	return 1;
+	for ( it=packs.begin() ; it != packs.end(); it++ )
+		wget(it->second.c_str(), path.c_str(), 0, LOGMULTI,-1);
+
 }
-
-
 // This is not done
 void update()
 {
@@ -137,6 +163,9 @@ int dlPack(string package){
 
 	collection coll("http://bpack.co.uk/repos.php?coll="+Config::getColl());
 	coll.add(package);
-	return coll.saveall(Config::getPackInstDir());
+	if(coll.empty())
+		return 0;
+	coll.saveall(Config::getPackInstDir());
+	return 1;
 
 }
