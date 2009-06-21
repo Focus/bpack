@@ -53,6 +53,48 @@ bool packinst::getNextDep(string &dep)
      }
 }
 
+//Sorts out optional dependencies
+vector<string> optional(string packs){
+	vector<string> *temp=new vector<string>;
+	vector<string> *add=new vector<string>;
+	vector<string> *rem=new vector<string>;
+	vector<string> ret;
+	if(getenv("OPTIONAL")&& strcmp(getenv("OPTIONAL"),"")){//User passed some add remove stuff for optional deps
+		*temp=loadLocation(getenv("OPTIONAL"));
+		for(int i=0;i<temp->size();i++){
+			if(!strncmp( (*temp)[i].c_str(),"+",1))
+				add->push_back( (*temp)[i].substr(1));
+			else if(!strncmp( (*temp)[i].c_str(),"-",1))
+				rem->push_back( (*temp)[i].substr(1));
+		}
+	}
+	*temp=loadLocation(packs);
+	if(Config::getOptionalDep()==RECOMMENDED){
+		for(int i=0;i<temp->size();i++){
+			if(!strncmp( (*temp)[i].c_str(),"!",1))
+				ret.push_back( (*temp)[i].substr(1) );
+		}
+	}
+	else if(Config::getOptionalDep()==ALL)
+		ret=*temp;
+
+	delete temp;
+	for(int i=0;i<add->size();i++)
+		ret.push_back( (*add)[i] );
+
+	for(int i=0;i<ret.size();i++){
+		for(int j=0;j<rem->size();j++){
+			if(!strcmp(ret[i].c_str(), (*rem)[j].c_str())){
+				ret.erase(ret.begin()+i);
+				i--;
+				break;
+			}
+		}
+	}
+	delete add,remove;
+	return ret;
+}
+
 //Get and return a package installation from file
 packinst getPackage(string location){
 	packinst pack;
@@ -106,6 +148,8 @@ packinst getPackage(string location){
 			pack.setConf(value);
 		else if(!strcmp(command.c_str(),"meta"))
 			pack.setMeta(value);
+		else if(!strcmp(command.c_str(),"optional"))
+			pack.addDeps(optional(value));
 	}
 	delete line,pos,file;
 	return pack;

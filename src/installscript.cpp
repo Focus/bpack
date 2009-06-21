@@ -97,9 +97,14 @@ bool configuration(string config,string location){
 		return 0;
 	}
 
-	for(int i=0;i<rem->size();i++){
-		if(!strncmp((*current)[i].c_str(),(*rem)[i].c_str(),(*rem)[i].length()))
-			current->erase(current->begin()+i);	
+	for(int i=0;i<current->size();i++){
+		for(int j=0;j<rem->size();j++){
+			if(!strncmp((*current)[i].c_str(),(*rem)[i].c_str(),(*rem)[j].length())){
+				current->erase(current->begin()+i);	
+				i--;
+				break;
+			}
+		}
 	}
 	delete rem;
 	for(int i=0;i<add->size();i++)

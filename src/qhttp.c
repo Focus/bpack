@@ -286,7 +286,7 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 {
     struct HttpResponse resp;
 	resp.errormsg = 0;
-    resp.rawheader=malloc(strlen(rawresp));
+    resp.rawheader=(char*)malloc(strlen(rawresp));
     strcpy(resp.rawheader, rawresp);
 
     //printf(" building response :\n%s\n\n", "");//rawresp);
@@ -349,7 +349,6 @@ struct HttpResponse httpreadresponse(int socket)
     free(buffer);
     char* newbuffer=(char*)malloc(bufsize);
     bufferused = recv(socket, newbuffer, bufsize, 0);
-	
 	int i;
     for(i=(strlen(newbuffer) - 1);i>0;i--) {
 		if(newbuffer[i]=='.' || newbuffer[i]=='\r') { 
@@ -362,7 +361,8 @@ struct HttpResponse httpreadresponse(int socket)
     //printf("buffer : %s",buffer);
     struct HttpResponse ret = buildresponsehead(newbuffer);
     ret.stream = socket;
-    free(newbuffer);
+    if(newbuffer!=NULL)
+    	free(newbuffer);
     return ret;
 }
 
@@ -765,11 +765,12 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     shutdown(hr.stream, SHUT_RDWR);
     fclose(f);
     logger(logtype, "saved");
-	if(hr.rawheader!=NULL)
-		free(hr.rawheader);
-	if(hr.streason!=NULL)
-		free(hr.streason);
-
+    if(hr.rawheader!=NULL)
+	    free(hr.rawheader);
+    if(hr.streason!=NULL)
+	    free(hr.streason);
+    if(hr.streason!=NULL)
+	    free(hr.streason);
     free(hq->path);
     free(hq->protocol);
     free(hq->host);

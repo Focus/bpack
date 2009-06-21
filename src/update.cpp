@@ -26,6 +26,7 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <cstdlib>
 #include "version.hpp"
 #include "update.hpp"
 #include "config.hpp"
@@ -58,10 +59,11 @@ collection::collection(string purl)
 {
 	url=purl;
 	// build request for collection
-	struct HttpRequest req = *buildreq(url.c_str());
+	struct HttpRequest *req = buildreq(url.c_str());
 	// add headers such as User-Agent and Accept
 	// get
-	struct HttpResponse resp = HttpGet(req, LOGMULTI);
+	struct HttpResponse resp = HttpGet(*req, LOGMULTI);
+	free(req);
 	// Error handling, on error none of the lower priority collections can be used, higher ones can however
 	// Read list
 	string respbody(getBody(&resp));
@@ -102,28 +104,10 @@ void collection::operator+=(const collection &coll)
 }
 
 void collection::add(string pack){
-	struct HttpRequest req = *buildreq(url.c_str());
-	// add headers such as User-Agent and Accept
-	// get
-	struct HttpResponse resp = HttpGet(req, LOGMULTI);
-	// Error handling, on error none of the lower priority collections can be used, higher ones can however
-	// Read list
-	string respbody(getBody(&resp));
-	// error handle
-	// check respbody is a valid collection listing
-	
-	//cout << respbody << "\n";
-	stringstream coll(respbody, stringstream::in);
-	string packroot;
-	coll >> packroot;
-	while(!coll.eof()){
-		string id, name;
-		coll >> id >> name;
-		if(!strcmp(name.c_str(),pack.c_str()))
-			packs.insert(pair<string,string>(name, packroot+id));
-		//cout << name << packroot+id << "\n";
-	}
+
+
 }
+
 //returns 1 on success
 void collection::saveall(string path)
 {

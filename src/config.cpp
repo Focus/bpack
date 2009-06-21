@@ -30,6 +30,7 @@ using namespace std;
 
 string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll,Config::cflags,Config::cxxflags;
 int Config::quitlevel;
+enum OPTDEP Config::optionaldep;
 
 
 void Config::initialise()
@@ -53,6 +54,7 @@ void Config::initialise()
 	Config::quitlevel=0;
 	cflags="";
 	cxxflags="";
+	optionaldep=RECOMMENDED;
 	//Load the config
 	vector<string> *file= new vector<string>;
 	*file=read("/etc/bpack.conf");
@@ -93,7 +95,14 @@ void Config::initialise()
 			Config::cflags=value;
 		else if(!strcmp(command.c_str(),"CXXFLAGS") || !strcmp(command.c_str(),"cxxflags"))
 			Config::cxxflags=value;
+		else if(!strcmp(command.c_str(),"optionaldeps")){ 
+			if(!strncmp("all",value.c_str(),3))
+				optionaldep=ALL;
+			else if(!strncmp("none",value.c_str(),4))
+				optionaldep=NONE;
+		}
 	}
 	delete line,pos,file;
     	
 }
+

@@ -28,11 +28,14 @@
 #include <iostream>
 #include <errno.h>
 
+enum OPTDEP{ALL,NONE,RECOMMENDED};
+
 class Config{
       
     private:
 	static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll,cflags,cxxflags;
 	static int quitlevel;
+	static enum OPTDEP optionaldep;
 
     public:
 
@@ -57,12 +60,12 @@ class Config{
 	//Gets flags
 	static std::string getCflags(){return cflags;}
 	static std::string getCxxflags(){return cxxflags;}
+	//Gets the optional dependency configuration
+	static enum OPTDEP getOptionalDep(){return optionaldep;}
 	//		
 	static std::string getColl(){return coll;}
         static void initialise();
-
-
-
 };
 
 #endif
+

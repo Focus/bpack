@@ -27,7 +27,9 @@
 
 #include <vector>
 #include <cstring>
+#include <cstdlib>
 #include <fstream>
+#include "config.hpp"
 #include "version.hpp"
 #include "storage.hpp"
 
@@ -90,6 +92,7 @@ class packinst{
              void setMakeInst(const std::string pmakeinst){makeinst=pmakeinst;}
              void setDeps(const std::vector<std::string> pdeps){deps=pdeps;}
              void addDep(const std::string pdep){deps.push_back(pdep);}   
+	     void addDeps(const std::vector<std::string> pdeps){ for(int i=0;i<pdeps.size();i++) deps.push_back(pdeps[i]);}
       
       private:
               std::string name,wget,config,make,makeinst, archiveurl, archivename,conffile,conf,preinstall,postinstall;
