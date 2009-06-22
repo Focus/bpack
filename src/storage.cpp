@@ -30,8 +30,10 @@
 #include <cstdlib>
 #include <fstream>
 #include "version.hpp"
+#include "package.hpp"
 #include "storage.hpp"
 #include "error.hpp"
+#define MIN(x,y) x<y ? x:y
 using namespace std;
 
 //Valid breaks? Otherwise quit!
@@ -107,42 +109,41 @@ vector<string> read(const string location){
 }
      
 
-//If statement macro
-string macroif(vector<string> statement){
-	
-}
-
 //Reads the macros
-string macro(string command){
-
-	string *wk=new string;
-	string *temp=new string;
-	vector<string> *statement=new vector<string>; 
-	string ret;
-	*temp=command;
-	int pos;
-	while( (pos=temp->find("{"))!=string::npos && pos!=temp->length()-1 ){
-		*temp=temp->substr(pos+1);
-		cout<<*temp<<endl;
-		if(temp->find("}")==string::npos)
-			err("The macro is bad");
-		else{
-			*wk=temp->substr(0,temp->find("}"));
-			cout<<*wk<<endl;
-			int i=0;
-			//Get rid of any spaces after the {
-			while((*wk)[i]==' ' && i<wk->length()){
-				*wk=wk->substr(1);
-				i++;
+void macro(string& config){
+	string temp,macro;
+	vector<package> *installed=new vector<package>;
+	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
+	temp=config;
+	int pos,pp;
+	bool found;
+	while( (pos=temp.find("{")) !=string::npos){
+		temp=temp.substr(temp.find("{")+1);
+		found=0;
+		if(temp.find("}")==string::npos || (temp.find("{")!=string::npos && temp.find("{")<temp.find("}")))
+			err("The macro is bad. Check the package and correct it",2);
+		macro=temp.substr(0,temp.find("}"));
+		while(macro.find(" ")!=string::npos)
+			macro=macro.substr(0,macro.find(" "))+macro.substr(MIN(macro.find(" ")+1,macro.length()));
+		for(int i=0;i<installed->size();i++){
+			if(!strcmp( (*installed)[i].getName().c_str(),macro.c_str() )){
+				found=1;
+				break;
+				cout<< (*installed)[i].getName()<<endl;
 			}
-			while( (i=wk->find(" "))!=string::npos && i+1<wk->length()){
-				statement->push_back(wk->substr(0,i));
-				*wk=wk->substr(i+1);
-			}
-			if(!strcmp( (*statement)[0].c_str(),"if"))
-				cout<<macroif(*statement);
 		}
-	}
-	return "";
-}	
-     
+		if(found)
+			config=config.substr(0,pos)+config.substr(pos+temp.find("}")+2);
+		else{
+			pp=temp.find("}")+2+pos;
+			while(config[pp]==' ')
+				pp++;
+			pp+=(config.substr(pp)).find(" ");
+			config=config.substr(0,pos)+config.substr(MIN(pp+1,config.length()));
+		}
+		temp=config;
+	}	
+	
+
+	delete installed;
+}

@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 #include "qhttp.h"
 
-#define MIN(x,y) x > y ? x : y
+#define MIN(x,y) x < y ? x : y
 
 //pass an integer %
 process(const char* name,float per){
@@ -767,8 +767,6 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
     logger(logtype, "saved");
     if(hr.rawheader!=NULL)
 	    free(hr.rawheader);
-    if(hr.streason!=NULL)
-	    free(hr.streason);
     if(hr.streason!=NULL)
 	    free(hr.streason);
     free(hq->path);

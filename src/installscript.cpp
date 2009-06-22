@@ -195,8 +195,12 @@ bool installScript(packinst inst, int bail=-1)
 	
 	//Run config, make and make install...
 	if(strcmp(inst.getConfig().c_str(),"no")){
-		if(system( ("./configure "+inst.getConfig()).c_str())!=0)
+		string *conf=new string;
+		*conf=inst.getConfig();
+		macro(*conf);
+		if(system( ("./configure "+*conf).c_str())!=0)
 			err("Configuration failed",2);
+		delete conf;
 	}
 	if(strcmp(inst.getMake().c_str(),"no")){
 		if(system( ("make "+inst.getMake()).c_str())!=0)
