@@ -36,19 +36,39 @@
 #include "update.hpp"
 using namespace std;
 
+#define MIN(x,y) x<y? x:y
+
 //Separates the foo-0.2.2 to foo and 0.2.2
 //TODO: Lame name
 void depVersion(string &dep, version &ver){
-        int pos,temp;
-        pos=dep.find_last_of("-");
-        stringstream *ss= new stringstream;
-        (*ss) << dep.substr(pos+1,1);
-        //If we have a - and the - isnt like hello-me
-        if(pos>0 && !((*ss) >> temp).fail()){
-                  ver=dep.substr(pos+1,dep.size());
-                  dep=dep.substr(0,pos);
-	}
-        delete ss;
+	int pos,pos2,test;
+	pos=0;
+	string temp;
+	stringstream ss;
+	temp=dep;
+	do{
+		ss.flush();
+		pos2=temp.find("-");
+		pos=pos+pos2;
+		temp=temp.substr(MIN(pos2+1,temp.length()));
+		test=strcspn(temp.substr(0,1).c_str(),"1234567890");
+	}while(pos2!=string::npos &&  test!=0);
+
+	//If there is no version set
+	if(pos2==string::npos)
+		return;
+
+	//Make a 2.3.5-7 into 2.3.5.7
+	while(temp.find("-")!=string::npos)
+		temp[temp.find("-")]='.';
+	while(temp.find("rc")!=string::npos)
+		temp=temp.substr(0,temp.find("rc"))+"."+temp.substr(temp.find("rc")+2);
+	while(temp.find("beta")!=string::npos)
+		temp=temp.substr(0,temp.find("beta"))+temp.substr(temp.find("beta")+4);
+
+	ver=temp;
+	dep=dep.substr(0,MIN(pos,dep.length()));
+
 }
 
 //Extracts locations from the copy log
@@ -62,7 +82,7 @@ vector<string> stripCp(){
 	while(!textfile->eof())
 	{
 		*textfile >> *x;
-        	if(!textfile->eof())
+		if(!textfile->eof())
 			locs.push_back(*x);
 	}
 	erase("/tmp/hijack_log.txt");
@@ -121,8 +141,8 @@ void install(string packname, int bail){
 	}
 	else
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
-	
-	
+
+
 	if(*location==""){
 		if(!dlPack(packname))
 			err("Package "+packname+" not found.",2);	
@@ -135,8 +155,8 @@ void install(string packname, int bail){
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
 	vector<package> *installed=new vector<package>;
-     	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
-     	string y;
+	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
+	string y;
 	bool gotit;
 	version depver;
 	delete ver;
@@ -148,40 +168,40 @@ void install(string packname, int bail){
 			exit(0);
 		}
 	}
-			
+
 	//check for dependencies
-     	while(packageinst->getNextDep(y)){
-        
+	while(packageinst->getNextDep(y)){
+
 		for(int i=0;i<installed->size();i++){
-                	gotit=0;
-                	depVersion(y,depver);
-            		if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str())){
-             			if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
-                 			cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
-							packageinst->removeDep(packageinst->getLoc());
-                			gotit=1;
-                			break;
-               			}
-                		else{
-                     			cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
-                     		}
-            		}
-            
-        	}
-        	if (!gotit){
+			gotit=0;
+			depVersion(y,depver);
+			if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str())){
+				if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
+					cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
+					packageinst->removeDep(packageinst->getLoc());
+					gotit=1;
+					break;
+				}
+				else{
+					cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
+				}
+			}
+
+		}
+		if (!gotit){
 			cout<<"\nDependency "<<y<<" needs to be installed.";
-                	install(y,bail); 
-            	}
-     	}
-        delete installed;
-     	cout<<"\nInstalling "<<packname<<"...\n";
-     	//Have a packinst!
+			install(y,bail); 
+		}
+	}
+	delete installed;
+	cout<<"\nInstalling "<<packname<<"...\n";
+	//Have a packinst!
 	if(!packageinst->getMeta()){
-    		if(installScript(*packageinst,bail)){
+		if(installScript(*packageinst,bail)){
 			clean(*packageinst);
 			cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 		}
-	
+
 		else
 			err("Error package not installed correctly. Consult the logs and inform us.",2);
 	}			

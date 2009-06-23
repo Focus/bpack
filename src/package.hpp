@@ -47,6 +47,7 @@ class package
              bool getScan() const {return scan;}
              void setName(const std::string pname){name=pname;}
              void setVersion(const std::string pname){ver=pname;}
+	     void setVersion(const version pver){ver=pver;}
              void setLocations(const std::vector<std::string> plocations){locations=plocations;}
              void addLocation(const std::string plocation){locations.push_back(plocation);}
 	     void addLocations(const std::vector<std::string> plocations){
@@ -67,6 +68,7 @@ class package
 std::vector<package> getInstalledPackages(const char*);
 void printPackages(const std::vector<package>);
 package getInstalledPackage(std::string);
+std::vector<package> getInstalledPackages();
 #endif
 
 

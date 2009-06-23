@@ -36,53 +36,53 @@ using namespace std;
 
 package::package(const string pname)
 {
-                       name=pname;
-                       scan=0;
+	name=pname;
+	scan=0;
 }
 
 package::package(const string pname,const vector<string> plocations)
 {
-                       name=pname;
-                       locations=plocations;
-                        scan=0;                       
+	name=pname;
+	locations=plocations;
+	scan=0;                       
 }
 
 package::package(const packinst inst)
 {
-                       name=inst.getName();
-                       ver=inst.getVersion();
-                       scan=0;                    
-                       
+	name=inst.getName();
+	ver=inst.getVersion();
+	scan=0;                    
+
 }
 
 
 bool package::write(){
-     ofstream text(Config::getPacklistPath().c_str(),ios::app);
-     if(!text){
-               cerr<<"\nNo premission to write to package list!";
-               return 0;;
-     }
-     text << "\n\n";
-     if(scan)
-             text << "!";
-     
-     text << "[";
-     text << name;
-     text <<";\n";
-     text <<ver.asString();
-     text <<";\n";
-     text << locations[0];
-     for (int i=1;i<locations.size();i++){
-         text << ",";
-         text << locations[i];
-         }
-     text<<";]\n";
-     text.close();
-     return 1;
+	ofstream text(Config::getPacklistPath().c_str(),ios::app);
+	if(!text){
+		cerr<<"\nNo premission to write to package list!";
+		return 0;;
+	}
+	text << "\n\n";
+	if(scan)
+		text << "!";
+
+	text << "[";
+	text << name;
+	text <<";\n";
+	text <<ver.asString();
+	text <<";\n";
+	text << locations[0];
+	for (int i=1;i<locations.size();i++){
+		text << ",";
+		text << locations[i];
+	}
+	text<<";]\n";
+	text.close();
+	return 1;
 }
 //TODO version checks!
 bool package::remove(){
-	
+
 	vector<string> *file = new vector<string>;
 	*file=read(Config::getPacklistPath());
 	int begin,end;
@@ -91,7 +91,7 @@ bool package::remove(){
 		if((*file)[i].find("["+name+";")!=string::npos){
 			begin=i;
 		}
-		
+
 		if(begin>0 && (*file)[i].find(";]")!=string::npos){
 			end=i;
 			break;
@@ -99,26 +99,26 @@ bool package::remove(){
 	}
 	ofstream text;
 	text.open(Config::getPacklistPath().c_str(),ios::out);
-    if(!text){
+	if(!text){
 		delete file;
 		return 0;
 	}
-	
+
 	for(int i=0; i<begin;i++){
 		text<<(*file)[i]+"\n";
 	}
-	
+
 	for(int i=end+1; i<file->size(); i++){
 		text<<(*file)[i]+"\n";
 	}
-	
+
 	text.close();
 	return 1;
-	
+
 }
 
 string packSize(vector<string> locs){
-	
+
 	double num=0;
 	struct stat st;
 	for(int i=0;i<locs.size();i++){
@@ -141,73 +141,76 @@ string packSize(vector<string> locs){
 		ret=ss.str()+" KB";
 	}
 	return ret;
-	
+
 }
 
 //Prints out a vector of packages   
 void printPackages(const vector<package> packagelist)
 {
-     if(packagelist.size()==0)
-     	return;
-     package *currentpack=new package;
-	 cout<<"\nInstalled packages:"<<endl;
-     for(int i=0;i<packagelist.size();i++){
-             *currentpack=packagelist[i];  
-             cout<<"\t"<<currentpack->getName()<<"-"<<currentpack->getVersion()<<"\t"<<packSize(currentpack->getLocations())<<endl;
+	if(packagelist.size()==0)
+		return;
+	package *currentpack=new package;
+	cout<<"\nInstalled packages:"<<endl;
+	for(int i=0;i<packagelist.size();i++){
+		*currentpack=packagelist[i];  
+		cout<<"\t"<<currentpack->getName()<<"-"<<currentpack->getVersion()<<endl;
 
-           }
-     
-     delete currentpack;
+	}
+
+	delete currentpack;
 }
+
 
 //Gets a list of installed stuff from the location given, format is [name;version;files/dirs;]
 vector<package> getInstalledPackages(const char* location){
-     vector<string> passy(3,"");
-     ifstream textfile;
-     vector<package> packagelist;
-     package *currentpack=new package;
-     
-     textfile.open(location);
+	vector<string> passy(3,"");
+	ifstream textfile;
+	vector<package> packagelist;
+	package *currentpack=new package;
 
-     if(!textfile){
-               cerr<<"\nNo configuration here, I'm so lost!.\n";
-               exit(1);
-     }
+	textfile.open(location);
 
-     string x;
-     string text;
-     while(!textfile.eof())
-     {
-        textfile >> x;
-        if(!textfile.eof())
-        text +=x;
-     }
+	if(!textfile){
+		cerr<<"\nNo configuration here, I'm so lost!.\n";
+		exit(1);
+	}
 
-     textfile.close();
-     vector<string> *locs=new vector<string>;
-     int start=0;
-     while(start+1<text.length()){
-                                 
-                                start=separate(text,passy,start);
-                                currentpack->setName(passy[0]);
-                                currentpack->setVersion(passy[1]);
-				*locs=loadLocation(passy[2]);
-				if(locs->size()>0 && (*locs)[0].find_first_of("/")!=0){//If it is a meta package
-					for(int i=0;i<locs->size();i++)
-						currentpack->addLocations(getInstalledPackage((*locs)[i]).getLocations());
-				}
-				else
-                                	currentpack->setLocations(*locs);
-				
-                                start++;
-                                packagelist.push_back(*currentpack);
-                                }
-     delete currentpack;
-     delete locs;
+	string x;
+	string text;
+	while(!textfile.eof())
+	{
+		textfile >> x;
+		if(!textfile.eof())
+			text +=x;
+	}
 
-     return packagelist;
-     }
+	textfile.close();
+	vector<string> *locs=new vector<string>;
+	int start=0;
+	while(start+1<text.length()){
 
+		start=separate(text,passy,start);
+		currentpack->setName(passy[0]);
+		currentpack->setVersion(passy[1]);
+		*locs=loadLocation(passy[2]);
+		if(locs->size()>0 && (*locs)[0].find_first_of("/")!=0){//If it is a meta package
+			for(int i=0;i<locs->size();i++)
+				currentpack->addLocations(getInstalledPackage((*locs)[i]).getLocations());
+		}
+		else
+			currentpack->setLocations(*locs);
+
+		start++;
+		packagelist.push_back(*currentpack);
+	}
+	delete currentpack;
+	delete locs;
+
+	return packagelist;
+}
+vector<package> getInstalledPackages(){
+	return getInstalledPackages(Config::getPacklistPath().c_str());
+}
 /************************************************************************
  * Gets a package with the given name
  * ************************************************************************/
@@ -217,27 +220,27 @@ package getInstalledPackage(const string in){
 	version *ver=new version;
 	*name=in;
 	depVersion(*name,*ver);
-     	vector<string> passy(3,"");
-     	ifstream textfile;
-     	package pack;
-     	textfile.open(Config::getPacklistPath().c_str());
+	vector<string> passy(3,"");
+	ifstream textfile;
+	package pack;
+	textfile.open(Config::getPacklistPath().c_str());
 
 
 	if(!textfile){
-               	cerr<<"\nNo configuration here, I'm so lost!.\n";
-               	exit(1);
-     	}
+		cerr<<"\nNo configuration here, I'm so lost!.\n";
+		exit(1);
+	}
 
-     	string *x=new string;
-     	string *text=new string;
-     	while(!textfile.eof())
-     	{	
-        	textfile >> *x;
-        	if(!textfile.eof())
-        		*text +=*x;
+	string *x=new string;
+	string *text=new string;
+	while(!textfile.eof())
+	{	
+		textfile >> *x;
+		if(!textfile.eof())
+			*text +=*x;
 	}
 	delete x;
-     	textfile.close();
+	textfile.close();
 	cout<<ver->asString()<<endl<<((*ver)=="1.0.5")<<endl<<((*ver)=="0.0.0")<<endl;
 	int start=0;
 	while(start+1<text->length()){

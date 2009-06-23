@@ -43,7 +43,7 @@ process(const char* name,float per){
 		printf("#");
 	for(i=per;i<25;i++)
 		printf("-");
-		
+
 	printf("] %d%%\r",(int)per*4);
 	fflush(stdout);
 }
@@ -52,32 +52,32 @@ process(const char* name,float per){
 
 void logger(enum LOGMETHOD logtype, const char* msg)
 {
-    switch (logtype)
-    {
-        case LOGNONE:
-            break;
-        case LOGSINGLE:
-            printf("qhttp : %s\r", msg);
-            break;
-        case LOGMULTI:
-            printf("qhttp : %s\n", msg);
-            break;
-    }
+	switch (logtype)
+	{
+		case LOGNONE:
+			break;
+		case LOGSINGLE:
+			printf("qhttp : %s\r", msg);
+			break;
+		case LOGMULTI:
+			printf("qhttp : %s\n", msg);
+			break;
+	}
 }
 
 void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 {
-    switch (logtype)
-    {
-        case LOGNONE:
-            break;
-        case LOGSINGLE:
-            printf("qhttp : %s%s\r", msg, msg2);
-            break;
-        case LOGMULTI:
-            printf("qhttp : %s%s\n", msg, msg2);
-            break;
-    }
+	switch (logtype)
+	{
+		case LOGNONE:
+			break;
+		case LOGSINGLE:
+			printf("qhttp : %s%s\r", msg, msg2);
+			break;
+		case LOGMULTI:
+			printf("qhttp : %s%s\n", msg, msg2);
+			break;
+	}
 }
 
 
@@ -87,7 +87,7 @@ void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 //Fixed again the strings, hehehe
 struct HttpRequest* buildreq(const char* url)
 {
-    struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
+	struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 	ret->errormsg = NULL;
 	ret->rawpost=NULL;
 	int pos;
@@ -99,72 +99,72 @@ struct HttpRequest* buildreq(const char* url)
 		url+=strstr(url,"://")-url+3;
 	} else
 		ret->protocol = "http";	// assume http as default
-		
+
 	if(strcasecmp(ret->protocol, "http")!=0 && strcasecmp(ret->protocol, "ftp")!=0){
 		ret->errormsg = "Unsupported protocol, cannot build request";
 		return ret;
 	}
 	//printf(" : %\n", );
-	
+
 	// sort out host
 	if(strchr(url,':')){
-        	ret->host = malloc(strchr(url,':')-url+1);
-          	strncpy(ret->host, url, strchr(url,':')-url);
+		ret->host = malloc(strchr(url,':')-url+1);
+		strncpy(ret->host, url, strchr(url,':')-url);
 		(ret->host)[strchr(url,'/')-url]='\0';
-    	}else if(strchr(url,'/')){
+	}else if(strchr(url,'/')){
 		ret->host = malloc(strchr(url,'/')-url+1);
-        	strncpy(ret->host, url, strchr(url,'/')-url);
+		strncpy(ret->host, url, strchr(url,'/')-url);
 		(ret->host)[strchr(url,'/')-url]='\0';
 	}else{
-        	ret->host = malloc(strlen(url));
-          	strcpy(ret->host, url);
+		ret->host = malloc(strlen(url));
+		strcpy(ret->host, url);
 	}
 	//printf(" : %\n", );
-	
+
 
 	// Sort out port
-    if(strchr(url,':')==NULL){
+	if(strchr(url,':')==NULL){
 		if(strcasecmp(ret->protocol, "http")==0)
 			ret->port = 80;
 		else
 			ret->port=21;
-    }else{
-        int tp;	// FIXME work without '/'
-        char* tmp;
+	}else{
+		int tp;	// FIXME work without '/'
+		char* tmp;
 		if(strchr(url, '/')){
 			tmp = malloc(strchr(url,'/')-strchr(url,':')+1);
-			  strncpy(tmp, strchr(url,':')+1, strchr(url,'/')-strchr(url,':')-1);
+			strncpy(tmp, strchr(url,':')+1, strchr(url,'/')-strchr(url,':')-1);
 			free(tmp);
 		}else
 			tmp = strchr(url,':');
-        if (1 != sscanf(tmp, "%d", &tp)){
-            char *msg = (char*)malloc(strlen(tmp)+27);
-            strcpy(msg, "Error with specified port: ");
-            strcat(msg, tmp);
-            ret->errormsg=msg;
-            free(msg);
-            return ret;
-        }
-        ret->port = tp;
-    }
+		if (1 != sscanf(tmp, "%d", &tp)){
+			char *msg = (char*)malloc(strlen(tmp)+27);
+			strcpy(msg, "Error with specified port: ");
+			strcat(msg, tmp);
+			ret->errormsg=msg;
+			free(msg);
+			return ret;
+		}
+		ret->port = tp;
+	}
 	//printf(" : %\n", );
-	
-	
+
+
 	// Sort out path
-	
+
 	if(strchr(url,'/')){
 		ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
 		strcpy(ret->path, strchr(url,'/'));
 	}else
 		ret->path = "/";
-	
+
 	//printf(" : %\n", );
-	
-	
+
+
 	// Sort out general
-    ret->rawheader = "";
-    ret->method = GET;
-    return ret;
+	ret->rawheader = "";
+	ret->method = GET;
+	return ret;
 }
 
 
@@ -172,30 +172,30 @@ struct HttpRequest* buildreq(const char* url)
 //   header : string with no new line in the format Content-Encoding: thing/blah
 void addheader(struct HttpRequest *req, const char* header)
 {
-    char* oldhead = req->rawheader;
-    req->rawheader = malloc(strlen(oldhead)+strlen(header)+2);
-    sprintf(req->rawheader, "%s%s\r\n", oldhead, header);
+	char* oldhead = req->rawheader;
+	req->rawheader = malloc(strlen(oldhead)+strlen(header)+2);
+	sprintf(req->rawheader, "%s%s\r\n", oldhead, header);
 }
 
 // Adds a key-value pair to the entity to be posted
 void addpostpair(struct HttpRequest *req, const char *key, const char *val)
 {
-    char* newpost = malloc(strlen(key)+strlen(val)+2);
-    sprintf(newpost, "%s=%s", key, val);
-    //printf(" Added post pair : %s\n", newpost);
-    
-    if(req->rawpost){
-        char* curpost = req->rawpost;
-        req->rawpost = malloc(strlen(curpost)+strlen(newpost)+2);
-        sprintf(req->rawpost, "%s&%s", curpost, newpost);
+	char* newpost = malloc(strlen(key)+strlen(val)+2);
+	sprintf(newpost, "%s=%s", key, val);
+	//printf(" Added post pair : %s\n", newpost);
+
+	if(req->rawpost){
+		char* curpost = req->rawpost;
+		req->rawpost = malloc(strlen(curpost)+strlen(newpost)+2);
+		sprintf(req->rawpost, "%s&%s", curpost, newpost);
 		req->rawpost[strlen(curpost)+strlen(newpost)+1]='\0';
-    }else{
-        req->rawpost = malloc(strlen(newpost)+1);
-        strcpy(req->rawpost, newpost);
+	}else{
+		req->rawpost = malloc(strlen(newpost)+1);
+		strcpy(req->rawpost, newpost);
 		req->rawpost[strlen(newpost)]='\0';
-    }
-    if(strstr(req->rawheader, "Content-Type:")==NULL)
-        addheader(req, "Content-Type: application/x-www-form-urlencoded");
+	}
+	if(strstr(req->rawheader, "Content-Type:")==NULL)
+		addheader(req, "Content-Type: application/x-www-form-urlencoded");
 	free(newpost);
 }
 
@@ -203,53 +203,53 @@ void addpostpair(struct HttpRequest *req, const char *key, const char *val)
 //   returns : handle to the socket or 0 on failure
 int sconnect(struct HttpRequest req)
 {
-   int sd;
-   struct sockaddr_in pin;
-   struct hostent *hp;
-   if ((hp = gethostbyname(req.host)) == 0) {
-      perror("gethostbyname");
-      //return -1;
-   }
+	int sd;
+	struct sockaddr_in pin;
+	struct hostent *hp;
+	if ((hp = gethostbyname(req.host)) == 0) {
+		perror("gethostbyname");
+		//return -1;
+	}
 
-   memset(&pin, 0, sizeof(pin));
-   pin.sin_family = AF_INET;
-   pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
-   pin.sin_port = htons(req.port);
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-      perror("socket");
-      return -1;
-   }
-   if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
-      perror("connect");
-      return -1;
-   }
-   return sd;
+	memset(&pin, 0, sizeof(pin));
+	pin.sin_family = AF_INET;
+	pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+	pin.sin_port = htons(req.port);
+	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("socket");
+		return -1;
+	}
+	if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
+		perror("connect");
+		return -1;
+	}
+	return sd;
 }
 
 //Simple connect function
 int fconnect(char* ip,int port){
-   int sd;
-   struct sockaddr_in pin;
-   struct hostent *hp;
-   long addr=inet_addr(ip);
-   if ((hp = gethostbyaddr((char*) &addr,sizeof(addr),AF_INET)) == NULL) {
-      perror("gethostbyaddr");
-      return -1;
-   }
+	int sd;
+	struct sockaddr_in pin;
+	struct hostent *hp;
+	long addr=inet_addr(ip);
+	if ((hp = gethostbyaddr((char*) &addr,sizeof(addr),AF_INET)) == NULL) {
+		perror("gethostbyaddr");
+		return -1;
+	}
 
-   memset(&pin, 0, sizeof(pin));
-   pin.sin_family = AF_INET;
-   pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
-   pin.sin_port = htons(port);
-   if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-      perror("socket");
-      return -1;
-   }
-   if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
-      perror("connect");
-      return -1;
-   }
-   return sd;
+	memset(&pin, 0, sizeof(pin));
+	pin.sin_family = AF_INET;
+	pin.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
+	pin.sin_port = htons(port);
+	if ((sd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+		perror("socket");
+		return -1;
+	}
+	if (connect(sd,(struct sockaddr *)  &pin, sizeof(pin)) == -1) {
+		perror("connect");
+		return -1;
+	}
+	return sd;
 }
 
 
@@ -257,82 +257,82 @@ int fconnect(char* ip,int port){
 // TODO can't send binarys, generally only just conforms to http
 char* rawrequest(struct HttpRequest *req)
 {
-    char* method;
-    int buffersize = strlen(req->host)+strlen(req->path)+50;
-    char* buffer = malloc(buffersize);
-    if (req->rawpost){
-        req->method = POST;
-        char* h = malloc(30);
-        sprintf(h, "Content-Length: %d", strlen(req->rawpost));
-        addheader(req, h);        
-        buffersize += strlen(req->rawpost);
-	free(h);
-    }
-    switch (req->method){
-        case GET:
-            method= "GET";
-            break;
-        case POST:
-            method= "POST";
-            break;
-    }                
-                //   TODO path & rawpost needs to be escapified
-    sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n%s\r\n%s", method, req->path, req->host, req->rawheader, req->rawpost);
-    return buffer;
+	char* method;
+	int buffersize = strlen(req->host)+strlen(req->path)+50;
+	char* buffer = malloc(buffersize);
+	if (req->rawpost){
+		req->method = POST;
+		char* h = malloc(30);
+		sprintf(h, "Content-Length: %d", strlen(req->rawpost));
+		addheader(req, h);        
+		buffersize += strlen(req->rawpost);
+		free(h);
+	}
+	switch (req->method){
+		case GET:
+			method= "GET";
+			break;
+		case POST:
+			method= "POST";
+			break;
+	}                
+	//   TODO path & rawpost needs to be escapified
+	sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\n%s\r\n%s", method, req->path, req->host, req->rawheader, req->rawpost);
+	return buffer;
 }
 
 // Turns the raw header text into a structure
 struct HttpResponse buildresponsehead(const char* rawresp)
 {
-    struct HttpResponse resp;
+	struct HttpResponse resp;
 	resp.errormsg = 0;
-    resp.rawheader=(char*)malloc(strlen(rawresp));
-    strcpy(resp.rawheader, rawresp);
+	resp.rawheader=(char*)malloc(strlen(rawresp));
+	strcpy(resp.rawheader, rawresp);
 
-    //printf(" building response :\n%s\n\n", "");//rawresp);
-    resp.streason = malloc(10);
-    sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
-    if(strstr(rawresp, "Content-Length:"))
-        sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
-    else if(strstr(rawresp, "Content-length:"))
-        sscanf(strstr(rawresp, "Content-length:"),"Content-length: %d",&(resp.clength));
+	//printf(" building response :\n%s\n\n", "");//rawresp);
+	resp.streason = malloc(10);
+	sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
+	if(strstr(rawresp, "Content-Length:"))
+		sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
+	else if(strstr(rawresp, "Content-length:"))
+		sscanf(strstr(rawresp, "Content-length:"),"Content-length: %d",&(resp.clength));
 	else if(strstr(rawresp, "content-length:"))
-        sscanf(strstr(rawresp, "content-length:"),"content-length: %d",&(resp.clength));
+		sscanf(strstr(rawresp, "content-length:"),"content-length: %d",&(resp.clength));
 	else{
-        resp.clength = -1;
+		resp.clength = -1;
 		resp.errormsg=malloc(strlen(("Cannot find content length")));
 		resp.errormsg="Cannot find content length";
 	}
-    return resp;
+	return resp;
 }
-    
+
 // FIXME could have trouble sending large files
 // returns 1 on success
 int httpsend(int socket, struct HttpRequest *req)
 {
-    char* message = rawrequest(req);
-    int p=0;
-    if(send(socket,message,strlen(message),0) < 0){
-            logger(LOGMULTI, " error writing to socket\n");
-            return 0;
-        }
-		free(message);
-    return 1;
+	char* message = rawrequest(req);
+	int p=0;
+	if(send(socket,message,strlen(message),0) < 0){
+		logger(LOGMULTI, " error writing to socket\n");
+		return 0;
+	}
+	free(message);
+	return 1;
 }
 
 //Simple function to send a message to the server
 int ftpsend(int socket, char* command){
-	
+
 	char* message=(char*)malloc(strlen(command)+strlen(" \r\n"));
 	sprintf(message,"%s\r\n",command);
 	if(send(socket,message,strlen(message),0) < 0){
-			printf("%s \n",strerror(errno));
-            logger(LOGMULTI, " error writing to socket\n");
-            return 0;
-        }
+		printf("%s \n",strerror(errno));
+		logger(LOGMULTI, " error writing to socket\n");
+		return 0;
+	}
 	free(message);
-    return 1;
-	
+	return 1;
+
 }
 
 // Reads the header from an arriving response
@@ -340,17 +340,17 @@ int ftpsend(int socket, char* command){
 
 struct HttpResponse httpreadresponse(int socket)
 {
-    int bufsize=4096;        /* a 4K buffer */
-    char *buffer=(char*)malloc(bufsize);
+	int bufsize=4096;        /* a 4K buffer */
+	char *buffer=(char*)malloc(bufsize);
 
-    int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
-    bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
+	int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
+	bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
 
-    free(buffer);
-    char* newbuffer=(char*)malloc(bufsize);
-    bufferused = recv(socket, newbuffer, bufsize, 0);
+	free(buffer);
+	char* newbuffer=(char*)malloc(bufsize);
+	bufferused = recv(socket, newbuffer, bufsize, 0);
 	int i;
-    for(i=(strlen(newbuffer) - 1);i>0;i--) {
+	for(i=(strlen(newbuffer) - 1);i>0;i--) {
 		if(newbuffer[i]=='.' || newbuffer[i]=='\r') { 
 			newbuffer[i+1]='\0';
 			break;
@@ -358,18 +358,18 @@ struct HttpResponse httpreadresponse(int socket)
 	}
 
 
-    //printf("buffer : %s",buffer);
-    struct HttpResponse ret = buildresponsehead(newbuffer);
-    ret.stream = socket;
-    if(newbuffer!=NULL)
-    	free(newbuffer);
-    return ret;
+	//printf("buffer : %s",buffer);
+	struct HttpResponse ret = buildresponsehead(newbuffer);
+	ret.stream = socket;
+	if(newbuffer!=NULL)
+		free(newbuffer);
+	return ret;
 }
 
 //Pass the socket for profit
 char* ftpreadresponse(int socket)
 {
-    int bufsize=5120;
+	int bufsize=5120;
 	int i,n=-1;
 
 	char* buffer=malloc(bufsize);
@@ -405,64 +405,64 @@ char* ftpreadresponse(int socket)
 }
 
 int ftpConvertAddy(char * buf, char * hostname, int * port) {
-   unsigned int i,t=0;
-   int flag=0,decCtr=0,tport1,tport2;
-   char tmpPort[6];
-   //example data in quotes below:
-   //"227 Listening on (149,122,52,162,4,20)"
-   //4 * 256 + 20 = 1044
-   for(i=0;i<strlen(buf);i++) {
-      if(buf[i]=='(') {
-         flag = 1;
-         i++;
-      }
-      if(buf[i]==')') {
-         hostname[t]='\0';
-         break;
-      }
-      if(flag==1) {
-         if(buf[i] != ',') {
-            hostname[t]=buf[i];
-            t++;
-         } else {
-            hostname[t]='.';
-            t++;
-         }
-      }
-   }
-   t=0;
-   for(i=0;i<strlen(hostname);i++) {
-      if(hostname[i]=='.')
-         decCtr++;
-      if(decCtr==4 && hostname[i]!='.') {
-         tmpPort[t]=hostname[i];
-         t++;
-         if(hostname[i+1]=='.') {
-            tmpPort[t]='\0';
-            tport1=atoi(tmpPort);
-            t=0;
-         }
-      }
-      if(decCtr==5 && hostname[i]!='.') { 
-         tmpPort[t]=hostname[i];
-         t++;
-         if(hostname[i+1]=='\0') {
-            tmpPort[t]='\0';
-            tport2=atoi(tmpPort);
-            t=0;
-         }
-      }
-   }
-   *port = tport1 * 256 + tport2;
-   decCtr=0;
-   for(i=0;i<strlen(hostname);i++) {
-      if(hostname[i]=='.') {
-         decCtr++;
-      }
-      if(decCtr>3)
-         hostname[i]='\0';
-   }
-   return 0;
+	unsigned int i,t=0;
+	int flag=0,decCtr=0,tport1,tport2;
+	char tmpPort[6];
+	//example data in quotes below:
+	//"227 Listening on (149,122,52,162,4,20)"
+	//4 * 256 + 20 = 1044
+	for(i=0;i<strlen(buf);i++) {
+		if(buf[i]=='(') {
+			flag = 1;
+			i++;
+		}
+		if(buf[i]==')') {
+			hostname[t]='\0';
+			break;
+		}
+		if(flag==1) {
+			if(buf[i] != ',') {
+				hostname[t]=buf[i];
+				t++;
+			} else {
+				hostname[t]='.';
+				t++;
+			}
+		}
+	}
+	t=0;
+	for(i=0;i<strlen(hostname);i++) {
+		if(hostname[i]=='.')
+			decCtr++;
+		if(decCtr==4 && hostname[i]!='.') {
+			tmpPort[t]=hostname[i];
+			t++;
+			if(hostname[i+1]=='.') {
+				tmpPort[t]='\0';
+				tport1=atoi(tmpPort);
+				t=0;
+			}
+		}
+		if(decCtr==5 && hostname[i]!='.') { 
+			tmpPort[t]=hostname[i];
+			t++;
+			if(hostname[i+1]=='\0') {
+				tmpPort[t]='\0';
+				tport2=atoi(tmpPort);
+				t=0;
+			}
+		}
+	}
+	*port = tport1 * 256 + tport2;
+	decCtr=0;
+	for(i=0;i<strlen(hostname);i++) {
+		if(hostname[i]=='.') {
+			decCtr++;
+		}
+		if(decCtr>3)
+			hostname[i]='\0';
+	}
+	return 0;
 }
 
 struct HttpResponse ftpLogin(int socket){
@@ -476,8 +476,8 @@ struct HttpResponse ftpLogin(int socket){
 		return hr;
 	}
 	free(greeting);
-	
-	
+
+
 	ftpsend(socket,"USER anonymous");
 	sleep(1);
 	char* user=ftpreadresponse(socket);
@@ -492,14 +492,14 @@ struct HttpResponse ftpLogin(int socket){
 	}
 	if(user!=NULL)
 		free(user);
-		
-	
+
+
 	ftpsend(socket,"PASS anonymous");
 	char* pass=ftpreadresponse(socket);
 	if(pass!=NULL) //Don't think checking the pass is worth it
 		free(pass);
-	
-	
+
+
 	ftpsend(socket,"TYPE I");
 	char* type=ftpreadresponse(socket);
 	if(type==NULL){
@@ -513,7 +513,7 @@ struct HttpResponse ftpLogin(int socket){
 	if(type!=NULL)
 		free(type);
 	return hr;
-	
+
 }
 
 int ftpGetFileSize(char* buffer){
@@ -528,7 +528,7 @@ int ftpGetFileSize(char* buffer){
 // TODO : follow redirects
 struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 {
-    int socket=sconnect(req);
+	int socket=sconnect(req);
 	if(strcasecmp(req.protocol, "http")==0){//http
 		if(socket>0){
 			logger2(logtype, "connected to ", req.host);
@@ -558,7 +558,7 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			struct HttpResponse hr=ftpLogin(socket); //Does the Login to the ftp server
 			if(hr.errormsg)
 				return hr;
-			
+
 			//Grabs the size of the file we want
 			char* retrmsg=malloc(strlen(req.path)+6);
 			sprintf(retrmsg,"SIZE %s",req.path);
@@ -573,8 +573,8 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			}
 			if(size!=NULL)
 				free(size);
-				
-				
+
+
 			/* Tell the server to be passive
 			 * We will connect to the server as this is much better bet with firewalls and stuff
 			 * Server sends back ip+port of the form (x1,x2,x3,x4,x5,x6)
@@ -587,14 +587,14 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			ftpConvertAddy(buffer,host,&port);
 			if(buffer!=NULL)
 				free(buffer);
-				
+
 			//Connect to that ip, this is where the server will send the data through
 			int filesocket=fconnect(host,port);
 			if(filesocket==0){
 				printf("Connecting to %s at %d failed\n",host,port);
 				exit(0);
 			}
-			
+
 			//Tell the server we want the file
 			sprintf(retrmsg,"RETR %s",req.path);
 			ftpsend(socket,retrmsg);
@@ -603,15 +603,15 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			ftpreadresponse(socket);
 			hr.stream=filesocket;
 			return hr;
-			
+
 		}else{
 			logger2(LOGMULTI, "not connected : error connecting to ", req.host);
 			struct HttpResponse error;
 			error.stcode = 0; error.streason =error.errormsg ="ErrorConnecting";
 			return error;
 		}
-	
-	
+
+
 	}
 }
 
@@ -633,18 +633,18 @@ int getHeader(struct HttpResponse *resp, char* key, char* value, int size)
 int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD logtype, int overwrite)
 {
 	// build request
-    struct HttpRequest *hq = buildreq(url);
+	struct HttpRequest *hq = buildreq(url);
 	if(hq->errormsg){
 		logger2(LOGMULTI, "Error building request : ", hq->errormsg);
 		return 2;
 	}
 	// get
-    struct HttpResponse hr = HttpGet(*hq, logtype);
+	struct HttpResponse hr = HttpGet(*hq, logtype);
 	if(hr.errormsg){
 		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
 		return 3;
 	}
-	
+
 	// choose filename
 	char tempname[100];
 	if (filename==0){	// use given filename first
@@ -658,75 +658,75 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		}else 	// use filename from url
 			filename = strrchr(url,'/')+1;
 	}
-		
+
 	// open file to save
 	//printf("\n %s \n %s \n %s",url,dir,filename);
-    char* path =(char*)malloc(strlen(dir)+strlen(filename)+2);
-    strcpy(path,dir);
+	char* path =(char*)malloc(strlen(dir)+strlen(filename)+2);
+	strcpy(path,dir);
 	//strcat(path,"/");
-    strcat(path,filename);
+	strcat(path,filename);
 	path[strlen(dir)+strlen(filename)]='\0';
 	FILE* f;
-    if(overwrite==-1){
-    	f = fopen("/tmp/.bpack_pack","w");
+	if(overwrite==-1){
+		f = fopen("/tmp/.bpack_pack","w");
 		if(!f){
 			logger(LOGMULTI, "Error opening /tmp/.bpack_pack");
 			return 3;
 		}
 		remove("/tmp/.bpack_pack");//Tell the kernel we want this disposed when we are done
-    }
-    else{ 
-    	f = fopen(path,"w");
+	}
+	else{ 
+		f = fopen(path,"w");
 		if(!f){
 			logger2(LOGMULTI, "Error opening file ", path);
 			return 3;
 		}
-    }
+	}
 
 
-    logger2(logtype, "saving to ", path);
+	logger2(logtype, "saving to ", path);
 	struct stat sta;
 	int exists=stat(path, &sta);
 
 	// TODO error handling and make nicer
 	//If the content length is specified and overwrite is allowed or the file isn't there we just write to path
-    if(hr.clength>0 && (overwrite==1 || exists!=0 ) ){
+	if(hr.clength>0 && (overwrite==1 || exists!=0 ) ){
 		int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
-        void *buffer = malloc(bufsize);
-        int transremain = hr.clength;
-        int readlength;
+		void *buffer = malloc(bufsize);
+		int transremain = hr.clength;
+		int readlength;
 		float per;
 		per=0;
-        do{
-            transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
+		do{
+			transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
 			if(100-(float)transremain*100/(float)hr.clength-per>=4|| 100-(float)transremain*100/(float)hr.clength==100){
 				process(filename,100-transremain*100/hr.clength);
 				per=100-(float)transremain*100/(float)hr.clength;
 			}
-            fwrite(buffer, 1, readlength, f);
-			
-        }while (transremain > 0);
+			fwrite(buffer, 1, readlength, f);
+
+		}while (transremain > 0);
 		printf("\n");
-        free(buffer);
-    }
+		free(buffer);
+	}
 	else if(hr.clength>0 && overwrite==-1){//TODO: finish this!
 		int bufsize = ( hr.clength < 65536 ) ? hr.clength : 65536;   // 64KB max buffer size
-        void *buffer = malloc(bufsize);
-        int transremain = hr.clength;
-        int readlength;
+		void *buffer = malloc(bufsize);
+		int transremain = hr.clength;
+		int readlength;
 		float per;
 		per=0;
-        do{
-            transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
+		do{
+			transremain -= (readlength = recv(hr.stream, buffer, bufsize,0));
 			if(100-(float)transremain*100/(float)hr.clength-per>=4|| 100-(float)transremain*100/(float)hr.clength==100){
 				process(filename,100-transremain*100/hr.clength);
 				per=100-(float)transremain*100/(float)hr.clength;
 			}
-            fwrite(buffer, 1, readlength, f);
-			
-        }while (transremain > 0);
-	printf("\n");
-        free(buffer);
+			fwrite(buffer, 1, readlength, f);
+
+		}while (transremain > 0);
+		printf("\n");
+		free(buffer);
 	}
 	else if(hr.clength<=0){
 		logger(LOGMULTI,"Error no content length!");
@@ -761,19 +761,19 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		free(hq);
 		return 3;
 	}
-    free(path);
-    shutdown(hr.stream, SHUT_RDWR);
-    fclose(f);
-    logger(logtype, "saved");
-    if(hr.rawheader!=NULL)
-	    free(hr.rawheader);
-    if(hr.streason!=NULL)
-	    free(hr.streason);
-    free(hq->path);
-    free(hq->protocol);
-    free(hq->host);
-    free(hq);
-    return 0; // success
+	free(path);
+	shutdown(hr.stream, SHUT_RDWR);
+	fclose(f);
+	logger(logtype, "saved");
+	if(hr.rawheader!=NULL)
+		free(hr.rawheader);
+	if(hr.streason!=NULL)
+		free(hr.streason);
+	free(hq->path);
+	free(hq->protocol);
+	free(hq->host);
+	free(hq);
+	return 0; // success
 }
 
 // Another malloc without a free, hopefully will find a better way to do this
@@ -781,7 +781,7 @@ char* getBody(struct HttpResponse *resp)
 {
 	int clength = resp->clength;
 	/*char slength[10]; sprintf(slength, "%d", clength);
-	logger2(LOGMULTI, "Reading body, length : ", slength);*/
+	  logger2(LOGMULTI, "Reading body, length : ", slength);*/
 	char *respbody = (char *)malloc(resp->clength+1);
 	respbody[resp->clength]='\0';
 	read(resp->stream, respbody, resp->clength);
