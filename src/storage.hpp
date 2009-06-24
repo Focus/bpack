@@ -21,14 +21,16 @@
  */
 
 
-#ifndef _STORAGE_H
-#define _STORAGE_H
+#ifndef _STORAGE_H_
+#define _STORAGE_H_
 
+#include <cstring>
 #include <vector>
 
 void macro(std::string&);
 std::vector<std::string> loadLocation(const std::string);
 int separate(const std::string,std::vector<std::string> &,const int);
 bool write (const std::string,const std::string,bool overwrite=0);
+bool write (const std::vector<std::string>,const std::string,bool p3=0);
 std::vector<std::string> read(const std::string);
 #endif

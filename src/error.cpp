@@ -1,4 +1,11 @@
+#include <errno.h>
+#include <iostream>
+#include <cstdlib>
+
+#include "config.hpp"
+
 #include "error.hpp"
+
 void err(std::string message, int level,bool errnoset){
 	
 	std::cerr<<"\n"<<message;

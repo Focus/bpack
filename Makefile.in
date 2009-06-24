@@ -51,7 +51,7 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-VERSION = 0.1
+VERSION = 0.1.3
 bindir = @bindir@
 DESTDIR=/var/bpack/
 
@@ -118,12 +118,13 @@ packs.list:
 
 install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)
+	mkdir -p $(DESTDIR)/installed
 	mkdir -p $(DESTDIR)/tarballs
 	mkdir -p $(DESTDIR)/packs
 	mkdir -p $(DESTDIR)/libs
 	cp -f  bpack $(bindir)/bpack
-	touch $(DESTDIR)/packs.list
 	touch /etc/bpack.conf
+	cat $(bindir)/bpack > $(DESTDIR)/installed/bpack-$(VERSION)
 
 tarclean:
 	rm -rf .tarball

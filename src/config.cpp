@@ -24,8 +24,13 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <cstring>
+
+
 #include "config.hpp"
 #include "storage.hpp"
+
+
 using namespace std;
 
 string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll,Config::cflags,Config::cxxflags;
@@ -44,11 +49,11 @@ void Config::initialise()
 			Config::installdir=env+"/";
 	}
 	coll="test";//Currently default, we need to change this to official soon!
-    	scriptdir = installdir + "scripts/";
-    	packinstdir = installdir + "packs/";
-    	tarballdir = installdir + "tarballs/";
-    	packmandir = installdir + "packman/";
-    	packlistpath = installdir + "packs.list";
+	scriptdir = installdir + "scripts/";
+	packinstdir = installdir + "packs/";
+	tarballdir = installdir + "tarballs/";
+	packmandir = installdir + "packman/";
+	packlistpath = installdir + "installed/";
 	logdir=installdir+"logs/";
 	lib=installdir+"libs/hijack.so.1.0";
 	Config::quitlevel=0;
@@ -103,6 +108,6 @@ void Config::initialise()
 		}
 	}
 	delete line,pos,file;
-    	
+
 }
 

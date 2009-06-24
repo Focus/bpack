@@ -23,6 +23,8 @@
 
 //TODO: Soooooooo many headers...
 
+#include <iostream>
+#include <cstring>
 
 #include "error.hpp"
 #include "version.hpp"
@@ -34,62 +36,11 @@
 #include "remove.hpp"
 #include "search.hpp"
 #include "update.hpp"
+
 using namespace std;
 
 #define MIN(x,y) x<y? x:y
 
-//Separates the foo-0.2.2 to foo and 0.2.2
-//TODO: Lame name
-void depVersion(string &dep, version &ver){
-	int pos,pos2,test;
-	pos=0;
-	string temp;
-	stringstream ss;
-	temp=dep;
-	do{
-		ss.flush();
-		pos2=temp.find("-");
-		pos=pos+pos2;
-		temp=temp.substr(MIN(pos2+1,temp.length()));
-		test=strcspn(temp.substr(0,1).c_str(),"1234567890");
-	}while(pos2!=string::npos &&  test!=0);
-
-	//If there is no version set
-	if(pos2==string::npos)
-		return;
-
-	//Make a 2.3.5-7 into 2.3.5.7
-	while(temp.find("-")!=string::npos)
-		temp[temp.find("-")]='.';
-	while(temp.find("rc")!=string::npos)
-		temp=temp.substr(0,temp.find("rc"))+"."+temp.substr(temp.find("rc")+2);
-	while(temp.find("beta")!=string::npos)
-		temp=temp.substr(0,temp.find("beta"))+temp.substr(temp.find("beta")+4);
-
-	ver=temp;
-	dep=dep.substr(0,MIN(pos,dep.length()));
-
-}
-
-//Extracts locations from the copy log
-vector<string> stripCp(){
-	vector<string> locs;
-	ifstream *textfile=new ifstream;
-	textfile->open("/tmp/hijack_log.txt");
-	if(!(*textfile))
-		err("I can't find the install log!",2);
-	string *x=new string;
-	while(!textfile->eof())
-	{
-		*textfile >> *x;
-		if(!textfile->eof())
-			locs.push_back(*x);
-	}
-	erase("/tmp/hijack_log.txt");
-	delete x;
-	delete textfile;
-	return locs;
-}
 
 //Installs and cleans up packages
 void clean(packinst pack){
@@ -102,10 +53,11 @@ void clean(packinst pack){
 		delete temp;
 	}
 	else
-		installed->setLocations(stripCp());
+		installed->setLocations(read("/tmp/hijack_log.txt"));
+	erase("/tmp/hijack_log.txt");
 	installed->setVersion(pack.getVersion());
 	installed->setName(pack.getName());
-	installed->write();
+	installed->save();
 	delete installed;
 	cout<<"Clearing up..."<<endl;
 	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");

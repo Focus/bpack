@@ -94,20 +94,31 @@ bool write(const string content, const string location,bool overwrite){
 	return 1;
 }
 
-//Reads a file and the vector elements are the lines
+
+
+
+bool write (const vector<string> p1,const string p2,bool p3){
+	string temp="";
+	for(int i=0;i<p1.size();i++)
+		temp=temp+p1[i]+"\n";
+	return write(temp,p2,p3);
+}
+
+
 vector<string> read(const string location){
 	ifstream textfile;
 	vector<string> ret;
 	textfile.open(location.c_str());
 	string text;
-	if(!textfile)
+	if(!textfile){
 		return ret;
-	while(getline(textfile,text))
+	}
+	while(getline(textfile,text)){
 		ret.push_back(text);
+	}
 	textfile.close();
 	return ret;
 }
-     
 
 //Reads the macros
 void macro(string& config){

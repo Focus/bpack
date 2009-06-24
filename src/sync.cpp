@@ -1,12 +1,14 @@
 #include <cstring>
 #include <vector>
+
+
 #include "package.hpp"
-#include "storage.hpp"
 #include "search.hpp"
 #include "error.hpp"
 #include "install.hpp"
 #include "version.hpp"
 
+#include "storage.hpp"
 
 #include "sync.hpp"
 
@@ -35,7 +37,7 @@ void pacmanRead(string location,string pack,version ver){
 	packg->setName(pack);
 	packg->setVersion(ver);
 	packg->setLocations(locations);
-	packg->write();
+	packg->save();
 	delete packg;
 }
 

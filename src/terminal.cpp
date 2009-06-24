@@ -75,7 +75,7 @@ int makeinstall(string path,string command="make install"){
 	pack->setName(name);
 	pack->setLocations(*locs);
 	pack->setVersion(ver.asString());
-	pack->write();
+	pack->save();
 	delete pack;
 	delete locs;
 	delete pos;

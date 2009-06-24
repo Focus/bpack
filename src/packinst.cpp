@@ -23,9 +23,9 @@
 
 /*********************************************************************************
 
-The current config works like the example below...
+  The current config works like the example below...
 
->cat packs/foobar-0.2
+  >cat packs/foobar-0.2
 
 config:--prefix=/usr
 make: DESTDIR=/dev/null
@@ -34,7 +34,7 @@ conf: crash:allways
 conffile:/etc/foobar.conf
 
 
-*********************************************************************************/
+ *********************************************************************************/
 
 
 #include "packinst.hpp"
@@ -43,14 +43,14 @@ using namespace std;
 //Get the next dependency
 bool packinst::getNextDep(string &dep)
 {
-     if(loc>=deps.size())
-     return 0;
-     else
-     {
-     dep=deps[loc];
-     loc++;
-     return 1;
-     }
+	if(loc>=deps.size())
+		return 0;
+	else
+	{
+		dep=deps[loc];
+		loc++;
+		return 1;
+	}
 }
 
 //Sorts out optional dependencies
@@ -118,16 +118,16 @@ packinst getPackage(string location){
 	for(int i=0;i<pos->size();i++){
 		command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
 		value=(*file)[(*line)[i]].substr((*pos)[i]+1);
-		
+
 		//Do a mini loop to get all of the lines in between the commands
-		
+
 		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
 			if((*file)[j].length()>0)
 				value=value+"\n"+(*file)[j];
 		}
-		
+
 		//Do we set anything?
-		
+
 		if(!strcmp(command.c_str(),"config"))
 			pack.setConfig(value);
 		else if(!strcmp(command.c_str(),"make"))

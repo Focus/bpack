@@ -23,9 +23,13 @@
 
 /*********************************************************************************
 
-This function is God. Bow down to it!
+  This function is God. Bow down to it!
 
-*********************************************************************************/
+ *********************************************************************************/
+
+#include <iostream>
+#include <cstring>
+
 #include "packinst.hpp"
 #include "version.hpp"
 #include "package.hpp"
@@ -43,8 +47,8 @@ using namespace std;
 
 //Returns 1 on success
 bool configuration(string config,string location){
-	
-	
+
+
 	vector<string> *add=new vector<string>;
 	vector<string> *rem=new vector<string>;
 	string *temp=new string;
@@ -68,7 +72,7 @@ bool configuration(string config,string location){
 	//Now the things we need to remove
 	while((pos=temp->find("-"))!=string::npos && pos!=temp->length()-1){
 		*temp=temp->substr(pos+1);
-		
+
 		if(temp->find("+")==string::npos && temp->find("-")==string::npos)//this must be the last item
 			rem->push_back(*temp);
 		else if(temp->find("+")==string::npos)//Get the bit in between the - and the -
@@ -78,7 +82,7 @@ bool configuration(string config,string location){
 		else 
 			rem->push_back(temp->substr(0,MIN(temp->find("+"),temp->find("-"))-1));
 	}
-	
+
 	delete temp;
 
 	vector<string> *current=new vector<string>;
@@ -109,7 +113,7 @@ bool configuration(string config,string location){
 	delete rem;
 	for(int i=0;i<add->size();i++)
 		current->push_back((*add)[i]);
-	
+
 	delete add;
 	string *newconf=new string;
 	*newconf="";
@@ -126,7 +130,7 @@ bool configuration(string config,string location){
 
 
 string tarName(string url){
-	
+
 	int pos=url.find_last_of("/");
 	if( pos<=0 )
 		return "";
@@ -155,14 +159,14 @@ bool installScript(packinst inst, int bail=-1)
 			err("No URL specified to download!",2);
 		}
 
-		
+
 		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGNONE,1))
 		{
 			err("Download failed!",1);
 		}
-		
+
 		tar=tarName(inst.getWget());
-	
+
 	}
 	else
 		tar=(*tars)[0];
@@ -186,13 +190,13 @@ bool installScript(packinst inst, int bail=-1)
 		if( system( inst.getPreInstall().c_str() )!=0)
 			err("Pre-install command has failed!");
 	}
-	
+
 	//Set compiler flags
 	if(Config::getCflags().length()>0)
 		setenv("CFLAGS",Config::getCflags().c_str(),1);
 	if(Config::getCxxflags().length()>0)
 		setenv("CXXFLAGS",Config::getCxxflags().c_str(),1);
-	
+
 	//Run config, make and make install...
 	if(strcmp(inst.getConfig().c_str(),"no")){
 		string *conf=new string;
@@ -211,9 +215,9 @@ bool installScript(packinst inst, int bail=-1)
 		cout<<"Removing version "<<inst.getVersion()<<endl;
 		if(!removePack(inst.getName()))
 			err("Removing old package failed!",1);
-		
+
 	}
-	
+
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
 	erase("/tmp/hijack_log.txt");
 	setenv("LD_PRELOAD",hijack.c_str(),1);
@@ -227,7 +231,7 @@ bool installScript(packinst inst, int bail=-1)
 		if( system(inst.getPostInstall().c_str()) !=0)
 			err("Post-install command has failed!");
 	}
-	
+
 	//Write the config file
 	if(inst.getConf()!=""){
 		if(inst.getConfFile()=="")

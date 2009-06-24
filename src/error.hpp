@@ -1,12 +1,7 @@
 #ifndef _ERROR_H
 #define _ERROR_H
 
-#include <iostream>
-#include <errno.h>
-#include <iostream>
-#include <cstdlib>
 #include <cstring>
-#include "config.hpp"
 /*
  * Error levels:
  * 0 - Display message and do nothing

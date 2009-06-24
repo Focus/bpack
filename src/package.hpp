@@ -24,51 +24,51 @@
 #ifndef _PACKAGE_H
 #define _PACKAGE_H
 
-#include <string>
-#include "packinst.hpp"
-#include "remove.hpp"
-#include "storage.hpp"
 #include <vector>
-#include "install.hpp"
-#include "config.hpp"
+#include <cstring>
+
+#include "packinst.hpp"
+
 class package
 {
-      
-      public:
-             package(){scan=0;}
-             package(const std::string);
-             package(const std::string , const std::vector<std::string>);
-             package(const packinst inst);
-             ~package(){}
-             std::string getName() const {return name;}
-             std::string getVersion() const {return ver.asString();}
-             version Version() const {return ver;}
-             std::vector<std::string> getLocations() const{return locations;} 
-             bool getScan() const {return scan;}
-             void setName(const std::string pname){name=pname;}
-             void setVersion(const std::string pname){ver=pname;}
-	     void setVersion(const version pver){ver=pver;}
-             void setLocations(const std::vector<std::string> plocations){locations=plocations;}
-             void addLocation(const std::string plocation){locations.push_back(plocation);}
-	     void addLocations(const std::vector<std::string> plocations){
-		     for(int i=0;i<plocations.size();i++)
-			     locations.push_back(plocations[i]);
-	     }
-             void setScan(const bool pscan){scan=pscan;}
-             bool write();
-			 bool remove();
-             
-      private:
-              std::string name;
-              version ver;
-              std::vector<std::string> locations;
-              bool scan;
+
+	public:
+		package(){scan=0;}
+		package(const std::string);
+		package(const std::string , const std::vector<std::string>);
+		package(const packinst inst);
+		~package(){}
+		std::string getName() const {return name;}
+		std::string getVersion() const {return ver.asString();}
+		version Version() const {return ver;}
+		std::vector<std::string> getLocations() const{return locations;} 
+		bool getScan() const {return scan;}
+		void setName(const std::string pname){name=pname;}
+		void setVersion(const std::string pname){ver=pname;}
+		void setVersion(const version pver){ver=pver;}
+		void setLocations(const std::vector<std::string> plocations){locations=plocations;}
+		void addLocation(const std::string plocation){locations.push_back(plocation);}
+		void addLocations(const std::vector<std::string> plocations){
+			for(int i=0;i<plocations.size();i++)
+				locations.push_back(plocations[i]);
+		}
+		void setScan(const bool pscan){scan=pscan;}
+		bool save();
+		bool remove();
+
+	private:
+		std::string name;
+		version ver;
+		std::vector<std::string> locations;
+		bool scan;
 };
 
-std::vector<package> getInstalledPackages(const char*);
+std::vector<package> getInstalledPackages(const std::string);
+std::vector<package> getInstalledPackages();
 void printPackages(const std::vector<package>);
 package getInstalledPackage(std::string);
 std::vector<package> getInstalledPackages();
+void depVersion(std::string&, version&);
 #endif
 
 
