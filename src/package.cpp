@@ -91,6 +91,7 @@ void depVersion(string &dep, version &ver){
 	if(pos2==string::npos)
 		return;
 
+	test=temp.length();
 	//Make a 2.3.5-7 into 2.3.5.7
 	while(temp.find("-")!=string::npos)
 		temp[temp.find("-")]='.';
@@ -100,7 +101,7 @@ void depVersion(string &dep, version &ver){
 		temp=temp.substr(0,temp.find("beta"))+temp.substr(temp.find("beta")+4);
 
 	ver=temp;
-	dep=dep.substr(0,MIN(pos,dep.length()));
+	dep=dep.substr(0,dep.length()-test-1);
 
 }
 

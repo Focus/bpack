@@ -32,6 +32,11 @@
 #include "remove.hpp"
 #include "package.hpp"
 #include "error.hpp"
+
+extern "C"{
+#include "qhttp.h"
+}
+
 using namespace std;
 
 int makeinstall(string path,string command="make install"){
@@ -93,11 +98,12 @@ void terminal(){
 			if(chdir(command.substr(command.find("cd ")+3).c_str())!=0)
 				cout<<strerror(errno)<<endl;
 		}
+		else if(command.find("trac ")!=string::npos)
+			makeinstall(path,command.substr(command.find("trac")+5));
+		else if(command.find("dl ")!=string::npos)
+			wget(command.substr(command.find("dl")+3).c_str(),path.c_str(),NULL,LOGNONE,1);
 		else if(strcmp(command.c_str(),"make install"))
 			system(command.c_str());
-		else if(command.find("\trac")!=string::npos)
-			makeinstall(path,command.substr(command.find("\trac")));
-		//else if(command.find("\get")!=string::npos)
 			
 		else
 			makeinstall(path);

@@ -147,7 +147,7 @@ packinst getPackage(string location){
 		else if(!strcmp(command.c_str(),"conf"))
 			pack.setConf(value);
 		else if(!strcmp(command.c_str(),"meta"))
-			pack.setMeta(value);
+			pack.setMeta(1);
 		else if(!strcmp(command.c_str(),"optional"))
 			pack.addDeps(optional(value));
 	}
