@@ -48,6 +48,20 @@ process(const char* name,float per){
 	fflush(stdout);
 }
 
+void freereq(struct HttpRequest *req){
+	free(req->host);
+	if(strcmp(req->path,"/"))
+		free(req->path);
+	free(req);
+}
+
+void freeresp(struct HttpResponse hr){
+	if(hr.rawheader!=NULL)
+		free(hr.rawheader);
+	if(hr.streason!=NULL)
+		free(hr.streason);
+}
+
 //TODO asyncronous download
 
 void logger(enum LOGMETHOD logtype, const char* msg)
@@ -93,43 +107,40 @@ struct HttpRequest* buildreq(const char* url)
 	int pos;
 	// Sort out protocol
 	if(strstr(url,"://")){
-		char* protc = (char*)malloc(strstr(url,"://")-url);
-		strncpy(protc, url, strstr(url,"://")-url);
-		protc[strstr(url,"://")-url]='\0';
-		ret->protocol=protc;
-		free(protc);
+		if(!strncmp(url,"http",4))
+			ret->protocol=HTTP;
+		else if(!strncmp(url,"ftp",3))
+			ret->protocol=FTP;
+		else{
+			ret->errormsg = "Unsupported protocol, cannot build request";
+			return ret;
+		}
+
 		url+=strstr(url,"://")-url+3;
 	} else
-		ret->protocol = "http";	// assume http as default
+		ret->protocol = HTTP;	// assume http as default
 
-	if(strcasecmp(ret->protocol, "http")!=0 && strcasecmp(ret->protocol, "ftp")!=0){
-		ret->errormsg = "Unsupported protocol, cannot build request";
-		return ret;
-	}
 	//printf(" : %\n", );
 
 	// sort out host
-	char* host;
 	if(strchr(url,':')){
-		host = malloc(strchr(url,':')-url+1);
-		strncpy(host, url, strchr(url,':')-url);
-		host[strchr(url,'/')-url]='\0';
+		ret->host = malloc(strchr(url,':')-url+1);
+		strncpy(ret->host, url, strchr(url,':')-url);
+		ret->host[strchr(url,'/')-url]='\0';
 	}else if(strchr(url,'/')){
-		host = malloc(strchr(url,'/')-url+1);
-		strncpy(host, url, strchr(url,'/')-url);
-		host[strchr(url,'/')-url]='\0';
+		ret->host = malloc(strchr(url,'/')-url+1);
+		strncpy(ret->host, url, strchr(url,'/')-url);
+		ret->host[strchr(url,'/')-url]='\0';
 	}else{
-		host = malloc(strlen(url));
-		strcpy(host, url);
+		ret->host = malloc(strlen(url));
+		strcpy(ret->host, url);
 	}
-	ret->host=host;
-	free(host);
 	//printf(" : %\n", );
 
 
 	// Sort out port
 	if(strchr(url,':')==NULL){
-		if(strcasecmp(ret->protocol, "http")==0)
+		if(ret->protocol==HTTP)
 			ret->port = 80;
 		else
 			ret->port=21;
@@ -158,10 +169,8 @@ struct HttpRequest* buildreq(const char* url)
 	// Sort out path
 
 	if(strchr(url,'/')){
-		char* path = malloc(url+strlen(url)-strchr(url,'/')+1);
-		strcpy(path, strchr(url,'/'));
-		ret->path=path;
-		free(path);
+		ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
+		strcpy(ret->path, strchr(url,'/'));
 	}else
 		ret->path = "/";
 
@@ -293,14 +302,12 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 {
 	struct HttpResponse resp;
 	resp.errormsg = 0;
-	char* rawheader=(char*)malloc(strlen(rawresp));
-	strcpy(rawheader, rawresp);
-	resp.rawheader=rawheader;
-	free(rawheader);
+	resp.rawheader=(char*)malloc(strlen(rawresp));
+	strcpy(resp.rawheader, rawresp);
 
 	//printf(" building response :\n%s\n\n", "");//rawresp);
-	char* reason = malloc(10);
-	sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), reason);
+	resp.streason = malloc(10);
+	sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
 	if(strstr(rawresp, "Content-Length:"))
 		sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
 	else if(strstr(rawresp, "Content-length:"))
@@ -312,8 +319,6 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 		resp.errormsg=malloc(strlen(("Cannot find content length")));
 		resp.errormsg="Cannot find content length";
 	}
-	resp.streason=reason;
-	free(reason);
 	return resp;
 }
 
@@ -357,23 +362,15 @@ struct HttpResponse httpreadresponse(int socket)
 	int bufferused = recv(socket, buffer, bufsize, MSG_PEEK);
 	bufsize=strstr(buffer,"\r\n\r\n")+4-buffer;
 
-	free(buffer);
 	char* newbuffer=(char*)malloc(bufsize);
 	bufferused = recv(socket, newbuffer, bufsize, 0);
 	int i;
-	for(i=(strlen(newbuffer) - 1);i>0;i--) {
-		if(newbuffer[i]=='.' || newbuffer[i]=='\r') { 
-			newbuffer[i+1]='\0';
-			break;
-		}
-	}
 
 
-	//printf("buffer : %s",buffer);
+	free(buffer);
 	struct HttpResponse ret = buildresponsehead(newbuffer);
 	ret.stream = socket;
-	if(newbuffer!=NULL)
-		free(newbuffer);
+	free(newbuffer);
 	return ret;
 }
 
@@ -540,7 +537,7 @@ int ftpGetFileSize(char* buffer){
 struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 {
 	int socket=sconnect(req);
-	if(strcasecmp(req.protocol, "http")==0){//http
+	if(req.protocol==HTTP){
 		if(socket>0){
 			logger2(logtype, "connected to ", req.host);
 			if (httpsend(socket, &req)){
@@ -561,7 +558,7 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD logtype)
 			return error;
 		}
 	}
-	else{ //ftp
+	else{
 		if(socket>0){
 			char* ip;
 			logger2(logtype, "connected to ", req.host);
@@ -659,7 +656,7 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	// choose filename
 	char tempname[100];
 	if (filename==0){	// use given filename first
-		if(!strcmp(hq->protocol,"http")){
+		if(hq->protocol==HTTP){
 			if(getHeader(&hr, "Content-Disposition", tempname, 99)){
 				// Get filename from response header
 				filename = strchr(strstr(tempname, "filename"), '"')+1;
@@ -746,14 +743,8 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		shutdown(hr.stream, SHUT_RDWR);
 		fclose(f);
 		logger(logtype, "saved");
-		if(hr.rawheader!=NULL)
-			free(hr.rawheader);
-		if(hr.streason!=NULL)
-			free(hr.streason);
-		free(hq->path);
-		free(hq->protocol);
-		free(hq->host);
-		free(hq);
+		freeresp(hr);
+		freereq(hq);
 		return 3;
 	}
 	else{
@@ -762,28 +753,16 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 		shutdown(hr.stream, SHUT_RDWR);
 		fclose(f);
 		logger(logtype, "saved");
-		if(hr.rawheader!=NULL)
-			free(hr.rawheader);
-		if(hr.streason!=NULL)
-			free(hr.streason);
-		free(hq->path);
-		free(hq->protocol);
-		free(hq->host);
-		free(hq);
+		freeresp(hr);
+		freereq(hq);
 		return 3;
 	}
 	free(path);
 	shutdown(hr.stream, SHUT_RDWR);
 	fclose(f);
 	logger(logtype, "saved");
-	if(hr.rawheader!=NULL)
-		free(hr.rawheader);
-	if(hr.streason!=NULL)
-		free(hr.streason);
-	free(hq->path);
-	free(hq->protocol);
-	free(hq->host);
-	free(hq);
+	freeresp(hr);
+	freereq(hq);
 	return 0; // success
 }
 

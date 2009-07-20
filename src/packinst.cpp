@@ -98,32 +98,29 @@ vector<string> optional(string packs){
 //Get and return a package installation from file
 packinst getPackage(string location){
 	packinst pack;
-	vector<string> *file= new vector<string>;
-	*file=read(location);
-	if(file->size()<=0){
-		delete file;
+	vector<string> file=read(location);
+	if(file.size()<=0)
 		return pack;
-	}
-	vector<int> *line=new vector<int>;
-	vector<int> *pos=new vector<int>;
-	for(int i=0;i<file->size();i++){
-		(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
-		if( (*file)[i].find_first_of(":")+1>0  ){
-			pos->push_back((*file)[i].find_first_of(":"));
-			line->push_back(i);
+	
+	vector<int> line,pos;
+	for(int i=0;i<file.size();i++){
+		file[i]=file[i].substr(0,file[i].find_first_of("#"));
+		if( file[i].find_first_of(":")+1>0  ){
+			pos.push_back(file[i].find_first_of(":"));
+			line.push_back(i);
 		}
 	}
 	string command,value;
-	line->push_back(file->size());
-	for(int i=0;i<pos->size();i++){
-		command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
-		value=(*file)[(*line)[i]].substr((*pos)[i]+1);
+	line.push_back(file.size());
+	for(int i=0;i<pos.size();i++){
+		command=file[line[i]].substr(0,pos[i]);
+		value=file[line[i]].substr(pos[i]+1);
 
 		//Do a mini loop to get all of the lines in between the commands
 
-		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
-			if((*file)[j].length()>0)
-				value=value+"\n"+(*file)[j];
+		for(int j=line[i]+1;j<line[i+1];j++){
+			if(file[j].length()>0)
+				value=value+"\n"+file[j];
 		}
 
 		//Do we set anything?
@@ -151,6 +148,5 @@ packinst getPackage(string location){
 		else if(!strcmp(command.c_str(),"optional"))
 			pack.addDeps(optional(value));
 	}
-	delete line,pos,file;
 	return pack;
 }

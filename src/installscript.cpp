@@ -170,7 +170,8 @@ bool installScript(packinst inst, int bail=-1)
 	}
 	else
 		tar=(*tars)[0];
-	delete tars,tars2;
+	delete tars;
+	delete tars2;
 	//Make a clean directory by removing previous extracts
 	erase(tardir+inst.getName()+"-"+inst.getVersion());
 	//Unpack the tar

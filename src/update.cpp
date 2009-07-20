@@ -63,12 +63,13 @@ collection::collection(string purl)
 	// add headers such as User-Agent and Accept
 	// get
 	struct HttpResponse resp = HttpGet(*req, LOGMULTI);
-	free(req);
+	freereq(req);
 	// Error handling, on error none of the lower priority collections can be used, higher ones can however
 	// Read list
 	char* body = getBody(&resp);
 	string respbody=body;
 	free(body);
+	freeresp(resp);
 	// error handle
 	// check respbody is a valid collection listing
 	
@@ -116,7 +117,7 @@ void collection::saveall(string path)
 	cout << "Downloading " << packs.size() << " packs\n";
 	map<string,string>::iterator it;
 	for ( it=packs.begin() ; it != packs.end(); it++ )
-		wget(it->second.c_str(), path.c_str(), 0, LOGMULTI,-1);
+		wget(it->second.c_str(), path.c_str(), 0, LOGMULTI,1);
 
 }
 // This is not done

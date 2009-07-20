@@ -61,29 +61,27 @@ void Config::initialise()
 	cxxflags="";
 	optionaldep=RECOMMENDED;
 	//Load the config
-	vector<string> *file= new vector<string>;
-	*file=read("/etc/bpack.conf");
-	if(file->size()<=0){
-		delete file;
+	vector<string> file=read("/etc/bpack.conf");
+	if(file.size()<=0)
 		return;
-	}
+	
 	vector<int> line,pos;
-	for(int i=0;i<file->size();i++){
-		(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
-		if( (*file)[i].find_first_of(":")+1>0  ){
-			pos.push_back((*file)[i].find_first_of(":"));
+	for(int i=0;i<file.size();i++){
+		file[i]=file[i].substr(0,file[i].find_first_of("#"));
+		if( file[i].find_first_of(":")+1>0  ){
+			pos.push_back(file[i].find_first_of(":"));
 			line.push_back(i);
 		}
 	}
 	string command,value;
-	line.push_back(file->size());
+	line.push_back(file.size());
 	for(int i=0;i<pos.size();i++){
-		command=(*file)[line[i]].substr(0,pos[i]);
-		value=(*file)[line[i]].substr(pos[i]+1);
+		command=file[line[i]].substr(0,pos[i]);
+		value=file[line[i]].substr(pos[i]+1);
 		//Do a mini loop to get all of the lines in between the commands
 		for(int j=line[i]+1;j<line[i+1];j++){
-			if((*file)[j].length()>0)
-				value=value+"\n"+(*file)[j];
+			if(file[j].length()>0)
+				value=value+"\n"+file[j];
 		}
 		//Do we set anything?
 		if(!strcmp(command.c_str(),"quitlevel")){
@@ -106,7 +104,6 @@ void Config::initialise()
 				optionaldep=NONE;
 		}
 	}
-	delete file;
 
 }
 

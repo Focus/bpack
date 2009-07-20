@@ -24,18 +24,18 @@
 enum HTTPMETHOD{GET,POST};
 // Chooses whether logging occurs (currently only to stdout) and whether it should be multiline
 enum LOGMETHOD{LOGNONE,LOGMULTI,LOGSINGLE};
-
+enum PROTOCOL{HTTP,FTP};
 struct HttpRequest
 {
     enum HTTPMETHOD method;
     unsigned short port;
     int socket;
     char *path;     // eg. /foo/bar.htm
-	char *protocol; // 
+    enum PROTOCOL protocol;// 
     char *host;     // eg. www.bpack.co.uk
     char *rawheader;// eachline terminated with /r/n, Host & Content-Length added automatically
     char *rawpost;  // FIXME: can only post text
-	char *errormsg; // points to an error description if there is one
+    char *errormsg; // points to an error description if there is one
 };
 
 
@@ -46,7 +46,7 @@ struct HttpResponse
     char *rawheader;// Raw http response header
     int clength;    // Content-Length
     int stream;
-	char *errormsg; // points to an error description if there is one
+    char *errormsg; // points to an error description if there is one
 };
 
 	
@@ -75,3 +75,7 @@ struct HttpResponse HttpGet(struct HttpRequest req, enum LOGMETHOD method);
 
 // read the body of the response and return as string
 char* getBody(struct HttpResponse*);
+
+//Free all the mallocs using these
+void freeresp(struct HttpResponse);
+void freereq(struct HttpRequest*);

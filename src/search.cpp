@@ -80,6 +80,7 @@ string search(string dir, string name){
 		}
 	}
 	}
+	closedir(dp);
 	return rety;
 	}
 	
@@ -91,12 +92,11 @@ string search(string dir, string name){
 			ret=ret+",";
 			}
 		}
-	closedir(dp);dp=NULL;
+	closedir(dp);
 	return ret.substr(0,ret.size()-1);
 	}
 	
 	closedir(dp);
-	dp=NULL;
 	return "";
 	
 
