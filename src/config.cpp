@@ -67,22 +67,21 @@ void Config::initialise()
 		delete file;
 		return;
 	}
-	vector<int> *line=new vector<int>;
-	vector<int> *pos=new vector<int>;
+	vector<int> line,pos;
 	for(int i=0;i<file->size();i++){
 		(*file)[i]=(*file)[i].substr(0,(*file)[i].find_first_of("#"));
 		if( (*file)[i].find_first_of(":")+1>0  ){
-			pos->push_back((*file)[i].find_first_of(":"));
-			line->push_back(i);
+			pos.push_back((*file)[i].find_first_of(":"));
+			line.push_back(i);
 		}
 	}
 	string command,value;
-	line->push_back(file->size());
-	for(int i=0;i<pos->size();i++){
-		command=(*file)[(*line)[i]].substr(0,(*pos)[i]);
-		value=(*file)[(*line)[i]].substr((*pos)[i]+1);
+	line.push_back(file->size());
+	for(int i=0;i<pos.size();i++){
+		command=(*file)[line[i]].substr(0,pos[i]);
+		value=(*file)[line[i]].substr(pos[i]+1);
 		//Do a mini loop to get all of the lines in between the commands
-		for(int j=(*line)[i]+1;j<(*line)[i+1];j++){
+		for(int j=line[i]+1;j<line[i+1];j++){
 			if((*file)[j].length()>0)
 				value=value+"\n"+(*file)[j];
 		}
@@ -107,7 +106,7 @@ void Config::initialise()
 				optionaldep=NONE;
 		}
 	}
-	delete line,pos,file;
+	delete file;
 
 }
 

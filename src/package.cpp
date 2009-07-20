@@ -133,7 +133,7 @@ string packSize(vector<string> locs){
 }
 
 //Prints out a vector of packages   
-void printPackages(const vector<package> packagelist){
+void printPackages(){
 	vector<string> *packs=new vector<string>;
 	*packs=loadLocation(search(Config::getPacklistPath()));
 	cout<<"Packages that bpack is aware of:"<<endl;

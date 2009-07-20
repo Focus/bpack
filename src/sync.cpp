@@ -14,7 +14,6 @@
 #include "sync.hpp"
 
 
-
 using namespace std;
 
 int partition(int low, int high, vector<int>& arr){
@@ -48,7 +47,7 @@ void quicksort(int low, int high, vector<int>& arr){
 //Makes a pacman package from a bpack one
 void pacmanWrite(package pack){
 	string path="/var/lib/pacman/local/"+pack.getName()+"-"+pack.getVersion()+"/";
-	mkdir(path.c_str(),666);
+	mkdir(path.c_str(),766);
 	packinst *dep=new packinst;
 	*dep=getPackage(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion());
 	string buffer;
@@ -64,9 +63,41 @@ void pacmanWrite(package pack){
 	else
 		write("",path+"depends");
 	delete dep;
-
-
-
+	vector <string> bpaths=pack.getLocations();
+	string temp;
+	vector <string> ppaths;
+	int have=0;
+	int i;
+	bool test;
+	int pos=0;
+	while(bpaths.size()>0){
+		temp=bpaths[0].substr(1);
+		if(temp.find("/")!=string::npos)
+			temp=temp.substr(0,temp.find("/")+1);
+		while(temp[temp.length()-1]=='/' ){
+			test=0;
+			for(i=0;i<ppaths.size();i++){
+				if(!strcmp(temp.c_str(),ppaths[i].c_str())){
+					have=i;
+					test=1;
+					break;
+				}
+			}
+			if(!test)
+				ppaths.insert(ppaths.begin()+have,temp);
+			
+			have++;
+			if( (pos=bpaths[0].substr(temp.length()+1).find("/"))!=string::npos)
+				temp=temp+bpaths[0].substr(temp.length()+1,pos+1);
+			else
+				break;
+		}
+		ppaths.insert(ppaths.begin()+have,bpaths[0].substr(1));
+		bpaths.erase(bpaths.begin());
+	}
+	ppaths.insert(ppaths.begin(),"%FILES%");
+	write(ppaths,path+"files");
+	write("%NAME%\n"+pack.getName()+"\n\n%VERSION%\n"+pack.getVersion()+"\n\n%DESC%\nBpack package\n\n%URL%\nhttp://www.bpack.co.uk/\n\n%LICENSE%\ncustom\n\n%BUILDDATE%\n1225056559\n\n%INSTALLDATE%\n1247414698\n\n%PACKAGER%\nBpack\n\n%SIZE%\n200000\n",path+"desc");
 }
 
 //Makes a bpack package from a pacman one

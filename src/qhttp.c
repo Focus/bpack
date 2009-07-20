@@ -93,9 +93,11 @@ struct HttpRequest* buildreq(const char* url)
 	int pos;
 	// Sort out protocol
 	if(strstr(url,"://")){
-		ret->protocol = (char*)malloc(strstr(url,"://")-url);
-		strncpy(ret->protocol, url, strstr(url,"://")-url);
-		(ret->protocol)[strstr(url,"://")-url]='\0';
+		char* protc = (char*)malloc(strstr(url,"://")-url);
+		strncpy(protc, url, strstr(url,"://")-url);
+		protc[strstr(url,"://")-url]='\0';
+		ret->protocol=protc;
+		free(protc);
 		url+=strstr(url,"://")-url+3;
 	} else
 		ret->protocol = "http";	// assume http as default
@@ -107,18 +109,21 @@ struct HttpRequest* buildreq(const char* url)
 	//printf(" : %\n", );
 
 	// sort out host
+	char* host;
 	if(strchr(url,':')){
-		ret->host = malloc(strchr(url,':')-url+1);
-		strncpy(ret->host, url, strchr(url,':')-url);
-		(ret->host)[strchr(url,'/')-url]='\0';
+		host = malloc(strchr(url,':')-url+1);
+		strncpy(host, url, strchr(url,':')-url);
+		host[strchr(url,'/')-url]='\0';
 	}else if(strchr(url,'/')){
-		ret->host = malloc(strchr(url,'/')-url+1);
-		strncpy(ret->host, url, strchr(url,'/')-url);
-		(ret->host)[strchr(url,'/')-url]='\0';
+		host = malloc(strchr(url,'/')-url+1);
+		strncpy(host, url, strchr(url,'/')-url);
+		host[strchr(url,'/')-url]='\0';
 	}else{
-		ret->host = malloc(strlen(url));
-		strcpy(ret->host, url);
+		host = malloc(strlen(url));
+		strcpy(host, url);
 	}
+	ret->host=host;
+	free(host);
 	//printf(" : %\n", );
 
 
@@ -153,8 +158,10 @@ struct HttpRequest* buildreq(const char* url)
 	// Sort out path
 
 	if(strchr(url,'/')){
-		ret->path = malloc(url+strlen(url)-strchr(url,'/')+1);
-		strcpy(ret->path, strchr(url,'/'));
+		char* path = malloc(url+strlen(url)-strchr(url,'/')+1);
+		strcpy(path, strchr(url,'/'));
+		ret->path=path;
+		free(path);
 	}else
 		ret->path = "/";
 
@@ -286,12 +293,14 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 {
 	struct HttpResponse resp;
 	resp.errormsg = 0;
-	resp.rawheader=(char*)malloc(strlen(rawresp));
-	strcpy(resp.rawheader, rawresp);
+	char* rawheader=(char*)malloc(strlen(rawresp));
+	strcpy(rawheader, rawresp);
+	resp.rawheader=rawheader;
+	free(rawheader);
 
 	//printf(" building response :\n%s\n\n", "");//rawresp);
-	resp.streason = malloc(10);
-	sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), resp.streason);
+	char* reason = malloc(10);
+	sscanf(rawresp, "HTTP/1.1 %d %s", &(resp.stcode), reason);
 	if(strstr(rawresp, "Content-Length:"))
 		sscanf(strstr(rawresp, "Content-Length:"),"Content-Length: %d",&(resp.clength));
 	else if(strstr(rawresp, "Content-length:"))
@@ -303,6 +312,8 @@ struct HttpResponse buildresponsehead(const char* rawresp)
 		resp.errormsg=malloc(strlen(("Cannot find content length")));
 		resp.errormsg="Cannot find content length";
 	}
+	resp.streason=reason;
+	free(reason);
 	return resp;
 }
 

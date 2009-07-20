@@ -96,8 +96,8 @@ void install(string packname, int bail){
 
 
 	if(*location==""){
-		if(!dlPack(packname))
-			err("Package "+packname+" not found.",2);	
+//if(!dlPack(packname))
+		err("Package "+packname+" not found.",2);	
 	}	
 	string *temp=new string;
 	*temp=*location;

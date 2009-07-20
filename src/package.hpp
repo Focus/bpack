@@ -65,7 +65,7 @@ class package
 
 std::vector<package> getInstalledPackages(const std::string);
 std::vector<package> getInstalledPackages();
-void printPackages(const std::vector<package>);
+void printPackages();
 package getInstalledPackage(std::string);
 std::vector<package> getInstalledPackages();
 void depVersion(std::string&, version&);

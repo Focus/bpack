@@ -49,7 +49,6 @@ void help();
 void mrt();
 
 
-
 int main(int argc, char *argv[]){
 	Config::initialise();
 	if(argc < 2){
@@ -111,7 +110,7 @@ int main(int argc, char *argv[]){
 	else if(!strcmp(argv[1],"--help"))
 		help();
 	else if(!strcmp(argv[1],"list"))
-		printPackages(getInstalledPackages(Config::getPacklistPath().c_str()));
+		printPackages();
 	else if(!strcmp(argv[1],"mrt"))
 		mrt();
 	else if(!strcmp(argv[1],"sync")){

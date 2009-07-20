@@ -66,7 +66,9 @@ collection::collection(string purl)
 	free(req);
 	// Error handling, on error none of the lower priority collections can be used, higher ones can however
 	// Read list
-	string respbody(getBody(&resp));
+	char* body = getBody(&resp);
+	string respbody=body;
+	free(body);
 	// error handle
 	// check respbody is a valid collection listing
 	
@@ -146,7 +148,6 @@ void update()
 int dlPack(string package){
 
 	collection coll("http://bpack.co.uk/repos.php?coll="+Config::getColl());
-	coll.add(package);
 	if(coll.empty())
 		return 0;
 	coll.saveall(Config::getPackInstDir());

@@ -100,6 +100,6 @@ void scan()
 		if((temp.getLocations()).size()>0)
 			found_pack.push_back(temp);
 	}
-	printPackages(found_pack);
+	printPackages();
 }
 
