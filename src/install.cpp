@@ -106,8 +106,8 @@ void install(string packname, int bail){
 	*packageinst=getPackage(Config::getPackInstDir()+*location);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
-	vector<package> *installed=new vector<package>;
-	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
+	vector<string> *installed=new vector<string>;
+	*installed=loadLocation(search(Config::getPacklistPath()));
 	string y;
 	bool gotit;
 	version depver;
@@ -115,27 +115,34 @@ void install(string packname, int bail){
 	delete location;
 	//Check if the package is installed
 	for(int i=0;i<installed->size();i++){
-		if( !strcmp( ((*installed)[i].getName()).c_str(), (packageinst->getName()).c_str()) && packageinst->getVersion()<=(*installed)[i].getVersion()){
+		y=(*installed)[i];
+		depVersion(y,depver);
+		if( !strcmp(y.c_str(), (packageinst->getName()).c_str()) && depver>=packageinst->getVersion()){
 			cout<<"\nThe package is installed with the current or more recent version"<<endl;
 			exit(0);
 		}
 	}
 
 	//check for dependencies
+	string inst;
+	version instver;
+	depver="0.0.0";
 	while(packageinst->getNextDep(y)){
-
+		depVersion(y,depver);
 		for(int i=0;i<installed->size();i++){
+			inst=(*installed)[i];
+			instver="0.0.0";
+			depVersion(inst,instver);
 			gotit=0;
-			depVersion(y,depver);
-			if(!strcmp(  ((*installed)[i].getName()).c_str(),y.c_str())){
-				if( (((*installed)[i].Version())>=depver)  || ( ((*installed)[i].Version())=="0.0.0") ){
+			if(!strcmp(inst.c_str(),y.c_str())){
+				if( instver>=depver.asString()  || instver=="0.0.0" ){
 					cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
 					packageinst->removeDep(packageinst->getLoc());
 					gotit=1;
 					break;
 				}
 				else{
-					cout<<"\nPackage "<<y<<" version "<<(*installed)[i].getVersion()<<" found but version "<<depver<<" required."<<endl;
+					cout<<"\nPackage "<<y<<" version "<<instver.asString()<<" found but version "<<depver.asString()<<" required."<<endl;
 				}
 			}
 

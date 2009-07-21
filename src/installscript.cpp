@@ -173,19 +173,18 @@ bool installScript(packinst inst, int bail=-1)
 	delete tars;
 	delete tars2;
 	//Make a clean directory by removing previous extracts
-	erase(tardir+inst.getName()+"-"+inst.getVersion());
+	erase(tardir+tar.substr(0,tar.find(".tar")));
 	//Unpack the tar
-	if(chdir(tardir.c_str())!=0){
-		err("Cannot cd to "+tardir,2,1);
-	}
-	if(system( ("tar xf "+tar).c_str())!=0){
+	if(system( ("tar xf "+tardir+tar+" -C "+tardir).c_str())!=0){
 		err("Unable to unpack the tarball!",2);
 	}
 
-	if(chdir( (tardir+inst.getName()+"-"+inst.getVersion()).c_str())!=0){
-		err("Cannot cd to "+tardir,0,1);
-		return 0;
+	if(chdir( (tardir+tar.substr(0,tar.find(".tar"))).c_str())!=0){
+		cout<<"Cannot cd to "+tardir+tar.substr(0,tar.find(".tar"))<<endl<<"Trying an other directory..."<<endl;
+		if(chdir( (tardir+inst.getName()+"-"+inst.getVersion()).c_str() ))
+			err("Cannot cd to "+tardir+inst.getName()+"-"+inst.getVersion(),2,1);
 	}
+
 	//Run preinstall commands
 	if(inst.getPreInstall()!=""){
 		if( system( inst.getPreInstall().c_str() )!=0)
