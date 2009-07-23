@@ -88,7 +88,7 @@ bool version::operator== (const string str) const{
 bool version::operator< (const version ver) const{
 	vector<int> vecver=ver.asVector();
 	vector<int> numberst=numbers;
-	while(vecver.size()>numbers.size())
+	while(vecver.size()>numberst.size())
 		numberst.push_back(0);
 	while(vecver.size()<numbers.size())
 		vecver.push_back(0);
