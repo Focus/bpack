@@ -136,9 +136,8 @@ string packSize(vector<string> locs){
 void printPackages(){
 	vector<string> *packs=new vector<string>;
 	*packs=loadLocation(search(Config::getPacklistPath()));
-	cout<<"Packages that bpack is aware of:"<<endl;
 	for(int i=0;i<packs->size();i++)
-		cout<<"\t"<<(*packs)[i]<<endl;
+		cout<<(*packs)[i]<<endl;
 	delete packs;
 }
 

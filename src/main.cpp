@@ -111,6 +111,17 @@ int main(int argc, char *argv[]){
 		help();
 	else if(!strcmp(argv[1],"list"))
 		printPackages();
+	else if(!strcmp(argv[1],"sizeof")){
+		package pack;
+		for(int i=2;i<argc;i++){
+			pack=getInstalledPackage(argv[i]);
+			if(pack.getName().length()<=0){
+				cout<<"Package "<<argv[i]<<" not found"<<endl;
+				return 0;
+			}
+			cout<<pack.getName()+"-"+pack.getVersion()<<"\t"<<packSize(pack.getLocations())<<endl;
+		}
+	}
 	else if(!strcmp(argv[1],"mrt"))
 		mrt();
 	else if(!strcmp(argv[1],"sync")){

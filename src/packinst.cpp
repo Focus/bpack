@@ -147,6 +147,8 @@ packinst getPackage(string location){
 			pack.setMeta(1);
 		else if(!strcmp(command.c_str(),"optional"))
 			pack.addDeps(optional(value));
+		else if(!strcmp(command.c_str(),"patches"))
+			pack.setPatches(loadLocation(value));
 	}
 	return pack;
 }

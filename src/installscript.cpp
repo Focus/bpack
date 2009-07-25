@@ -161,9 +161,7 @@ bool installScript(packinst inst, int bail=-1)
 
 
 		if(wget(inst.getWget().c_str(),tardir.c_str(),0,LOGNONE,1))
-		{
 			err("Download failed!",1);
-		}
 
 		tar=tarName(inst.getWget());
 
@@ -184,7 +182,25 @@ bool installScript(packinst inst, int bail=-1)
 		if(chdir( (tardir+inst.getName()+"-"+inst.getVersion()).c_str() ))
 			err("Cannot cd to "+tardir+inst.getName()+"-"+inst.getVersion(),2,1);
 	}
-
+	//Aplly the patches
+	vector<string> patches;
+	for(int i=0;i<inst.getPatches().size();i++){
+		if(inst.getPatches()[i].find_last_of("/")==string::npos){
+			err("Patch url "+inst.getPatches()[i]+" looks bad, skipping",0);
+			continue;
+		}
+		if(wget(inst.getPatches()[i].c_str(),tardir.c_str(),inst.getPatches()[i].substr(inst.getPatches()[i].find_last_of("/")+1).c_str(),LOGNONE,1)){
+			err("Patch url "+inst.getPatches()[i]+" could not be downloaded, skipping",0);
+			continue;
+		}
+		patches.push_back(inst.getPatches()[i].substr(inst.getPatches()[i].find_last_of("/")+1));
+	}
+	for(int i=0;i<patches.size();i++){
+		if( system( ("patch -Np1 -i ../"+patches[i]).c_str())!=0)
+			err("Patch "+patches[i]+" could not be applied",0);
+		else
+			cout<<"Patch "+patches[i]+" successful"<<endl;
+	}
 	//Run preinstall commands
 	if(inst.getPreInstall()!=""){
 		if( system( inst.getPreInstall().c_str() )!=0)

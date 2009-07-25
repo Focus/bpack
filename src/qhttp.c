@@ -369,6 +369,15 @@ struct HttpResponse httpreadresponse(int socket)
 
 	free(buffer);
 	struct HttpResponse ret = buildresponsehead(newbuffer);
+	if(ret.clength<=0){
+		if(strstr(newbuffer,"Location:")){
+			char* redirect=strstr(newbuffer,"Location: ")+10;
+			redirect[strlen(redirect)-strlen(strchr(redirect,'\r'))]='\0';
+			ret.errormsg=malloc(strlen(redirect));
+			strcpy(ret.errormsg,redirect);
+			ret.clength=-10; //Return code for redirect
+		}
+	}
 	ret.stream = socket;
 	free(newbuffer);
 	return ret;
@@ -648,10 +657,17 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	}
 	// get
 	struct HttpResponse hr = HttpGet(*hq, logtype);
+	if(hr.clength==-10){
+		int ret=wget(hr.errormsg,dir,filename,logtype,overwrite);
+		freereq(hq);
+		freeresp(hr);
+		return ret;
+	}
 	if(hr.errormsg){
 		logger2(LOGMULTI, "Error getting : ", hr.errormsg);
 		return 3;
 	}
+
 
 	// choose filename
 	char tempname[100];
