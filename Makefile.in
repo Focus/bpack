@@ -123,6 +123,7 @@ install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)/packs
 	mkdir -p $(DESTDIR)/libs
 	cp -f bpack $(bindir)/bpack
+	ln -s $(bindir)/bpack $(bindir)/versioncmp
 	cp -f binpack $(bindir)/binpack
 	touch /etc/bpack.conf
 	echo "$(bindir)/bpack $(DESTDIR)/libs/hijack.so.1.0" > $(DESTDIR)/installed/bpack-$(VERSION)

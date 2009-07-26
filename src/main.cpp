@@ -50,6 +50,25 @@ void mrt();
 
 
 int main(int argc, char *argv[]){
+	if(!strcmp(argv[0],"versioncmp")){
+		if(argc < 3){
+			cout<<"versioncmp [ver1] [ver2]"<<endl;
+			return 1;
+		}
+		version ver1,ver2;
+		string stringy;
+		stringy=argv[1];
+		ver1=stringy;
+		stringy=argv[2];
+		ver2=stringy;
+		if(ver1==ver2)
+			cout<<"0"<<endl;
+		else if(ver1>ver2)
+			cout<<"1"<<endl;
+		else
+			cout<<"-1"<<endl;
+		return 0;
+	}
 	Config::initialise();
 	if(argc < 2){
 		cerr<<"Usage:\n bpack [action] [parameters]\nUse --help for more details\n";

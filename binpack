@@ -3,46 +3,6 @@ rm -rf /tmp/binpack/
 mkdir -p /tmp/binpack/package/
 version=0.1
 ret="default"
-installdeps (){
-	i=1
-	for dep in ${deps[*]}
-	do
-		index=${dep#*-[0-9]}
-		if [ ${#index} -eq ${#dep} ]
-		then
-			ver="0"
-			pack=$dep
-		else
-			ver=${dep:${#dep}-${#index}-1}
-			pack=${dep:0:${#dep}-${#ver}-1}
-		fi
-		installed=0
-		for got in $( ls /var/bpack/installed/ | grep $pack )
-		do
-			index=${got#*-[0-9]}
-			if [ ${#index} -eq ${#got} ]
-			then
-				if [ "$got" = "$pack" ]; then
-					installed=1
-				fi
-			else
-				gver=${got:${#got}-${#index}-1}
-				gpack=${got:0:${#got}-${#gver}-1}
-				if [ $gpack == $pack ] && [ $( vercmp $gver $ver) -gt "-1" ]; then
-					installed=1
-				fi
-			fi
-		done
-		if [ $installed -eq 0 ]
-		then
-			need[$i]=$dep
-			let i=i+1
-		fi
-	done
-	echo "The following packages will need to be installed: ${need[@]}"
-	return 1
-}
-
 
 getname (){
 	temp=$1
@@ -77,6 +37,139 @@ getname (){
 	ret=$temp
 }
 
+paclate (){
+	case $1 in
+		*)
+		ret=$1
+		;;
+	esac
+}
+
+installdeps (){
+	i=1
+	j=1
+	for dep in ${deps[*]}
+	do
+		index=${dep#*-[0-9]}
+		if [ ${#index} -eq ${#dep} ]
+		then
+			ver="0"
+			pack=$dep
+		else
+			ver=${dep:${#dep}-${#index}-1}
+			pack=${dep:0:${#dep}-${#ver}-1}
+		fi
+		installed=0
+		for got in $( ls /var/bpack/installed/ | grep $pack )
+		do
+			index=${got#*-[0-9]}
+			if [ ${#index} -eq ${#got} ]
+			then
+				if [ "$got" = "$pack" ]; then
+					installed=1
+					break
+				fi
+			else
+				gver=${got:${#got}-${#index}-1}
+				gpack=${got:0:${#got}-${#gver}-1}
+				if [ $gpack == $pack ]; then
+					installed=-1
+					if [ $( versioncmp $gver $ver) -gt "-1" ]; then
+						installed=1
+						break
+					fi
+				fi
+			fi
+		done
+		if [ $installed -eq 0 ]; then
+			paclate $pack
+			need[$i]=$ret
+			needver[$i]=$ver
+			let i=i+1
+		elif [ $installed -eq -1 ]; then
+			paclate $pack
+			update[$j]=$ret
+			updatever[$j]=$ver
+			let j=j+1
+		fi
+	done
+	if [ ${#need[*]} -gt 0 ]; then
+		echo "The following packages will need to be installed: ${need[@]}"
+	fi
+	if [ ${#update[*]} -gt 0 ]; then
+		echo "The following packages will need to be upgraded: ${update[@]}"
+	fi
+	echo -n "Would you like to install these dependencies? [y/n/q]:"
+	read -n 1 input
+	echo ""
+	if [ "$input" == "n" ]; then
+		return
+	elif [ "$input" == "q" ]; then
+		exit 0
+	fi
+	for i in ${!need[*]}
+	do
+		needy=-10
+		dep=${need[$i]}
+		for bhas in $( ls /var/bpack/packs/ | grep $dep )
+		do
+			index=${bhas#*-[0-9]}
+			bver=${bhas:${#bhas}-${#index}-1}
+			bname=${bhas:0:${#bhas}-${bver}-1}
+			if [ $bname == $dep ] && [ $( versioncmp $bver ${needver[$i]} )]; then
+				needy=`bpack install $bname`
+			fi
+		done
+		if [ $needy -eq -10 ]; then
+			echo "Package $dep not found!"
+			echo -n "Would you like to carry on? [y/n]:"
+			read -n 1 input
+			echo ""
+			if [ "$input" == "n" ]; then
+				exit 0
+			fi
+		elif [ $needy -ne 0 ]; then
+			echo "Package $dep not installed correctly!"
+			echo -n "Would you like to carry on? [y/n]:"
+			read -n 1 input
+			echo ""
+			if [ "$input" == "n" ]; then
+				exit 0
+			fi
+		fi
+	done
+	for i in ${!update[*]}
+	do
+		needy=-10
+		dep=${update[$i]}
+		for bhas in $( ls /var/bpack/packs/ | grep $dep )
+		do
+			index=${bhas#*-[0-9]}
+			bver=${bhas:${#bhas}-${#index}-1}
+			bname=${bhas:0:${#bhas}-${bver}-1}
+			if [ $bname == $dep ] && [ $( versioncmp $bver ${updatever[$i]} )]; then
+				needy=`bpack upgrade $bname`
+			fi
+		done
+		if [ $needy -eq -10 ]; then
+			echo "Package $dep not found!"
+			echo -n "Would you like to carry on? [y/n]:"
+			read -n 1 input
+			echo ""
+			if [ "$input" == "n" ]; then
+				exit 0
+			fi
+		elif [ $needy -ne 0 ]; then
+			echo "Package $dep not upgraded correctly!"
+			echo -n "Would you like to carry on? [y/n]:"
+			read -n 1 input
+			echo ""
+			if [ "$input" == "n" ]; then
+				exit 0
+			fi
+		fi
+	done
+}
 
 pacman (){
 	first="${1%'-i686.pkg.tar.gz'}"
@@ -104,11 +197,14 @@ pacman (){
 		let i=i+1
 	done
 	installdeps
-	#if [ `installdeps deps` -eq 0 ]
-	#then
-	#	echo "Could not install dependencies. Aborting."
-	#	exit 0
-	#fi
+	rm -f /tmp/binpack/package/.[A-Z]*
+	sed -i '/^\./d' /tmp/binpack/log
+	sed -i '/\/$/d' /tmp/binpack/log
+	sed -i 's/^/\//' /tmp/binpack/log
+	cp -rf /tmp/binpack/package/* /
+	cp /tmp/binpack/log /var/bpack/installed/$name
+	echo "Package $name is installed."
+	rm -rf /tmp/binpack/
 }
 
 case $1 in
