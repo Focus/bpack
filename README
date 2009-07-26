@@ -1,4 +1,4 @@
-README  Version 0.1
+README  Version 0.2
 	Author: Bati Sengul
  
 	Bpack developed by Bati Sengul and Michael Bush
@@ -10,9 +10,7 @@ README  Version 0.1
    a.	Pre-requisites
    b.	Instructions
 
-2.	=Configuration=
-
-3.	=Usage=
+2.	=Usage=
 
    a.	Installing packages
       i.	Basic installation
@@ -28,13 +26,13 @@ README  Version 0.1
    f.   Clean
    g.	Scanning the computer for pre-installed packages
 
-4.	=Configuration=
+3.	=Configuration=
 
    a.   /etc/bpack.conf
    b.   Package making
    c.   Collections
 
-5.	=Contributing=
+4.	=Contributing=
 
    a.	Development
    b.	Donating
@@ -69,13 +67,7 @@ One can of course pass parameters such as --prefix to configure and DESTDIR to m
 
 
 
-				=== 2 ===  ===Configuration===
-
-To configure the way bpack work edit the configuration file which is in /etc/bpack.conf by default. Here is a list of configurations:
-
-
-
-				=== 3 ===  ===Usage===
+				=== 2 ===  ===Usage===
 
 
 == a ==  ==Installing packages==
@@ -162,6 +154,13 @@ Running the following command
 	bpack list
 
 will show the user the packages bpack has under control and the size they take up.
+If you wish to know if package x is installed, you can use grep
+
+	bpack list | grep x
+
+To see the size of a package run,
+
+	bpack sizeof [package]
 
 
 == f ==  ==Clean==
@@ -189,7 +188,7 @@ Bpack has its own feature for scanning through the root directory for packages t
 
 
 
-				=== 5 ===  ===Contributing===
+				=== 3 ===  ===Configuration===
 
 
 == a ==  ==/etc/bpack.conf==
@@ -204,6 +203,8 @@ Currently these are the available options and values
 
 	quitlevel	0,1,2,-1,-2		In the negatives, bpack will ask more instead of quiting, in the possitives bpack will quit more than usual.
 	collection	a collection name	The default collection to get packages from.
+	cflags		string			The cflags that bpack should apply
+	cxxflags	string			The cxxflags that bpack should apply
 
 
 == b ==  ==Package making==
@@ -219,6 +220,7 @@ Bpack will read the lines untill the next option (ignoring the empty lines) so m
 
 	location	The url for the tarball, incase it needs to be downloaded
 	deps		Dependencies seperated by commas
+	optional	Optional dependencies, recommended ones should have a ! before them (i.e. foo,!gcc,bar)
 	config		Parameters to be passed to ./configure (e.g. --prefix=/usr)
 	make		Paramerers to be passed to make
 	makeinst	Parameters to be passed to makeinst
@@ -226,6 +228,7 @@ Bpack will read the lines untill the next option (ignoring the empty lines) so m
 	postinstall	Things to exacute after the install in the unpacked tar directory
 	conf		The contents of the configuration file, make sure you set conffile if you use this option
 	conffile	The location of the configuration file
+	patches		The location of patches to be downloaded and applied (seperated by commas)
 
 Many of these can be left out. To stop bpack from running ./configure, make or make install, pass the value  no  to config, make or makeinst.
 
@@ -233,6 +236,7 @@ The package must be saved under bpack_dir/packs/ and the format for the file nam
 
 	name-version
 
+The conf: option is a bit special in the sense that it should be written like a diff. To insert a line use + and to delete a line use -.
 
 == b ==  ==Package making==
 
@@ -240,7 +244,7 @@ Share your bpack experiance with others and create a collection. A collection is
 
 
 
-				=== 5 ===  ===Contributing===
+				=== 4 ===  ===Contributing===
 
 
 
@@ -250,6 +254,12 @@ We always need more people to help develop bpack. If you are a programmer, talk 
 
 Feel free to come and talk to us ;)
 
+You can join us on #bpack @ freenode, or email us
+	Bati Sengul <batieatworld@gmail.com>
+	Mike Bush <mpbush@gmail.com>
+
+Visit our website at
+	http://www.bpack.co.uk/
 
 == b ==  ==Donations==
 

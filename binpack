@@ -1,0 +1,144 @@
+#!/bin/bash
+rm -rf /tmp/binpack/
+mkdir -p /tmp/binpack/package/
+version=0.1
+ret="default"
+installdeps (){
+	i=1
+	for dep in ${deps[*]}
+	do
+		index=${dep#*-[0-9]}
+		if [ ${#index} -eq ${#dep} ]
+		then
+			ver="0"
+			pack=$dep
+		else
+			ver=${dep:${#dep}-${#index}-1}
+			pack=${dep:0:${#dep}-${#ver}-1}
+		fi
+		installed=0
+		for got in $( ls /var/bpack/installed/ | grep $pack )
+		do
+			index=${got#*-[0-9]}
+			if [ ${#index} -eq ${#got} ]
+			then
+				if [ "$got" = "$pack" ]; then
+					installed=1
+				fi
+			else
+				gver=${got:${#got}-${#index}-1}
+				gpack=${got:0:${#got}-${#gver}-1}
+				if [ $gpack == $pack ] && [ $( vercmp $gver $ver) -gt "-1" ]; then
+					installed=1
+				fi
+			fi
+		done
+		if [ $installed -eq 0 ]
+		then
+			need[$i]=$dep
+			let i=i+1
+		fi
+	done
+	echo "The following packages will need to be installed: ${need[@]}"
+	return 1
+}
+
+
+getname (){
+	temp=$1
+#Remove the 2.5-8 and such and make it 2.5.8
+	index=${temp%[0-9]-[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+2}
+		index=${temp%[0-9]-[0-9]*}
+	done
+#Remove the rc
+	index=${temp%[0-9]rc[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+3}
+		index=${temp%[0-9]rc[0-9]*}
+	done
+#Remove the beta
+	index=${temp%[0-9]beta-[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+6}
+		index=${temp%[0-9]beta-[0-9]*}
+	done
+#Remove the git 
+	index=${temp%[0-9]git[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+4}
+		index=${temp%[0-9]git[0-9]*}
+	done
+	ret=$temp
+}
+
+
+pacman (){
+	first="${1%'-i686.pkg.tar.gz'}"
+	name=${first#*/}
+	while [ `expr index "$name" /` -gt 0 ]
+	do
+		name=${name#*/}
+	done
+	getname $name
+	name=$ret
+	tar xvf $1 -C /tmp/binpack/package/ > /tmp/binpack/log  || (echo "Cannot extract the package!"; exit 0)
+	echo "Checking dependencies..."
+	i=1
+	for line in $( grep '^depend = ' /tmp/binpack/package/.PKGINFO | sed s/'^depend = '//)
+	do
+		index=${line%[a-z]>=[0-9]*}
+		if [ ${#index} -eq ${#line} ]
+		then
+			getname $line
+			deps[$i]="$ret"
+		else
+			getname ${line:0:${#index}+1}-${line:${#index}+3}
+			deps[$i]="$ret"
+		fi
+		let i=i+1
+	done
+	installdeps
+	#if [ `installdeps deps` -eq 0 ]
+	#then
+	#	echo "Could not install dependencies. Aborting."
+	#	exit 0
+	#fi
+}
+
+case $1 in
+	-h| --help)
+	echo "Binpack version $version"
+	echo -e "Binpack is a binary helper for bpack.\nUsage:"
+	echo -e "\tbinpack [file]\n\n"
+	echo "Currently supports .deb and .pkg.tar.gz extensions"
+	exit 0
+	;;
+	--version)
+	echo "Binpack version $version"
+	echo -e "\tAuthor: Bati Sengul <batieatworld@gmail.com>"
+	exit 0
+	;;
+	'')
+	echo -e "Usage:\n\tbinpack [file]"
+	exit 0
+	;;
+esac
+
+
+if [ ! -f $1 ]
+then
+	echo "File $1 does not exist!"
+	exit 0
+fi
+
+if [ "${1:${#1}-15}"="i686.pkg.tar.gz" ]
+then
+	pacman $1
+fi
+
