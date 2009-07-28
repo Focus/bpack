@@ -147,7 +147,7 @@ installdeps (){
 			index=${bhas#*-[0-9]}
 			bver=${bhas:${#bhas}-${#index}-1}
 			bname=${bhas:0:${#bhas}-${bver}-1}
-			if [ $bname == $dep ] && [ $( versioncmp $bver ${updatever[$i]} )]; then
+			if [ $bname == $dep ] && [ $( versioncmp $bver ${updatever[$i]} ) ]; then
 				needy=`bpack upgrade $bname`
 			fi
 		done

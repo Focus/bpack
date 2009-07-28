@@ -123,10 +123,10 @@ install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)/packs
 	mkdir -p $(DESTDIR)/libs
 	cp -f bpack $(bindir)/bpack
-	ln -s $(bindir)/bpack $(bindir)/versioncmp
+	ln -sf $(bindir)/bpack $(bindir)/versioncmp
 	cp -f binpack $(bindir)/binpack
 	touch /etc/bpack.conf
-	echo "$(bindir)/bpack $(DESTDIR)/libs/hijack.so.1.0" > $(DESTDIR)/installed/bpack-$(VERSION)
+	echo -e "$(bindir)/bpack\n$(bindir)/binpack\n$(DESTDIR)/libs/hijack.so.1.0" > $(DESTDIR)/installed/bpack-$(VERSION)
 
 tarclean:
 	rm -rf .tarball
