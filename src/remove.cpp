@@ -56,50 +56,62 @@ int erase(string path){
 		remove(path.c_str());
 	}
 	else{
-  		if(remove(path.c_str())){
+		if(remove(path.c_str())){
 			err("Erase could not delete "+path,0,1);
-    		return 0;
+			return 0;
 		}
 	}
 	return 1;
 }
 
 int erase(vector<string> paths){
-  for(int i=0;i<paths.size();i++){
-    if(erase(paths[i])==0)
-      return 0;
-  }
-  return 1;
+	for(int i=0;i<paths.size();i++){
+		if(erase(paths[i])==0)
+			return 0;
+	}
+	return 1;
 }
 
 //Removes the package
+//TODO: Make this more lightweight
 int removePack(string pack){
-  vector<package> *packages=new vector<package>;
-  vector<string> locations;
-  *packages=getInstalledPackages(Config::getPacklistPath().c_str());
-  int index=-1;
-  for(int i=0; i< packages->size();i++){
-    if(!strcmp(  (((*packages)[i]).getName()).c_str(),pack.c_str())){
-      cout<<"\nPackage "<<pack<<" found! \nRemoving package..."<<endl;
-      index=i;
-      break;
-    }
-  }
+	vector<package> *packages=new vector<package>;
+	vector<string> locations;
+	*packages=getInstalledPackages(Config::getPacklistPath().c_str());
+	int index=-1;
+	for(int i=0; i< packages->size();i++){
+		if(!strcmp(  (((*packages)[i]).getName()).c_str(),pack.c_str())){
+			cout<<"\nPackage "<<pack<<" found! \nRemoving package..."<<endl;
+			index=i;
+			break;
+		}
+	}
 
-  if(index<0){
-    err("No package named "+pack+" was found.");
-    return 0;
-  }
+	if(index<0){
+		err("No package named "+pack+" was found.");
+		return 0;
+	}
 
-  locations=((*packages)[index]).getLocations();
-  if( ((*packages)[index]).getScan())
-    err("This package was scanned, are you really sure you want to remove this?",1);
-  cout<<"\nErasing "<<pack<<"..."<<endl;
-  if(erase(locations)){
-	(*packages)[index].remove();
+	locations=((*packages)[index]).getLocations();
+	if( ((*packages)[index]).getScan())
+		err("This package was scanned, are you really sure you want to remove this?",1);
+	string name;
+	version ver;
+	for(int i=0; i<(*packages)[index].getDeps().size();i++){
+		name=(*packages)[index].getDeps()[i];
+		depVersion(name,ver);
+		for(int j=0;j<packages->size();j++){
+			if(!strcmp(name.c_str(),(*packages)[j].getName().c_str()) && ver<=(*packages)[j].getVersion())
+				err("Package "+name+" depends on "+pack,2,0);
+		}
+		ver="0.0.0";
+	}
+	cout<<"\nErasing "<<pack<<"..."<<endl;
+	if(erase(locations)){
+		(*packages)[index].remove();
+		delete packages;
+		return 1;
+	}
 	delete packages;
-	return 1;
-  }
-  delete packages;
-  return 0;
+	return 0;
 }

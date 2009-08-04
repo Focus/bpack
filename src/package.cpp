@@ -64,7 +64,7 @@ package::package(const packinst inst)
 
 
 bool package::save(){
-	return write(locations,Config::getPacklistPath()+name+"-"+ver.asString());
+	return write(locations,Config::getPacklistPath()+name+"-"+ver.asString()) && write(deps,Config::getDepTree()+name+"-"+ver.asString());
 }
 //TODO version checks!
 bool package::remove(){
@@ -156,6 +156,7 @@ vector<package> getInstalledPackages(const string location){
 		current.setName(name);
 		current.setVersion(ver);
 		current.setLocations(read(location+(*files)[i]));
+		current.setDeps(read(Config::getDepTree()+(*files)[i]));
 		ret.push_back(current);
 	}
 	delete files;

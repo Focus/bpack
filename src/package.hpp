@@ -42,6 +42,8 @@ class package
 		std::string getVersion() const {return ver.asString();}
 		version Version() const {return ver;}
 		std::vector<std::string> getLocations() const{return locations;} 
+		//Contrary to what this looks like, the deps are the packages that depend on this package!
+		std::vector<std::string> getDeps() const{return deps;} 
 		bool getScan() const {return scan;}
 		void setName(const std::string pname){name=pname;}
 		void setVersion(const std::string pname){ver=pname;}
@@ -52,6 +54,7 @@ class package
 			for(int i=0;i<plocations.size();i++)
 				locations.push_back(plocations[i]);
 		}
+		void setDeps(const std::vector<std::string> pdeps){deps=pdeps;}
 		void setScan(const bool pscan){scan=pscan;}
 		bool save();
 		bool remove();
@@ -59,7 +62,7 @@ class package
 	private:
 		std::string name;
 		version ver;
-		std::vector<std::string> locations;
+		std::vector<std::string> locations,deps;
 		bool scan;
 };
 

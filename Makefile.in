@@ -109,7 +109,7 @@ src/sync.o: src/sync.cpp src/sync.hpp
 clean:
 	rm -f src/*.o bpack
 libs/hijack.so.1.0: src/hijack.c
-	mkdir libs/
+	mkdir -p libs/
 	$(CC) -fPIC -c src/hijack.c -fno-stack-protector
 	$(LD) -shared -soname hijack.so.1 -o libs/hijack.so.1.0 -lc hijack.o -ldl
 

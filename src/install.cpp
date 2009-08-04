@@ -57,6 +57,7 @@ void clean(packinst pack){
 	erase("/tmp/hijack_log.txt");
 	installed->setVersion(pack.getVersion());
 	installed->setName(pack.getName());
+	installed->setDeps(pack.getDeps());
 	installed->save();
 	delete installed;
 	cout<<"Clearing up..."<<endl;
@@ -137,7 +138,6 @@ void install(string packname, int bail){
 			if(!strcmp(inst.c_str(),y.c_str())){
 				if( instver>=depver.asString()  || instver=="0.0.0" ){
 					cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
-					packageinst->removeDep(packageinst->getLoc());
 					gotit=1;
 					break;
 				}

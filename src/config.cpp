@@ -33,7 +33,7 @@
 
 using namespace std;
 
-string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll,Config::cflags,Config::cxxflags;
+string Config::installdir, Config::scriptdir, Config::packinstdir, Config::tarballdir, Config::packmandir, Config::packlistpath, Config::logdir,Config::lib,Config::coll,Config::cflags,Config::cxxflags,Config::deptree;
 int Config::quitlevel;
 enum OPTDEP Config::optionaldep;
 
@@ -54,6 +54,7 @@ void Config::initialise()
 	tarballdir = installdir + "tarballs/";
 	packmandir = installdir + "packman/";
 	packlistpath = installdir + "installed/";
+	deptree = installdir + "deptree/"; 
 	logdir=installdir+"logs/";
 	lib=installdir+"libs/hijack.so.1.0";
 	Config::quitlevel=0;

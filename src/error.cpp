@@ -8,7 +8,7 @@
 
 void err(std::string message, int level,bool errnoset){
 	
-	std::cerr<<"\n"<<message;
+	std::cerr<<"\n"<<message<<std::endl;
 	if(errnoset){
 		std::cerr<<"\nReason: "<<strerror(errno)<<std::endl;
 	}

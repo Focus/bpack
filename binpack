@@ -220,21 +220,18 @@ case $1 in
 	echo -e "\tAuthor: Bati Sengul <batieatworld@gmail.com>"
 	exit 0
 	;;
-	'')
-	echo -e "Usage:\n\tbinpack [file]"
+	*i686.pkg.tar.gz)
+	if [ ! -f $1 ]
+	then
+		echo "File $1 does not exist!"
+		exit 0
+	fi
+	pacman $1
+	;;
+	*)
+	echo -e "Usage:\n\tbinpack [file]\n"
+	echo "Supported files: *i686.pkg.tar.gz"
 	exit 0
 	;;
 esac
-
-
-if [ ! -f $1 ]
-then
-	echo "File $1 does not exist!"
-	exit 0
-fi
-
-if [ "${1:${#1}-15}"="i686.pkg.tar.gz" ]
-then
-	pacman $1
-fi
 
