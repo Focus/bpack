@@ -24,6 +24,7 @@
 #ifndef _TERMINAL_H_
 #define _TERMINAL_H_
 
+int makeinstall(std::string,std::string);
 void terminal();
 
 #endif

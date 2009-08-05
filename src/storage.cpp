@@ -29,6 +29,8 @@
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
+
+#include "search.hpp"
 #include "version.hpp"
 #include "package.hpp"
 #include "storage.hpp"
@@ -122,9 +124,10 @@ vector<string> read(const string location){
 
 //Reads the macros
 void macro(string& config){
-	string temp,macro;
-	vector<package> *installed=new vector<package>;
-	*installed=getInstalledPackages(Config::getPacklistPath().c_str());
+	string temp,macro,name;
+	version ver;
+	vector<string> *installed=new vector<string>;
+	*installed=loadLocation(search(Config::getPacklistPath()));
 	temp=config;
 	int pos,pp;
 	bool found;
@@ -137,20 +140,25 @@ void macro(string& config){
 		while(macro.find(" ")!=string::npos)
 			macro=macro.substr(0,macro.find(" "))+macro.substr(MIN(macro.find(" ")+1,macro.length()));
 		for(int i=0;i<installed->size();i++){
-			if(!strcmp( (*installed)[i].getName().c_str(),macro.c_str() )){
+			name=(*installed)[i];
+			depVersion(name,ver);
+			if(!strcmp(name.c_str(),macro.c_str())){
 				found=1;
 				break;
-				cout<< (*installed)[i].getName()<<endl;
 			}
+			ver="0.0.0";
 		}
 		if(found)
 			config=config.substr(0,pos)+config.substr(pos+temp.find("}")+2);
 		else{
-			pp=temp.find("}")+2+pos;
+			pp=config.find("}")+1;
 			while(config[pp]==' ')
 				pp++;
-			pp+=(config.substr(pp)).find(" ");
-			config=config.substr(0,pos)+config.substr(MIN(pp+1,config.length()));
+			if(config.substr(pp).find(" ")!=string::npos)
+				pp+=(config.substr(pp)).find(" ");
+			else
+				pp=config.length();
+			config=config.substr(0,pos)+config.substr(pp);
 		}
 		temp=config;
 	}	

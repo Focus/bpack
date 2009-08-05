@@ -73,45 +73,51 @@ int erase(vector<string> paths){
 }
 
 //Removes the package
-//TODO: Make this more lightweight
-int removePack(string pack){
-	vector<package> *packages=new vector<package>;
-	vector<string> locations;
-	*packages=getInstalledPackages(Config::getPacklistPath().c_str());
+int removePack(string packname){
+	vector<string> *packages=new vector<string>;
+	package *pack=new package;
+	string name,name2;
+	version ver,ver2;
+	*packages=loadLocation(search(Config::getPacklistPath().c_str()));
 	int index=-1;
 	for(int i=0; i< packages->size();i++){
-		if(!strcmp(  (((*packages)[i]).getName()).c_str(),pack.c_str())){
-			cout<<"\nPackage "<<pack<<" found! \nRemoving package..."<<endl;
+		name=(*packages)[i];
+		depVersion(name,ver);
+		ver="0.0.0";
+		if(!strcmp(name.c_str(),packname.c_str())){
+			cout<<"\nPackage "<<packname<<" found! \nRemoving package..."<<endl;
 			index=i;
 			break;
 		}
 	}
 
 	if(index<0){
-		err("No package named "+pack+" was found.");
+		err("No package named "+packname+" was found.");
 		return 0;
 	}
-
-	locations=((*packages)[index]).getLocations();
-	if( ((*packages)[index]).getScan())
+	*pack=getInstalledPackage((*packages)[index]);
+	if(pack->getScan())
 		err("This package was scanned, are you really sure you want to remove this?",1);
-	string name;
-	version ver;
-	for(int i=0; i<(*packages)[index].getDeps().size();i++){
-		name=(*packages)[index].getDeps()[i];
+	for(int i=0; i<pack->getDeps().size();i++){
+		name=pack->getDeps()[i];
+		ver="0.0.0";
 		depVersion(name,ver);
 		for(int j=0;j<packages->size();j++){
-			if(!strcmp(name.c_str(),(*packages)[j].getName().c_str()) && ver<=(*packages)[j].getVersion())
-				err("Package "+name+" depends on "+pack,2,0);
+			name2=(*packages)[j];
+			ver2="0.0.0";
+			depVersion(name2,ver2);
+			if(!strcmp(name.c_str(),name2.c_str()) && ver<=ver2)
+				err("Package "+name+" depends on "+packname,2,0);
 		}
-		ver="0.0.0";
 	}
-	cout<<"\nErasing "<<pack<<"..."<<endl;
-	if(erase(locations)){
-		(*packages)[index].remove();
+	cout<<"\nErasing "<<packname<<"..."<<endl;
+	if(erase(pack->getLocations())){
+		pack->remove();
 		delete packages;
+		delete pack;
 		return 1;
 	}
 	delete packages;
+	delete pack;
 	return 0;
 }

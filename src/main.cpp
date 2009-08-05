@@ -132,8 +132,10 @@ int main(int argc, char *argv[]){
 		printPackages();
 	else if(!strcmp(argv[1],"sizeof")){
 		package pack;
+		string name;
 		for(int i=2;i<argc;i++){
-			pack=getInstalledPackage(argv[i]);
+			name=argv[i];
+			pack=getInstalledPackage(name);
 			if(pack.getName().length()<=0){
 				cout<<"Package "<<argv[i]<<" not found"<<endl;
 				return 0;
@@ -151,6 +153,23 @@ int main(int argc, char *argv[]){
 		if(!strcmp(argv[2],"pacman"))
 			pacmanSync();
 	}
+	else if(!strcmp(argv[1],"track")){
+		if(argc<3){
+			cerr<<"\nTrack what?\n";
+			return 0;
+		}
+		string stuff=argv[2];
+		string path=get_current_dir_name();
+		makeinstall(path,stuff);
+	}
+	else if(!strcmp(argv[1],"pretend")){
+		string pack;
+		cout<<"Checking dependencies...\n\n";
+		for(int i=2;i<argc;i++){
+			pack=argv[i];
+			pretend(pack,0);
+		}
+	}		
 	else
 		cerr<<"\nUsage:\n bpack [action] [parameters]\nUse --help for more details!\n";
 
@@ -172,6 +191,7 @@ void help()
 	cout<<"\n  upgrade [packages]";
 	cout<<"\n  update";
 	cout<<"\n  list";
+	cout<<"\n  sizeof [package]";
 	cout<<"\n  clean";
 	cout<<"\n  clean cache";
 	cout<<"\n  clean packs";

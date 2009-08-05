@@ -45,6 +45,7 @@ void quicksort(int low, int high, vector<int>& arr){
 }
 
 //Makes a pacman package from a bpack one
+//DOESNT WORK
 void pacmanWrite(package pack){
 	string path="/var/lib/pacman/local/"+pack.getName()+"-"+pack.getVersion()+"/";
 	mkdir(path.c_str(),766);
@@ -155,10 +156,11 @@ void pacmanSync(){
 	}
 	quicksort(0,pl.size()-1,pl);
 	//Now give pacman what we have and it doesn't
-	for(int i=0;i<pl.size();i++)
+	//THIS DOESNT WORK
+	/*for(int i=0;i<pl.size();i++)
 		installed.erase(installed.begin()+pl[i]);
 	for(int i=0;i<installed.size();i++)
-		pacmanWrite(installed[i]);
+		pacmanWrite(installed[i]);*/
 
 }
 			

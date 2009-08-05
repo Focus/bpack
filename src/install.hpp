@@ -25,5 +25,6 @@
 #define _INSTALL_H_
 #include <cstring>
 void install(std::string, int);
+void pretend(std::string, int);
 
 #endif

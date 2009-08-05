@@ -30,7 +30,7 @@ enum OPTDEP{ALL,NONE,RECOMMENDED};
 class Config{
 
 	private:
-		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll,cflags,cxxflags,deptree;
+		static std::string installdir, scriptdir, packinstdir, tarballdir, packmandir, packlistpath, logdir,website,lib,coll,cflags,cxxflags,deptree,optiondir;
 		static int quitlevel;
 		static enum OPTDEP optionaldep;
 
@@ -62,6 +62,7 @@ class Config{
 		//		
 		static std::string getDepTree(){return deptree;}
 		static std::string getColl(){return coll;}
+		static std::string getOptionDir(){return optiondir;}
 		static void initialise();
 };
 

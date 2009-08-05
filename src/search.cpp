@@ -27,6 +27,10 @@
 #include <cstdlib>
 #include <sys/stat.h>
 #include <ftw.h>
+
+
+#include "error.hpp"
+
 using namespace std;
 
 string tree;
@@ -52,8 +56,7 @@ string search(string dir, string name){
 	struct dirent *d;
 	dp=opendir(dir.c_str());
 	if(dp==NULL){
-		cerr<<"\nCannot search "<<dir<<endl;
-		exit(1);
+		err("Cannot search "+dir,2,1);
 	}
 	string ret,rety;
 	ret="";
