@@ -138,6 +138,8 @@ int removePack(string packname){
 			sepVer(name2,ver2);
 			if(!strcmp(name.c_str(),name2.c_str()) && ver<=ver2){
 				err("Package "+name+" depends on "+packname,0,0);
+				delete packages;
+				delete pack;
 				return 0;
 			}
 		}
