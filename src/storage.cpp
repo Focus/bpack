@@ -121,6 +121,17 @@ vector<string> read(const string location){
 	return ret;
 }
 
+void removeLine(string line,string file){
+	vector<string> content=read(file);
+	for(int i=0;i<content.size();i++){
+		if(!strcmp(content[i].c_str(),line.c_str())){
+			content.erase(content.begin()+i);
+			i--;
+		}
+	}
+	write(content,file,1);
+}
+
 //Reads the macros
 void macro(string& config){
 	string temp,macro,name;

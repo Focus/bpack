@@ -123,8 +123,22 @@ int main(int argc, char *argv[]){
 			removePack(argv[i]);
 	}
 	else if(!strcmp(argv[1],"upgrade")){
-		for(int i=2;i<argc;i++)
-			install(argv[i],1);
+		if(argc>2 && !strcmp(argv[2],"all")){
+			vector<string> *packs = new vector<string>;
+			string name;
+			version ver;
+			*packs=com2vec(search(Config::getPacklistPath()));
+			for(int i=0;i<packs->size();i++){
+				name=(*packs)[i];
+				sepVer(name,ver);
+				install(name,1);
+			}
+			delete packs;
+		}
+		else{
+			for(int i=2;i<argc;i++)
+				install(argv[i],1);
+		}
 	}
 	else if(!strcmp(argv[1],"--help"))
 		help();

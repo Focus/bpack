@@ -72,8 +72,38 @@ int erase(vector<string> paths){
 	return 1;
 }
 
+int removePack(string);
+
+void removeHanging(){
+	string name;
+	version ver;
+	int rem,ret;
+	vector<string> *packs = new vector<string>;
+	vector<string> *save = new vector<string>;
+	*packs = com2vec(search(Config::getPacklistPath()));
+	*save = read(Config::getInstallDir()+"list");
+	for(int i=0;i<packs->size();i++){
+		rem = 1;
+		name = (*packs)[i];
+		sepVer(name,ver);
+		for(int j=0;j<save->size();j++){
+			if(!strcmp(name.c_str(),(*save)[j].c_str())){
+				rem = 0;
+				break;
+			}
+		}
+		if(rem)
+			removePack(name);
+	}
+}
+
+
 //Removes the package
 int removePack(string packname){
+	if(!strcmp(packname.c_str(),"hanging")){
+		removeHanging();
+		return 1;
+	}
 	vector<string> *packages=new vector<string>;
 	package *pack=new package;
 	string name,name2;
@@ -106,17 +136,22 @@ int removePack(string packname){
 			name2=(*packages)[j];
 			ver2="0.0.0";
 			sepVer(name2,ver2);
-			if(!strcmp(name.c_str(),name2.c_str()) && ver<=ver2)
-				err("Package "+name+" depends on "+packname,2,0);
+			if(!strcmp(name.c_str(),name2.c_str()) && ver<=ver2){
+				err("Package "+name+" depends on "+packname,0,0);
+				return 0;
+			}
 		}
 	}
 	cout<<"\nErasing "<<packname<<"..."<<endl;
 	if(erase(pack->getLocations())){
 		pack->remove();
+		removeLine(pack->getName(),Config::getInstallDir()+"list");
 		delete packages;
 		delete pack;
 		return 1;
 	}
+	else
+		err("Removing the files have failed. Package not erased!",0);
 	delete packages;
 	delete pack;
 	return 0;

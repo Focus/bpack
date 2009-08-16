@@ -1,4 +1,13 @@
 #!/bin/bash
+# 
+# BINPACK (c) 2009 Bati Sengul <batieatworld@gmail.com>
+#
+# I hereby let you (presumably a user) to use, modify and redistribute the software
+# with no conditions imposed. It would be nice to let me know if you do plan to
+# modify and redistribute.
+#
+#
+
 rm -rf /tmp/binpack/
 mkdir -p /tmp/binpack/package/
 version=0.1
@@ -210,6 +219,7 @@ pacman (){
 case $1 in
 	-h| --help)
 	echo "Binpack version $version"
+	echo -e "\t Author:  Bati Sengul <batieatworld@gmail.com>"
 	echo -e "Binpack is a binary helper for bpack.\nUsage:"
 	echo -e "\tbinpack [file]\n\n"
 	echo "Currently supports .deb and .pkg.tar.gz extensions"
