@@ -72,8 +72,7 @@ bool package::remove(){
 }
 
 //Separates the foo-0.2.2 to foo and 0.2.2
-//TODO: Lame name
-void depVersion(string &dep, version &ver){
+void sepVer(string &dep, version &ver){
 	int pos,pos2,test;
 	pos=0;
 	string temp;
@@ -135,7 +134,7 @@ string packSize(vector<string> locs){
 //Prints out a vector of packages   
 void printPackages(){
 	vector<string> *packs=new vector<string>;
-	*packs=loadLocation(search(Config::getPacklistPath()));
+	*packs=com2vec(search(Config::getPacklistPath()));
 	for(int i=0;i<packs->size();i++)
 		cout<<(*packs)[i]<<endl;
 	delete packs;
@@ -145,14 +144,14 @@ void printPackages(){
 //Gets a list of installed stuff from the location given
 vector<package> getInstalledPackages(const string location){
 	vector<string> *files=new vector<string>;
-	*files=loadLocation(search(location));
+	*files=com2vec(search(location));
 	string name;
 	version ver;
 	package current;
 	vector<package> ret;
 	for(int i=0;i<files->size();i++){
 		name=(*files)[i];
-		depVersion(name,ver);
+		sepVer(name,ver);
 		current.setName(name);
 		current.setVersion(ver);
 		current.setLocations(read(location+(*files)[i]));
@@ -172,15 +171,15 @@ vector<package> getInstalledPackages(){
 package getInstalledPackage(const string in){
 	string name=in;
 	version ver;
-	depVersion(name,ver);
+	sepVer(name,ver);
 	vector<string> *files=new vector<string>;
 	package ret;
-	*files=loadLocation(search(Config::getPacklistPath()));
+	*files=com2vec(search(Config::getPacklistPath()));
 	string pname;
 	version pver;
 	for(int i=0;i<files->size();i++){
 		pname=(*files)[i];
-		depVersion(pname,pver);
+		sepVer(pname,pver);
 		if(!strcmp(pname.c_str(),name.c_str()) && (pver==ver || ver=="0.0.0")){
 			ret.setName(pname);
 			ret.setVersion(pver);

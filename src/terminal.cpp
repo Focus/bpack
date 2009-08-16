@@ -47,7 +47,7 @@ int makeinstall(string path,string command="make install"){
 	version ver;
 	if(*pos>0){
 		name=path.substr(*pos,path.size()-*pos-2);
-		depVersion(name,ver);
+		sepVer(name,ver);
 	}
 	erase("/tmp/hijack_log.txt");
 	//Set compiler flags

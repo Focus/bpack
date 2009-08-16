@@ -134,7 +134,7 @@ void update()
 	
 	// Get all local packs
 	string packdir(Config::getPackInstDir());
-    	vector<string> packs=loadLocation(search(packdir,""));
+    	vector<string> packs=com2vec(search(packdir,""));
 	//cout << packs[0] << packs[1] << "\n";
 	
 	// remove all the packs we have from all, we dont need to download them

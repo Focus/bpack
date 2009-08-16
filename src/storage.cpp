@@ -65,9 +65,8 @@ int separate(const string text,vector<string> &par,const int start){
 	return breaks[numbreaks+1];
 }
 
-//TODO: Stupid name
 //Seperates things like something,something,something
-vector<string> loadLocation(const string locations){
+vector<string> com2vec(const string locations){
 	vector<string> locs;
         int index=0;
         int temp=index;
@@ -127,7 +126,7 @@ void macro(string& config){
 	string temp,macro,name;
 	version ver;
 	vector<string> *installed=new vector<string>;
-	*installed=loadLocation(search(Config::getPacklistPath()));
+	*installed=com2vec(search(Config::getPacklistPath()));
 	temp=config;
 	int pos,pp;
 	bool found;
@@ -141,7 +140,7 @@ void macro(string& config){
 			macro=macro.substr(0,macro.find(" "))+macro.substr(MIN(macro.find(" ")+1,macro.length()));
 		for(int i=0;i<installed->size();i++){
 			name=(*installed)[i];
-			depVersion(name,ver);
+			sepVer(name,ver);
 			if(!strcmp(name.c_str(),macro.c_str())){
 				found=1;
 				break;

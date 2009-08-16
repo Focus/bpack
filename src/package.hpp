@@ -71,7 +71,7 @@ std::vector<package> getInstalledPackages();
 void printPackages();
 package getInstalledPackage(std::string);
 std::vector<package> getInstalledPackages();
-void depVersion(std::string&, version&);
+void sepVer(std::string&, version&);
 std::string packSize(std::vector<std::string>);
 #endif
 

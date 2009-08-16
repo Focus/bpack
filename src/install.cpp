@@ -94,7 +94,7 @@ string greatestVer(vector<string> bushsucks, string realname){
 	string temp,ret;
 	for(int i=0; i< bushsucks.size();i++){
 		temp=bushsucks[i];
-		depVersion(temp,tempver);
+		sepVer(temp,tempver);
 		if(tempver>highver && !strcmp(temp.c_str(),realname.c_str()))
 			ret=bushsucks[i];
 	}
@@ -107,9 +107,9 @@ void install(string packname, int bail){
 	packinst *packageinst=new packinst;
 	version *ver=new version;
 	string *location=new string;
-	depVersion(packname,*ver);
+	sepVer(packname,*ver);
 	if(*ver=="0.0.0"){
-		*location=greatestVer(loadLocation(search(Config::getPackInstDir(),packname+"*")),packname);
+		*location=greatestVer(com2vec(search(Config::getPackInstDir(),packname+"*")),packname);
 	}
 	else
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
@@ -121,13 +121,13 @@ void install(string packname, int bail){
 	}	
 	string *temp=new string;
 	*temp=*location;
-	depVersion(*temp,*ver);
+	sepVer(*temp,*ver);
 	delete temp;
 	*packageinst=getPackage(Config::getPackInstDir()+*location,packname);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
 	vector<string> *installed=new vector<string>;
-	*installed=loadLocation(search(Config::getPacklistPath()));
+	*installed=com2vec(search(Config::getPacklistPath()));
 	string y;
 	bool gotit;
 	version depver;
@@ -136,7 +136,7 @@ void install(string packname, int bail){
 	//Check if the package is installed
 	for(int i=0;i<installed->size();i++){
 		y=(*installed)[i];
-		depVersion(y,depver);
+		sepVer(y,depver);
 		if( !strcmp(y.c_str(), (packageinst->getName()).c_str()) && depver>=packageinst->getVersion()){
 			cout<<"\nThe package is installed with the current or more recent version"<<endl;
 			exit(0);
@@ -148,11 +148,11 @@ void install(string packname, int bail){
 	version instver;
 	depver="0.0.0";
 	while(packageinst->getNextDep(y)){
-		depVersion(y,depver);
+		sepVer(y,depver);
 		for(int i=0;i<installed->size();i++){
 			inst=(*installed)[i];
 			instver="0.0.0";
-			depVersion(inst,instver);
+			sepVer(inst,instver);
 			gotit=0;
 			if(!strcmp(inst.c_str(),y.c_str())){
 				if( instver>=depver.asString()  || instver=="0.0.0" ){
@@ -195,9 +195,9 @@ void pretend(string packname, int bail){
 	packinst *packageinst=new packinst;
 	version *ver=new version;
 	string *location=new string;
-	depVersion(packname,*ver);
+	sepVer(packname,*ver);
 	if(*ver=="0.0.0"){
-		*location=greatestVer(loadLocation(search(Config::getPackInstDir(),packname+"*")),packname);
+		*location=greatestVer(com2vec(search(Config::getPackInstDir(),packname+"*")),packname);
 	}
 	else
 		*location=search(Config::getPackInstDir(),packname+"-"+ver->asString());
@@ -209,13 +209,13 @@ void pretend(string packname, int bail){
 	}	
 	string *temp=new string;
 	*temp=*location;
-	depVersion(*temp,*ver);
+	sepVer(*temp,*ver);
 	delete temp;
 	*packageinst=getPackage(Config::getPackInstDir()+*location,packname);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
 	vector<string> *installed=new vector<string>;
-	*installed=loadLocation(search(Config::getPacklistPath()));
+	*installed=com2vec(search(Config::getPacklistPath()));
 	string y;
 	bool gotit;
 	version depver;
@@ -223,7 +223,7 @@ void pretend(string packname, int bail){
 	//Check if the package is installed
 	for(int i=0;i<installed->size();i++){
 		y=(*installed)[i];
-		depVersion(y,depver);
+		sepVer(y,depver);
 		if( !strcmp(y.c_str(), (packageinst->getName()).c_str()) && depver>=packageinst->getVersion()){
 			cout<<"\nThe package is installed with the current or more recent version"<<endl;
 			exit(0);
@@ -235,11 +235,11 @@ void pretend(string packname, int bail){
 	version instver;
 	depver="0.0.0";
 	while(packageinst->getNextDep(y)){
-		depVersion(y,depver);
+		sepVer(y,depver);
 		for(int i=0;i<installed->size();i++){
 			inst=(*installed)[i];
 			instver="0.0.0";
-			depVersion(inst,instver);
+			sepVer(inst,instver);
 			gotit=0;
 			if(!strcmp(inst.c_str(),y.c_str())){
 				if( instver>=depver.asString()  || instver=="0.0.0" ){

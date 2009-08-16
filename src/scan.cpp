@@ -91,9 +91,9 @@ void scan()
 	cout<<"\n\nScanning filesystem for packages, note that this may return obscure directories."<<endl;
 	cout<<"Please manually edit before removing or updating any of these!!"<<endl;
 	cout<<"Getting package names..."<<endl;
-	packs=loadLocation(search(path,""));
+	packs=com2vec(search(path,""));
 	cout<<"Building a directory tree (this could take a while)..."<<endl;
-	locations=loadLocation(dirTree("/usr"));
+	locations=com2vec(dirTree("/usr"));
 	cout<<"Searching for the packages..."<<endl;
 	for(int i=0;i<packs.size();i++){
 		temp=getPack(packs[i]);

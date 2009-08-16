@@ -1,0 +1,7 @@
+Try this
+	
+for line in $( ls src/*{.c,.cpp,.h,.hpp} )
+do
+	echo "$line :"
+	echo $( grep TODO $line )
+done

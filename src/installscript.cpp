@@ -148,8 +148,8 @@ bool installScript(packinst inst, int bail=-1)
 	//Check if the tarball is there, if not grab it!
 	vector<string> *tars=new vector<string>;
 	vector<string> *tars2=new vector<string>;
-	*tars=loadLocation(search(tardir,inst.getName()+"-"+ inst.getVersion()+".tar.*"));
-	*tars2=loadLocation(search(tardir,tarName(inst.getWget())));
+	*tars=com2vec(search(tardir,inst.getName()+"-"+ inst.getVersion()+".tar.*"));
+	*tars2=com2vec(search(tardir,tarName(inst.getWget())));
 	if(tars2->size()>0)
 		tar=(*tars2)[0];
 	else if(tars->size()<=0){

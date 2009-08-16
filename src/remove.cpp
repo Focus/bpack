@@ -45,7 +45,7 @@ int erase(string path){
 		return 1;
 	if((buf.st_mode & S_IFMT)==S_IFDIR){  //If we have a directory to delete, we need to empty it out first
 		vector<string> locs;
-		locs=loadLocation(search(path,""));
+		locs=com2vec(search(path,""));
 		//Check if we have a / at the end ( /etc will become /etc/ )
 		if( strcmp((path.substr(path.size()-1)).c_str(),"/"))
 			path=path+"/";
@@ -78,11 +78,11 @@ int removePack(string packname){
 	package *pack=new package;
 	string name,name2;
 	version ver,ver2;
-	*packages=loadLocation(search(Config::getPacklistPath().c_str()));
+	*packages=com2vec(search(Config::getPacklistPath().c_str()));
 	int index=-1;
 	for(int i=0; i< packages->size();i++){
 		name=(*packages)[i];
-		depVersion(name,ver);
+		sepVer(name,ver);
 		ver="0.0.0";
 		if(!strcmp(name.c_str(),packname.c_str())){
 			cout<<"\nPackage "<<packname<<" found! \nRemoving package..."<<endl;
@@ -101,11 +101,11 @@ int removePack(string packname){
 	for(int i=0; i<pack->getDeps().size();i++){
 		name=pack->getDeps()[i];
 		ver="0.0.0";
-		depVersion(name,ver);
+		sepVer(name,ver);
 		for(int j=0;j<packages->size();j++){
 			name2=(*packages)[j];
 			ver2="0.0.0";
-			depVersion(name2,ver2);
+			sepVer(name2,ver2);
 			if(!strcmp(name.c_str(),name2.c_str()) && ver<=ver2)
 				err("Package "+name+" depends on "+packname,2,0);
 		}

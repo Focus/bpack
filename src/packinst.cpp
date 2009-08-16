@@ -60,7 +60,7 @@ vector<string> optional(string packs, string name=NULL){
 	vector<string> *rem = new vector<string>;
 	vector<string> ret;
 	if(getenv("OPTIONAL")&& strcmp(getenv("OPTIONAL"),"")){//User passed some add remove stuff for optional deps
-		*temp=loadLocation(getenv("OPTIONAL"));
+		*temp=com2vec(getenv("OPTIONAL"));
 		for(int i=0;i<temp->size();i++){
 			if(!strncmp( (*temp)[i].c_str(),"+",1))
 				add->push_back( (*temp)[i].substr(1));
@@ -78,7 +78,7 @@ vector<string> optional(string packs, string name=NULL){
 			stone=stone+(*stored)[i];
 		delete stored;
 		vector<string> *past = new vector<string>;
-		*past=loadLocation(stone);
+		*past=com2vec(stone);
 		for(int i=0;i<past->size();i++){
 			if(!strncmp( (*past)[i].c_str(),"+",1))
 				add->push_back( (*past)[i].substr(1));
@@ -89,7 +89,7 @@ vector<string> optional(string packs, string name=NULL){
 	}
 	else
 		delete stored;
-	*temp=loadLocation(packs);
+	*temp=com2vec(packs);
 	if(Config::getOptionalDep()==RECOMMENDED){
 		for(int i=0;i<temp->size();i++){
 			if(!strncmp( (*temp)[i].c_str(),"!",1))
@@ -153,7 +153,7 @@ packinst getPackage(string location,string name){
 		else if(!strcmp(command.c_str(),"makeinst"))
 			pack.setMakeInst(value);
 		else if(!strcmp(command.c_str(),"deps"))
-			pack.setDeps(loadLocation(value));
+			pack.setDeps(com2vec(value));
 		else if(!strcmp(command.c_str(),"location"))
 			pack.setWget(value);
 		else if(!strcmp(command.c_str(),"preinstall"))
@@ -169,7 +169,7 @@ packinst getPackage(string location,string name){
 		else if(!strcmp(command.c_str(),"optional"))
 			pack.addDeps(optional(value,name));
 		else if(!strcmp(command.c_str(),"patches"))
-			pack.setPatches(loadLocation(value));
+			pack.setPatches(com2vec(value));
 	}
 	return pack;
 }
@@ -204,7 +204,7 @@ int getPackageDeps(string location,vector<string>& plus,vector<string>& minus,st
 	if(optionsline.length()<=0)
 		return 1;
 	vector<string> *options = new vector<string>;
-	*options=loadLocation(optionsline);
+	*options=com2vec(optionsline);
 	plus=optional(optionsline,name);
 	bool got;
 	string curr;

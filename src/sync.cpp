@@ -134,7 +134,7 @@ void pacmanRead(string location,string pack,version ver){
 //Syncs up pacmans db with ours
 void pacmanSync(){
 	vector<package> installed=getInstalledPackages();
-	vector<string> pacman=loadLocation(search("/var/lib/pacman/local/"));
+	vector<string> pacman=com2vec(search("/var/lib/pacman/local/"));
 	string pack;
 	version ver;
 	vector<int> pl;
@@ -142,7 +142,7 @@ void pacmanSync(){
 	//Add packages pacman has and we haven't
 	for(int i=0;i<pacman.size();i++){
 		pack=pacman[i];
-		depVersion(pack,ver);
+		sepVer(pack,ver);
 		have=0;
 		for(int j=0;j<installed.size();j++){
 			//If we dont have the package

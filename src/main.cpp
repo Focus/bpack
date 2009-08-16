@@ -42,7 +42,7 @@ extern "C"{
 }
 
 
-
+#define VERSION 0.2
 
 //List of functions we need.
 void help();
@@ -92,26 +92,26 @@ int main(int argc, char *argv[]){
 		//Clean all
 		if(argc==2){
 			cout<<"Cleaning up tarballs..."<<endl;
-			vector<string> tars=loadLocation(search(Config::getTarballDir()));
+			vector<string> tars=com2vec(search(Config::getTarballDir()));
 			for(int i=0;i<tars.size();i++)
 				tars[i]=Config::getTarballDir()+tars[i];
 			erase(tars);
 			cout<<"Cleaning up packs..."<<endl;
-			vector<string> packs=loadLocation(search(Config::getPackInstDir()));
+			vector<string> packs=com2vec(search(Config::getPackInstDir()));
 			for(int i=0;i<packs.size();i++)
 				packs[i]=Config::getPackInstDir()+packs[i];
 			erase(packs);
 		}
 		else if(!strcmp(argv[2],"cache")){
 			cout<<"Cleaning up tarballs..."<<endl;
-			vector<string> tars=loadLocation(search(Config::getTarballDir()));
+			vector<string> tars=com2vec(search(Config::getTarballDir()));
 			for(int i=0;i<tars.size();i++)
 				tars[i]=Config::getTarballDir()+tars[i];
 			erase(tars);
 		}
 		else if(!strcmp(argv[2],"packs")){
 			cout<<"Cleaning up packs..."<<endl;
-			vector<string> packs=loadLocation(search(Config::getPackInstDir()));
+			vector<string> packs=com2vec(search(Config::getPackInstDir()));
 			for(int i=0;i<packs.size();i++)
 				packs[i]=Config::getPackInstDir()+packs[i];
 			erase(packs);
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]){
 //This could do with a bit of work...DONE
 void help()
 {
-	cout<<"Bpack - Basic Package Manager, version 0.1(alpha)"<<endl;
+	cout<<"Bpack - Basic Package Manager, version "<<VERSION<<endl;
 	cout<<"Copyright (C) 2009  Bati Sengul <batieatworld@gmail.com>"<<endl;
 	cout<<"                    Mike Bush <mpbush@gmail.com>"<<endl;
 	cout<<"\n\tHomepage <http://www.bpack.co.uk/>"<<endl;
@@ -195,6 +195,7 @@ void help()
 	cout<<"\n  clean";
 	cout<<"\n  clean cache";
 	cout<<"\n  clean packs";
+	cout<<"\n  sync [package manager]";
 	cout<<"\n  --help";
 
 
