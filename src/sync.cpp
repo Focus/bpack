@@ -50,8 +50,9 @@ void pacmanWrite(package pack){
 	string path="/var/lib/pacman/local/"+pack.getName()+"-"+pack.getVersion()+"/";
 	mkdir(path.c_str(),766);
 	packinst *dep=new packinst;
-	*dep=getPackage(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion());
-	string buffer;
+	
+	*dep=getPackage(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion(),NULL);
+       	string buffer;
 	if(dep->getName().length()>0){
 		buffer="%DEPENDS%\n";
 		vector<string> *deps=new vector<string>;

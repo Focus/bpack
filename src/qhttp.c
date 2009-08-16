@@ -224,7 +224,7 @@ int sconnect(struct HttpRequest req)
 	struct hostent *hp;
 	if ((hp = gethostbyname(req.host)) == 0) {
 		perror("gethostbyname");
-		//return -1;
+		return -1;
 	}
 
 	memset(&pin, 0, sizeof(pin));
@@ -641,7 +641,6 @@ int getHeader(struct HttpResponse *resp, char* key, char* value, int size)
 }
 
 // TODO make wary of status codes, Transfer-Encoding, chunked transfers, errors
-// TODO should probably follow redirects
 
 // Simple function to download and save a file like wget basic usage
 // use filename = NULL to use the remote filename, see LOGMETHOD above
@@ -780,9 +779,9 @@ int wget(const char* url, const char* dir, const char* filename, enum LOGMETHOD 
 	freeresp(hr);
 	freereq(hq);
 	return 0; // success
+	//No way!!
 }
 
-// Another malloc without a free, hopefully will find a better way to do this
 char* getBody(struct HttpResponse *resp)
 {
 	int clength = resp->clength;

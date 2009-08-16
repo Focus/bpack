@@ -62,6 +62,25 @@ void clean(packinst pack){
 	delete installed;
 	cout<<"Clearing up..."<<endl;
 	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");
+	cout<<"Saving options..."<<endl;
+	vector<string> plus,minus;
+	if(!getPackageDeps(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion(),plus,minus,pack.getName()))
+		err("\tCannot save options!",0);
+	else{
+		string file;
+		if(plus.size()>0){
+			file="+"+plus[0];
+			for(int i=1;i<plus.size();i++)
+				file=file+",+"+plus[i];
+		}
+		if(minus.size()>0){
+			file=file+"-"+minus[0];
+			for(int i=1;i<minus.size();i++)
+				file=file+",-"+minus[i];
+		}
+		if(file.length()>0)
+			write(file,Config::getOptionDir()+pack.getName());
+	}
 }
 
 
@@ -104,7 +123,7 @@ void install(string packname, int bail){
 	*temp=*location;
 	depVersion(*temp,*ver);
 	delete temp;
-	*packageinst=getPackage(Config::getPackInstDir()+*location);
+	*packageinst=getPackage(Config::getPackInstDir()+*location,packname);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
 	vector<string> *installed=new vector<string>;
@@ -237,7 +256,7 @@ void pretend(string packname, int bail){
 	}
 	cout<<packageinst->getName()<<"-"<<packageinst->getVersion()<<":     ";
 	for(int i=0;i<packageinst->getDeps().size();i++)
-		cout<<(packageinst->getDeps())[i]<<",";
+		cout<<(packageinst->getDeps())[i]<<"  ";
 	cout<<"\n";
 	delete installed;
 	delete packageinst;

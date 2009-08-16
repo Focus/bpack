@@ -105,7 +105,8 @@ class packinst{
 
 };
 
-packinst getPackage(std::string);
+packinst getPackage(std::string,std::string name=NULL);
+int getPackageDeps(std::string,std::vector<std::string>&,std::vector<std::string>&,std::string name=NULL);
 
 #endif
 

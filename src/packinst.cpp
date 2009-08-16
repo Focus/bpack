@@ -35,7 +35,7 @@ conffile:/etc/foobar.conf
 
 
  *********************************************************************************/
-
+#include <iostream> //For testing
 
 #include "packinst.hpp"
 using namespace std;
@@ -54,10 +54,10 @@ bool packinst::getNextDep(string &dep)
 }
 
 //Sorts out optional dependencies
-vector<string> optional(string packs){
-	vector<string> *temp=new vector<string>;
-	vector<string> *add=new vector<string>;
-	vector<string> *rem=new vector<string>;
+vector<string> optional(string packs, string name=NULL){
+	vector<string> *temp = new vector<string>;
+	vector<string> *add = new vector<string>;
+	vector<string> *rem = new vector<string>;
 	vector<string> ret;
 	if(getenv("OPTIONAL")&& strcmp(getenv("OPTIONAL"),"")){//User passed some add remove stuff for optional deps
 		*temp=loadLocation(getenv("OPTIONAL"));
@@ -68,6 +68,27 @@ vector<string> optional(string packs){
 				rem->push_back( (*temp)[i].substr(1));
 		}
 	}
+	//Get the optional deps stored in the file
+	vector<string> *stored = new vector<string>;
+	if(name.length()>0)
+		*stored=read(Config::getOptionDir()+name);
+	if(stored->size()>0){
+		string stone;
+		for(int i=0;i<stored->size();i++)
+			stone=stone+(*stored)[i];
+		delete stored;
+		vector<string> *past = new vector<string>;
+		*past=loadLocation(stone);
+		for(int i=0;i<past->size();i++){
+			if(!strncmp( (*past)[i].c_str(),"+",1))
+				add->push_back( (*past)[i].substr(1));
+			else if(!strncmp( (*temp)[i].c_str(),"-",1))
+				rem->push_back( (*past)[i].substr(1));
+		}
+		delete past;
+	}
+	else
+		delete stored;
 	*temp=loadLocation(packs);
 	if(Config::getOptionalDep()==RECOMMENDED){
 		for(int i=0;i<temp->size();i++){
@@ -96,12 +117,12 @@ vector<string> optional(string packs){
 }
 
 //Get and return a package installation from file
-packinst getPackage(string location){
+packinst getPackage(string location,string name){
 	packinst pack;
 	vector<string> file=read(location);
 	if(file.size()<=0)
 		return pack;
-	
+
 	vector<int> line,pos;
 	for(int i=0;i<file.size();i++){
 		file[i]=file[i].substr(0,file[i].find_first_of("#"));
@@ -146,9 +167,57 @@ packinst getPackage(string location){
 		else if(!strcmp(command.c_str(),"meta"))
 			pack.setMeta(1);
 		else if(!strcmp(command.c_str(),"optional"))
-			pack.addDeps(optional(value));
+			pack.addDeps(optional(value,name));
 		else if(!strcmp(command.c_str(),"patches"))
 			pack.setPatches(loadLocation(value));
 	}
 	return pack;
 }
+int getPackageDeps(string location,vector<string>& plus,vector<string>& minus,string name){
+	vector<string> file=read(location);
+	string optionsline;
+	if(file.size()<=0)
+		return 0;
+
+	vector<int> line,pos;
+	for(int i=0;i<file.size();i++){
+		file[i]=file[i].substr(0,file[i].find_first_of("#"));
+		if( file[i].find_first_of(":")+1>0  ){
+			pos.push_back(file[i].find_first_of(":"));
+			line.push_back(i);
+		}
+	}
+	string command,value;
+	line.push_back(file.size());
+	for(int i=0;i<pos.size();i++){
+		command=file[line[i]].substr(0,pos[i]);
+		value=file[line[i]].substr(pos[i]+1);
+		for(int j=line[i]+1;j<line[i+1];j++){
+			if(file[j].length()>0)
+				value=value+"\n"+file[j];
+		}
+		if(!strcmp(command.c_str(),"optional")){
+			optionsline=value;
+			break;
+		}
+	}
+	if(optionsline.length()<=0)
+		return 1;
+	vector<string> *options = new vector<string>;
+	*options=loadLocation(optionsline);
+	plus=optional(optionsline,name);
+	bool got;
+	for(int i=0;i<options->size();i++){
+		got=0;
+		for(int j=0;j<plus.size();j++){
+			if( (*options)[i].substr(1)==plus[j] ){
+				got=1;
+				break;
+			}
+		}
+		if(!got)
+			minus.push_back( (*options)[i].substr(1));
+	}
+	return 1;
+}
+
