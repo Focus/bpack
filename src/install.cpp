@@ -211,7 +211,7 @@ void pretend(string packname, int bail){
 	*temp=*location;
 	depVersion(*temp,*ver);
 	delete temp;
-	*packageinst=getPackage(Config::getPackInstDir()+*location);
+	*packageinst=getPackage(Config::getPackInstDir()+*location,packname);
 	packageinst->setName(packname);
 	packageinst->setVersion(*ver);
 	vector<string> *installed=new vector<string>;
@@ -220,7 +220,6 @@ void pretend(string packname, int bail){
 	bool gotit;
 	version depver;
 	delete ver;
-	delete location;
 	//Check if the package is installed
 	for(int i=0;i<installed->size();i++){
 		y=(*installed)[i];
@@ -255,10 +254,18 @@ void pretend(string packname, int bail){
 		}
 	}
 	cout<<packageinst->getName()<<"-"<<packageinst->getVersion()<<":     ";
-	for(int i=0;i<packageinst->getDeps().size();i++)
-		cout<<(packageinst->getDeps())[i]<<"  ";
-	cout<<"\n";
+	vector<string> plus,minus;
+	if(!getPackageDeps(Config::getPackInstDir()+*location,plus,minus,packname))
+		err("Cannot get package dependencies!!",0);
+	else{
+		for(int i=0;i<plus.size();i++)
+			cout<<"+"<<plus[i]<<"  ";
+		for(int i=0;i<minus.size();i++)
+			cout<<"-"<<minus[i]<<"  ";
+		cout<<"\n";
+	}
 	delete installed;
 	delete packageinst;
+	delete location;
 }
 

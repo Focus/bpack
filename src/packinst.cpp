@@ -207,16 +207,21 @@ int getPackageDeps(string location,vector<string>& plus,vector<string>& minus,st
 	*options=loadLocation(optionsline);
 	plus=optional(optionsline,name);
 	bool got;
+	string curr;
 	for(int i=0;i<options->size();i++){
 		got=0;
+		if((*options)[i][0]=='!')
+			curr=(*options)[i].substr(1);
+		else
+			curr=(*options)[i];
 		for(int j=0;j<plus.size();j++){
-			if( (*options)[i].substr(1)==plus[j] ){
+			if( curr==plus[j] ){
 				got=1;
 				break;
 			}
 		}
 		if(!got)
-			minus.push_back( (*options)[i].substr(1));
+			minus.push_back( (*options)[i]);
 	}
 	return 1;
 }
