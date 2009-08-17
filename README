@@ -32,7 +32,11 @@ README  Version 0.2
    b.   Package making
    c.   Collections
 
-4.	=Contributing=
+4.	=Helper tools=
+
+   a.   Binpack
+
+5.	=Contributing=
 
    a.	Development
    b.	Donating
@@ -91,6 +95,16 @@ Multiple packages can be installed from a single call by listing packages, e.g. 
 
 	bpack install gcc wget ncurses
 
+A lot of packages come with optional dependencies. You can see what will be installed with which optional dependencies by running
+
+	bpack pretend [package]
+
+If you wish to change the optional dependencies, use the enviromental variable like this
+
+	OPTIONAL="+foo -bar" bpack install [package]
+
+You can use pretend in the above example if you want to see the changes. If you want further control, bpack stores and uses your optional flags in the options/[package] file. This way you need not to worry about the optional dependencies when you are upgrading.
+
 
 =ii=   =Terminal=
 
@@ -99,6 +113,12 @@ Bpack also comes with a terminal. If you wish to compile things yourself, run th
 	bpack terminal
 
 to get the bpack terminal. With this terminal you can exacute commands as usual (e.g. cd, make, ls) but bpack will trace your make install call and make it a package for you.
+
+A very helpful tool bpack comes with is track. You can use
+
+	bpack track "make install"
+
+to make a package out of something that you have compiled yourself.
 
 
 == c ==  ==Removing Packages==
@@ -114,7 +134,13 @@ e.g. if you wish to remove gcc (don't do this!),
 	
 	bpack remove gcc
 
-As with the install call, remove can take multiple packages to remove.
+As with the install call, remove can take multiple packages to remove. Bpack will automatically check if there are any packages that depend on the package selected to remove.
+
+You may also like to run
+
+	bpack remove hanging
+
+to remove packages that were installed as a dependency for a package the user installed but are no longer needed (i.e. no other package depends on it).
 
 
 =ii=   =Removing Scanned Files=
@@ -205,6 +231,7 @@ Currently these are the available options and values
 	collection	a collection name	The default collection to get packages from.
 	cflags		string			The cflags that bpack should apply
 	cxxflags	string			The cxxflags that bpack should apply
+	optional	string			Default set of optional packages to install, choose from all, recommended, none.
 
 
 == b ==  ==Package making==
@@ -246,6 +273,18 @@ Share your bpack experiance with others and create a collection. A collection is
 
 				=== 4 ===  ===Contributing===
 
+
+== a ==  ==Binpack==
+
+Binpack is a helper script for bpack. As the name suggest, it installs binary packages from other package managers. We know that programs such as firefox may take a long time to compile. Binpack will install Debian (including Ubuntu) and Archlinux packages. The format is
+
+	binpack [file]
+
+The file must end with a .deb or .i686.pkg.tar.gz. Binpack will allow bpack to manage dependencies and also keep track of the packages.
+
+
+
+				=== 5 ===  ===Contributing===
 
 
 == a ==  ==Development==

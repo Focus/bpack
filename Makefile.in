@@ -113,9 +113,6 @@ libs/hijack.so.1.0: src/hijack.c
 	$(CC) -fPIC -c src/hijack.c -fno-stack-protector
 	$(LD) -shared -soname hijack.so.1 -o libs/hijack.so.1.0 -lc hijack.o -ldl
 
-packs.list:
-	touch packs.list
-
 install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)
 	mkdir -p $(DESTDIR)/installed
@@ -129,25 +126,3 @@ install: bpack libs/hijack.so.1.0
 	touch /etc/bpack.conf
 	echo -e "$(bindir)/bpack\n$(bindir)/binpack\n$(DESTDIR)/libs/hijack.so.1.0" > $(DESTDIR)/installed/bpack-$(VERSION)
 
-tarclean:
-	rm -rf .tarball
-
-tar:
-	mkdir -p .tarball/bpack-$(VERSION)/libs
-	mkdir -p .tarball/bpack-$(VERSION)/src
-	touch .tarball/bpack-$(VERSION)/packs.list
-	cp config.h.in .tarball/bpack-$(VERSION)
-	cp config.sub .tarball/bpack-$(VERSION)
-	cp config.guess .tarball/bpack-$(VERSION)
-	cp install-sh .tarball/bpack-$(VERSION)
-	cp -rf scripts .tarball/bpack-$(VERSION)
-	cp -rf packs .tarball/bpack-$(VERSION)
-	cp src/search.cpp src/remove.cpp src/main.cpp src/config.cpp src/installscript.cpp src/storage.cpp src/packinst.cpp src/version.cpp src/install.cpp src/package.cpp src/scan.cpp src/hijack.c .tarball/bpack-$(VERSION)/src
-	cp src/search.hpp src/remove.hpp src/config.hpp src/installscript.hpp src/storage.hpp src/packinst.hpp src/version.hpp src/install.hpp src/package.hpp src/scan.hpp .tarball/bpack-$(VERSION)/src
-	cp configure .tarball/bpack-$(VERSION)
-	cp Makefile.in .tarball/bpack-$(VERSION)
-	cp README .tarball/bpack-$(VERSION)
-	cp AUTHORS .tarball/bpack-$(VERSION)
-	cp ChangeLog .tarball/bpack-$(VERSION)
-	cd .tarball && tar cfvpj ../bpack-$(VERSION).tar.bz bpack-$(VERSION)
-	
