@@ -77,7 +77,9 @@ int removePack(string);
 void removeHanging(){
 	string name;
 	version ver;
-	int rem,ret;
+	int rem,rem2;
+	vector<string> del;
+	package pack;
 	vector<string> *packs = new vector<string>;
 	vector<string> *save = new vector<string>;
 	*packs = com2vec(search(Config::getPacklistPath()));
@@ -92,8 +94,27 @@ void removeHanging(){
 				break;
 			}
 		}
-		if(rem)
-			removePack(name);
+		if(rem){
+			rem2 = 0;
+			pack=getInstalledPackage(name);
+			for(int k=0;k<pack.getDeps().size();k++){
+				if(search(Config::getPacklistPath(),pack.getDeps()[i])==""){
+					rem2=1;
+					break;
+				}
+			}
+			if(!rem2)
+				del.push_back(name);
+		}
+	}
+	cout<<"   Packages to be removed:\n\n";
+	for(int i=0;i<del.size();i++)
+		cout<<del[i]<<"  ";
+	cout<<"\n";
+
+	if(ask("Are you sure you wish to remove these?")){
+		for(int i=0;i<del.size();i++)
+			removePack(del[i]);
 	}
 }
 

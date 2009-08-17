@@ -6,6 +6,7 @@
 
 #include "error.hpp"
 
+
 void err(std::string message, int level,bool errnoset){
 	
 	std::cerr<<"\n"<<message<<std::endl;

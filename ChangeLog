@@ -1,0 +1,7 @@
+0.2:
+*New storage system for installed files
+*Dependency checking on removing files
+*Binpack, a tool for installing Debian and Archlinux binary files
+*Clearing up unwanted dependencies
+*Better handling for optional dependencies
+*Added the pretend option for checking how packages will install
