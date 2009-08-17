@@ -75,10 +75,13 @@ int main(int argc, char *argv[]){
 		return 0;
 	}    
 	else if(!strcmp(argv[1], "install")){
+		string name;
+		version ver;
 		for(int i=2;i<argc;i++){
-
 			install(argv[i],0);
-
+			name=argv[i];
+			sepVer(name,ver);
+			write(name+"\n",Config::getInstallDir()+"list",0);
 		}
 
 	}    

@@ -81,6 +81,7 @@ int makeinstall(string path,string command="make install"){
 	pack->setLocations(*locs);
 	pack->setVersion(ver.asString());
 	pack->save();
+	write(pack->getName()+"\n",Config::getInstallDir()+"list",0);
 	delete pack;
 	delete locs;
 	delete pos;

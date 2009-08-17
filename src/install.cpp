@@ -81,7 +81,6 @@ void clean(packinst pack){
 		if(file.length()>0)
 			write(file,Config::getOptionDir()+pack.getName());
 	}
-	write(pack.getName()+"\n",Config::getInstallDir()+"list",0);
 }
 
 
