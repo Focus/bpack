@@ -43,6 +43,42 @@ using namespace std;
 
 //Does the actual installing from fakeroot
 void installFake(packinst pack){
+	vector<string> locs;
+	cout<<"Copying files..."<<endl;
+	vector<string> *files = new vector<string>;
+	*files=com2vec(search(Config::getInstallDir()+"fakeroot/"));
+	for(int i=0;i<files->size();i++){
+		if(!cp(Config::getInstallDir()+"fakeroot/"+(*files)[i],"/",&locs))
+			err("Something went wrong while copying!!!",0);
+	}
+	package *installed = new package;
+	installed->setName(pack.getName());
+	installed->setVersion(pack.getVersion());
+	installed->setLocations(locs);
+	installed->save();
+	delete installed;
+	cout<<"Clearing up..."<<endl;
+	erase(Config::getInstallDir()+"fakeroot/");
+	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");
+	cout<<"Saving options..."<<endl;
+	vector<string> plus,minus;
+	if(!getPackageDeps(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion(),plus,minus,pack.getName()))
+		err("\tCannot save options!",0);
+	else{
+		string file;
+		if(plus.size()>0){
+			file="+"+plus[0];
+			for(int i=1;i<plus.size();i++)
+				file=file+",+"+plus[i];
+		}
+		if(minus.size()>0){
+			file=file+"-"+minus[0];
+			for(int i=1;i<minus.size();i++)
+				file=file+",-"+minus[i];
+		}
+		if(file.length()>0)
+			write(file,Config::getOptionDir()+pack.getName());
+	}
 
 }
 

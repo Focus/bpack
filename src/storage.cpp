@@ -29,6 +29,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
+#include <sys/stat.h>
 
 #include "search.hpp"
 #include "version.hpp"
@@ -37,6 +38,61 @@
 #include "error.hpp"
 #define MIN(x,y) x<y ? x:y
 using namespace std;
+
+#define BUFFER 5012
+
+int cp(vector<string>, string);
+int cp(string src,string dest,vector<string> *track){
+	struct stat buf;
+	string name;
+	if(src.find_last_of("/")==string::npos)
+		name=src;
+	else
+		name=src.substr(src.find_last_of("/")+1);
+	if(dest[dest.length()-1]!='/')
+		dest=dest+"/";
+	if(stat(src.c_str(),&buf)==-1){
+		err("Cannot stat "+src,0,1);
+		return 0;
+	}
+	if((buf.st_mode & S_IFMT)==S_IFDIR){
+		mkdir((dest+name).c_str(),buf.st_mode);
+		return cp(com2vec(search(src,"")),dest+name,track);
+	}
+	FILE* srcfile=fopen(src.c_str(),"r");
+	if(!srcfile){
+		err("Cannot open "+src+" for reading.",0,1);
+		return 0;
+	}
+	FILE* destfile=fopen((dest+name).c_str(),"w");
+	if(!destfile){
+		err("Cannot open "+dest+name+" for reading.",0,1);
+		return 0;
+	}
+	int read,left;
+	char* buffer=(char*)malloc(BUFFER);
+	while(left<buf.st_size){
+		read=fread(buffer,1,BUFFER, srcfile);
+		fwrite(buffer,1,read,destfile);
+		left=left+read;
+	}
+	if(track!=NULL)
+		track->push_back(dest+name);
+	free(buffer);
+	fclose(srcfile);
+	fclose(destfile);
+	chmod((dest+name).c_str(),buf.st_mode);
+	return 1;
+}
+
+int cp(vector<string> src,string dest,vector<string> *track){
+	int ret;
+	for(int i=0;i<src.size();i++)
+		ret=ret && cp(src[i],dest,track);
+	return ret;
+}
+
+
 
 //Valid breaks? Otherwise quit!
 const void checkBreaks (vector<int> breaks){

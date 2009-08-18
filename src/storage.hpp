@@ -34,4 +34,7 @@ bool write (const std::string,const std::string,bool overwrite=0);
 bool write (const std::vector<std::string>,const std::string,bool p3=0);
 std::vector<std::string> read(const std::string);
 void removeLine(std::string,std::string);
+//If you want to track the cp call, pass it a vector of strings (note that it wont track the directories it makes)
+int cp(std::vector<std::string>,std::string,std::vector<std::string> *arg=NULL);
+int cp(std::string,std::string,std::vector<std::string> *arg=NULL);
 #endif
