@@ -166,6 +166,8 @@ packinst getPackage(string location,string name){
 			pack.setConf(value);
 		else if(!strcmp(command.c_str(),"meta"))
 			pack.setMeta(1);
+		else if(!strcmp(command.c_str(),"fakeroot"))
+			pack.setFakeroot(1);
 		else if(!strcmp(command.c_str(),"optional"))
 			pack.addDeps(optional(value,name));
 		else if(!strcmp(command.c_str(),"patches"))

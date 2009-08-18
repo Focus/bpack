@@ -29,6 +29,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <sys/stat.h>
 
 #include "packinst.hpp"
 #include "version.hpp"
@@ -44,6 +45,16 @@ extern "C"{
 #define MIN(x,y) x < y ? x : y
 #define MAX(x,y) x > y ? x : y
 using namespace std;
+
+//Changes the --prefix option to use the fakeroot method
+string fakePrefix(const string config){
+	int pos;
+	if( (pos=config.find("--prefix"))==string::npos)
+		return config;
+	string ret=config.substr(0,pos);
+	ret=ret+"--prefix="+Config::getInstallDir()+"fakeroot"+config.substr(pos+9);
+	return ret;
+}
 
 //Returns 1 on success
 bool configuration(string config,string location){
@@ -218,8 +229,18 @@ bool installScript(packinst inst, int bail=-1)
 		string *conf=new string;
 		*conf=inst.getConfig();
 		macro(*conf);
-		if(system( ("./configure "+*conf).c_str())!=0)
-			err("Configuration failed",2);
+		if(!inst.getFakeroot()){
+			if(system( ("./configure "+*conf).c_str())!=0)
+				err("Configuration failed",2);
+		}
+		else{
+			string *fakeroot=new string;
+			*fakeroot=fakePrefix(*conf);
+			if(system( ("./configure "+*fakeroot).c_str())!=0)
+				err("Configuration failed",2);
+			delete fakeroot;
+		}
+
 		delete conf;
 	}
 	if(strcmp(inst.getMake().c_str(),"no")){
@@ -235,8 +256,14 @@ bool installScript(packinst inst, int bail=-1)
 	}
 
 	//Lets hijack this ride! (this will log activities in /tmp/hijack_log.txt)
-	erase("/tmp/hijack_log.txt");
-	setenv("LD_PRELOAD",hijack.c_str(),1);
+	if(!inst.getFakeroot()){
+		erase("/tmp/hijack_log.txt");
+		setenv("LD_PRELOAD",hijack.c_str(),1);
+	}
+	else{
+		erase(Config::getInstallDir()+"fakeroot/");
+		mkdir( (Config::getInstallDir()+"fakeroot/").c_str(),766);
+	}
 	//And install
 	if(strcmp(inst.getMakeInst().c_str(),"no")){
 		if(system( ("make install "+inst.getMakeInst()).c_str())!=0)

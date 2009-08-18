@@ -41,6 +41,10 @@ using namespace std;
 
 #define MIN(x,y) x<y? x:y
 
+//Does the actual installing from fakeroot
+void installFake(packinst pack){
+
+}
 
 //Installs and cleans up packages
 void clean(packinst pack){
@@ -176,7 +180,10 @@ void install(string packname, int bail){
 	//Have a packinst!
 	if(!packageinst->getMeta()){
 		if(installScript(*packageinst,bail)){
-			clean(*packageinst);
+			if(packageinst->getFakeroot())
+				installFake(*packageinst);
+			else
+				clean(*packageinst);
 			cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 		}
 

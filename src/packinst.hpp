@@ -47,7 +47,7 @@ class packinst{
 		//What are all these?
 		std::string getArchiveName() const {return archivename;}
 		std::string getArchiveUrl() const {return archiveurl;}
-
+		bool getFakeroot() const {return fakeroot;}
 		std::string getPreInstall() const {return preinstall;}
 		std::string getConf() const {return conf;}
 		std::string getConfFile() const {return conffile;}
@@ -89,6 +89,7 @@ class packinst{
 				archivename = wget;
 			}
 		}
+		void setFakeroot(const bool p){fakeroot=p;}
 		void setConfig(const std::string pconfig){config=pconfig;}
 		void setMake(const std::string pmake){make=pmake;}
 		void setMakeInst(const std::string pmakeinst){makeinst=pmakeinst;}
@@ -101,7 +102,7 @@ class packinst{
 		version ver;
 		std::vector<std::string> deps,patches;
 		int loc;
-		bool meta;
+		bool meta,fakeroot;
 
 };
 

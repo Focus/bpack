@@ -1,0 +1,115 @@
+#!/bin/bash
+# 
+# BINPACK (c) 2009 Bati Sengul <batieatworld@gmail.com>
+#
+# I hereby let you (presumably a user) to use, modify and redistribute the software
+# with no conditions imposed. It would be nice to let me know if you do plan to
+# modify and redistribute.
+#
+#
+
+VERSION=0.1
+AUTHOR="Bati Sengul <batieatworld@gmail.com>"
+BPACK_DIR="/var/bpack"
+
+ret="default"
+inst=1
+newest=1
+file=1
+output="default"
+
+options (){
+	i=0
+	for line in $*
+	do
+		case $line in
+			-n)
+			inst=0
+			;;
+			-i)
+			newest=0
+			;;
+		esac
+		let 'i=i+1'
+	done
+}
+
+
+getname (){
+	temp=$1
+#Remove the 2.5-8 and such and make it 2.5.8
+	index=${temp%[0-9]-[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+2}
+		index=${temp%[0-9]-[0-9]*}
+	done
+#Remove the rc
+	index=${temp%[0-9]rc[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+3}
+		index=${temp%[0-9]rc[0-9]*}
+	done
+#Remove the beta
+	index=${temp%[0-9]beta-[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+6}
+		index=${temp%[0-9]beta-[0-9]*}
+	done
+#Remove the git 
+	index=${temp%[0-9]git[0-9]*}
+	while [ ${#temp} -gt ${#index} ]
+	do
+		temp=${temp:0:${#index}+1}.${temp:${#index}+4}
+		index=${temp%[0-9]git[0-9]*}
+	done
+	ret=$temp
+}
+
+pack (){
+	pack=$1
+	file=""
+
+	# Check if they have the package installed
+	for lin in $( ls $BPACK_DIR/installed/ | grep $1)
+	do
+		if [ "${lin:0:${#pack}}" == "$pack" ]; then
+			file=$lin
+			break
+		fi
+	done
+
+	if [ ! $file == "" ] && [ $newest -eq 0 ]; then
+		output="$file.pack"
+		tar cf $output $( cat $BPACK_DIR/installed/$file )
+		return
+	fi
+}
+
+
+case $1 in
+	-h| --help)
+	echo "Packmaker version $VERSION"
+	echo "   Author: $AUTHOR"
+	echo "Packmaker makes binary packages from installed or uninstalled bpack packages. Usage: "
+	echo -e "\tpackmaker [options] [package]\n"
+	echo "Options"
+	echo -e "  -n\tDo not install the file if it is not already installed"
+	echo -e "  -i\tAllways try to use the installed version (not necessarily the newest)"
+	exit 0
+	;;
+#	*)
+#	echo -n "Usage: "
+#	echo -e "\tpackamker [options] [package]"
+#	exit 0
+#	;;
+esac
+options $*
+for line in $*
+do
+	if [ ! "${line:0:1}" == '-' ]; then
+		pack $line
+	fi
+done
