@@ -48,7 +48,7 @@ void Config::initialise()
 		else
 			Config::installdir=env+"/";
 	}
-	coll="test";//Currently default, we need to change this to official soon!
+	coll="official";
 	scriptdir = installdir + "scripts/";
 	packinstdir = installdir + "packs/";
 	tarballdir = installdir + "tarballs/";

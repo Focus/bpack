@@ -32,6 +32,7 @@
 #include "config.hpp"
 #include "search.hpp"
 #include "storage.hpp"
+#include "error.hpp"
 extern "C"{
 #include "qhttp.h"
 }
@@ -55,15 +56,19 @@ class collection
 		int empty();
 };
 
-collection::collection(string purl)
-{
+collection::collection(string purl){
 	url=purl;
 	// build request for collection
 	struct HttpRequest *req = buildreq(url.c_str());
 	// add headers such as User-Agent and Accept
 	// get
-	struct HttpResponse resp = HttpGet(*req, LOGMULTI);
+	struct HttpResponse resp = HttpGet(*req, LOGNONE);
 	freereq(req);
+	if(resp.errormsg != NULL){
+		err(resp.errormsg,0);
+		//freeresp(resp);
+		return;
+	}
 	// Error handling, on error none of the lower priority collections can be used, higher ones can however
 	// Read list
 	char* body = getBody(&resp);
@@ -93,16 +98,14 @@ int collection::empty(){
 }
 
 // removes from this collection any packs in the vector
-void collection::operator-=(vector<string> &rempacks)
-{
+void collection::operator-=(vector<string> &rempacks) {
 	vector<string>::iterator it;
 	for ( it=rempacks.begin() ; it != rempacks.end(); it++ )
 		packs.erase(*it);
 }
 
 // add any packs from provided collection, discard duplicates
-void collection::operator+=(const collection &coll)
-{
+void collection::operator+=(const collection &coll) {
 	
 }
 
@@ -112,8 +115,7 @@ void collection::add(string pack){
 }
 
 //returns 1 on success
-void collection::saveall(string path)
-{
+void collection::saveall(string path){
 	cout << "Downloading " << packs.size() << " packs\n";
 	map<string,string>::iterator it;
 	for ( it=packs.begin() ; it != packs.end(); it++ )
@@ -121,8 +123,7 @@ void collection::saveall(string path)
 
 }
 // This is not done
-void update()
-{
+void update(){
 	// Get list of collections we are using
 	string testurl("http://bpack.co.uk/repos.php?coll="+Config::getColl());
 	

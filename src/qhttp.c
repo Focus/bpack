@@ -64,32 +64,30 @@ void freeresp(struct HttpResponse hr){
 
 //TODO asyncronous download
 
-void logger(enum LOGMETHOD logtype, const char* msg)
-{
+void logger(enum LOGMETHOD logtype, const char* msg){
 	switch (logtype)
 	{
 		case LOGNONE:
 			break;
 		case LOGSINGLE:
-			printf("qhttp : %s\r", msg);
+			printf("%s\r", msg);
 			break;
 		case LOGMULTI:
-			printf("qhttp : %s\n", msg);
+			printf("%s\n", msg);
 			break;
 	}
 }
 
-void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
-{
+void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2){
 	switch (logtype)
 	{
 		case LOGNONE:
 			break;
 		case LOGSINGLE:
-			printf("qhttp : %s%s\r", msg, msg2);
+			printf("%s%s\r", msg, msg2);
 			break;
 		case LOGMULTI:
-			printf("qhttp : %s%s\n", msg, msg2);
+			printf("%s%s\n", msg, msg2);
 			break;
 	}
 }
@@ -99,8 +97,7 @@ void logger2(enum LOGMETHOD logtype, const char* msg, const char*msg2)
 // on error the returned structure's errormsg field is set, otherwise NULL
 
 //Fixed again the strings, hehehe
-struct HttpRequest* buildreq(const char* url)
-{
+struct HttpRequest* buildreq(const char* url) {
 	struct HttpRequest *ret = (struct HttpRequest*)malloc(sizeof(struct HttpRequest));
 	ret->errormsg = NULL;
 	ret->rawpost=NULL;

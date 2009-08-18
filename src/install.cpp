@@ -190,6 +190,7 @@ void install(string packname, int bail){
 	delete packageinst;
 }
 
+//Works out the dependencies and optional dependencies and displays what would be installed in the current setup
 void pretend(string packname, int bail){
 
 	packinst *packageinst=new packinst;
@@ -253,7 +254,7 @@ void pretend(string packname, int bail){
 			pretend(y,bail); 
 		}
 	}
-	cout<<packageinst->getName()<<"-"<<packageinst->getVersion()<<":     ";
+	cout<<packageinst->getName()<<"-"<<packageinst->getVersion()<<"     ";
 	vector<string> plus,minus;
 	if(!getPackageDeps(Config::getPackInstDir()+*location,plus,minus,packname))
 		err("Cannot get package dependencies!!",0);
