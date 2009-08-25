@@ -70,6 +70,25 @@ bool package::save(){
 bool package::remove(){
 	return erase(Config::getPacklistPath()+name+"-"+ver.asString());
 }
+//Pass it deps from packinst and the name of the package
+int depTree(vector<string> deps,string pack){
+	string name;
+	version ver;
+	int ret=1;
+	for(int i=0;i<deps.size();i++){
+		vector<string> *file=new vector<string>;
+		name=deps[i];
+		sepVer(name,ver);
+		*file=read(Config::getDepTree()+name);
+		for(int j=0;j<file->size();j++){
+			if((*file)[i]==name)
+				continue;
+		}
+		ret=ret && write(pack+"\n",Config::getDepTree()+name,0);
+		delete file;
+	}
+	return ret;
+}
 
 //Separates the foo-0.2.2 to foo and 0.2.2
 void sepVer(string &dep, version &ver){
@@ -101,7 +120,6 @@ void sepVer(string &dep, version &ver){
 
 	ver=temp;
 	dep=dep.substr(0,dep.length()-test-1);
-
 }
 
 string packSize(vector<string> locs){

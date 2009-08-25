@@ -120,6 +120,7 @@ install: bpack libs/hijack.so.1.0
 	mkdir -p $(DESTDIR)/packs
 	mkdir -p $(DESTDIR)/libs
 	mkdir -p $(DESTDIR)/options
+	mkdir -p $(DESTDIR)/deptree
 	cp -f bpack $(bindir)/bpack
 	cp -f libs/hijack.so.1.0 $(DESTDIR)/libs/
 	ln -sf $(bindir)/bpack $(bindir)/versioncmp

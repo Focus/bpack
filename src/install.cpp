@@ -56,6 +56,7 @@ void installFake(packinst pack){
 	installed->setVersion(pack.getVersion());
 	installed->setLocations(locs);
 	installed->save();
+	depTree(pack.getDeps(),pack.getName());
 	delete installed;
 	cout<<"Clearing up..."<<endl;
 	erase(Config::getInstallDir()+"fakeroot/");
@@ -97,8 +98,8 @@ void clean(packinst pack){
 	erase("/tmp/hijack_log.txt");
 	installed->setVersion(pack.getVersion());
 	installed->setName(pack.getName());
-	installed->setDeps(pack.getDeps());
 	installed->save();
+	depTree(pack.getDeps(),pack.getName());
 	delete installed;
 	cout<<"Clearing up..."<<endl;
 	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");

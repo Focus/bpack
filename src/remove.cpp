@@ -107,6 +107,10 @@ void removeHanging(){
 				del.push_back(name);
 		}
 	}
+	if(del.size()<=0){
+		cout<<"No hanging packages detected."<<endl;
+		return;
+	}
 	cout<<"   Packages to be removed:\n\n";
 	for(int i=0;i<del.size();i++)
 		cout<<del[i]<<"  ";

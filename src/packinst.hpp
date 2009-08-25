@@ -36,7 +36,7 @@
 class packinst{
 
 	public:
-		packinst(){loc=0;meta=0;}
+		packinst(){loc=0;meta=0;fakeroot=0;}
 		~packinst(){}
 		std::string getName() const {return name;}
 		std::string getVersion() const {return ver.asString();}

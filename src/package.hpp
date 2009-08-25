@@ -46,6 +46,7 @@ class package
 		std::vector<std::string> getDeps() const{return deps;} 
 		bool getScan() const {return scan;}
 		void setName(const std::string pname){name=pname;}
+		void setDeps(const std::vector<std::string> pdeps){deps=pdeps;}
 		void setVersion(const std::string pname){ver=pname;}
 		void setVersion(const version pver){ver=pver;}
 		void setLocations(const std::vector<std::string> plocations){locations=plocations;}
@@ -54,7 +55,6 @@ class package
 			for(int i=0;i<plocations.size();i++)
 				locations.push_back(plocations[i]);
 		}
-		void setDeps(const std::vector<std::string> pdeps){deps=pdeps;}
 		void setScan(const bool pscan){scan=pscan;}
 		bool save();
 		bool remove();
@@ -73,6 +73,7 @@ package getInstalledPackage(std::string);
 std::vector<package> getInstalledPackages();
 void sepVer(std::string&, version&);
 std::string packSize(std::vector<std::string>);
+int depTree(std::vector<std::string>,std::string);
 #endif
 
 

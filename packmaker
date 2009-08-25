@@ -86,6 +86,10 @@ pack (){
 		tar cf $output $( cat $BPACK_DIR/installed/$file )
 		return
 	fi
+	if [ $inst -eq 1 ]; then
+		out=$( `bpack install $pack` )
+		echo $out
+	fi
 }
 
 
