@@ -131,7 +131,7 @@ installdeps (){
 		done
 		if [ $needy -eq -10 ]; then
 			echo "Package $dep not found!"
-			echo -n "Would you like to carry on? [y/n]:"
+			echo -n "Would you like to carry on? [Y/n]:"
 			read -n 1 input
 			echo ""
 			if [ "$input" == "n" ]; then
@@ -139,7 +139,7 @@ installdeps (){
 			fi
 		elif [ $needy -ne 0 ]; then
 			echo "Package $dep not installed correctly!"
-			echo -n "Would you like to carry on? [y/n]:"
+			echo -n "Would you like to carry on? [Y/n]:"
 			read -n 1 input
 			echo ""
 			if [ "$input" == "n" ]; then

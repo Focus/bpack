@@ -182,17 +182,26 @@ bool installScript(packinst inst, int bail=-1)
 	delete tars;
 	delete tars2;
 	//Make a clean directory by removing previous extracts
-	erase(tardir+tar.substr(0,tar.find(".tar")));
+	string tempdir="/tmp/bpack-build/"+inst.getName()+"-"+inst.getVersion();
+	erase(tempdir);
+	//Any error in the one below will be caught by the if statement below, no need to care about /dir existing errors
+	mkdir("/tmp/bpack-build/",S_IWUSR);
+	if(mkdir(tempdir.c_str(),S_IWUSR) != 0)
+			err("Unable to create "+tempdir,2,1);
 	//Unpack the tar
-	if(system( ("tar xf "+tardir+tar+" -C "+tardir).c_str())!=0){
+	if(system( ("tar xf "+tardir+tar+" -C "+tempdir).c_str())!=0){
 		err("Unable to unpack the tarball!",2);
 	}
 
-	if(chdir( (tardir+tar.substr(0,tar.find(".tar"))).c_str())!=0){
-		cout<<"Cannot cd to "+tardir+tar.substr(0,tar.find(".tar"))<<endl<<"Trying an other directory..."<<endl;
-		if(chdir( (tardir+inst.getName()+"-"+inst.getVersion()).c_str() ))
-			err("Cannot cd to "+tardir+inst.getName()+"-"+inst.getVersion(),2,1);
+	//Find the folder the damn thing extracted and cd to it
+	vector<string> *tfiles = new vector<string>;
+	*tfiles=com2vec(search(tempdir));
+	if(tfiles->size() == 0)
+			err("There doesn't seem to be a folder extracted!",2);
+	if(chdir( (tempdir+"/"+(*tfiles)[0]).c_str())!=0 ){
+			err("Cannot cd to "+tempdir+(*tfiles)[0],2,1);
 	}
+	delete tfiles;
 	//Aplly the patches
 	vector<string> patches;
 	for(int i=0;i<inst.getPatches().size();i++){
