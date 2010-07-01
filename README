@@ -99,7 +99,7 @@ A lot of packages come with optional dependencies. You can see what will be inst
 
 	bpack pretend [package]
 
-If you wish to change the optional dependencies, use the enviromental variable like this
+If you wish to change the optional dependencies, use the environmental variable like this
 
 	OPTIONAL="+foo -bar" bpack install [package]
 
@@ -112,7 +112,7 @@ Bpack also comes with a terminal. If you wish to compile things yourself, run th
 
 	bpack terminal
 
-to get the bpack terminal. With this terminal you can exacute commands as usual (e.g. cd, make, ls) but bpack will trace your make install call and make it a package for you.
+to get the bpack terminal. With this terminal you can execute commands as usual (e.g. cd, make, ls) but bpack will trace your make install call and make it a package for you.
 
 A very helpful tool bpack comes with is track. You can use
 
@@ -145,7 +145,7 @@ to remove packages that were installed as a dependency for a package the user in
 
 =ii=   =Removing Scanned Files=
 
-For scanning the computer see 3.e. The important thing to remember is to CHECK THE SCAN BEFORE REMOVING FILES that are installed. No seriously. Scanned locations may be compleately wrong, it is your duty to check they are sane!!
+For scanning the computer see 3.e. The important thing to remember is to CHECK THE SCAN BEFORE REMOVING FILES that are installed. No seriously. Scanned locations may be completely wrong, it is your duty to check they are sane!!
 
 
 
@@ -219,7 +219,7 @@ Bpack has its own feature for scanning through the root directory for packages t
 
 == a ==  ==/etc/bpack.conf==
 
-Bpack will read all the configuration from this file, other than the enviroment variable BPACK_DIR which if set, bpack will use as it's base directory (by default this is /var/bpack). The format of the configuration is as follows;
+Bpack will read all the configuration from this file, other than the environment variable BPACK_DIR which if set, bpack will use as it's base directory (by default this is /var/bpack). The format of the configuration is as follows;
 
 	option:value
 
@@ -227,7 +227,7 @@ Currently these are the available options and values
 
 	Option		Values			Explanation
 
-	quitlevel	0,1,2,-1,-2		In the negatives, bpack will ask more instead of quiting, in the possitives bpack will quit more than usual.
+	quitlevel	0,1,2,-1,-2		In the negatives, bpack will ask more instead of quiting, in the positives bpack will quit more than usual.
 	collection	a collection name	The default collection to get packages from.
 	cflags		string			The cflags that bpack should apply
 	cxxflags	string			The cxxflags that bpack should apply
@@ -236,7 +236,7 @@ Currently these are the available options and values
 
 == b ==  ==Package making==
 
-The package format for bpack is very simple so users should not be affraid of making their own. Just like the conf file, the format is
+The package format for bpack is very simple so users should not be afraid of making their own. Just like the conf file, the format is
 
 	option:value
 
@@ -246,13 +246,13 @@ Bpack will read the lines untill the next option (ignoring the empty lines) so m
 	Option		Action
 
 	location	The url for the tarball, incase it needs to be downloaded
-	deps		Dependencies seperated by commas
+	deps		Dependencies separated by commas
 	optional	Optional dependencies, recommended ones should have a ! before them (i.e. foo,!gcc,bar)
 	config		Parameters to be passed to ./configure (e.g. --prefix=/usr)
 	make		Paramerers to be passed to make
 	makeinst	Parameters to be passed to makeinst
-	preinstall	Things to exacute before the install in the unpacked tar directory
-	postinstall	Things to exacute after the install in the unpacked tar directory
+	preinstall	Things to execute before the install in the unpacked tar directory
+	postinstall	Things to execute after the install in the unpacked tar directory
 	conf		The contents of the configuration file, make sure you set conffile if you use this option
 	conffile	The location of the configuration file
 	patches		The location of patches to be downloaded and applied (seperated by commas)
@@ -267,7 +267,7 @@ The conf: option is a bit special in the sense that it should be written like a 
 
 == b ==  ==Package making==
 
-Share your bpack experiance with others and create a collection. A collection is a bunch of packages (you can nick packages from other people) that the user will recieve when they update. For more information, register at http://www.bpack.co.uk .
+Share your bpack experience with others and create a collection. A collection is a bunch of packages (you can nick packages from other people) that the user will receive when they update. For more information, register at http://www.bpack.co.uk .
 
 
 
@@ -276,7 +276,7 @@ Share your bpack experiance with others and create a collection. A collection is
 
 == a ==  ==Binpack==
 
-Binpack is a helper script for bpack. As the name suggest, it installs binary packages from other package managers. We know that programs such as firefox may take a long time to compile. Binpack will install Debian (including Ubuntu) and Archlinux packages. The format is
+Binpack is a helper script for bpack. As the name suggest, it installs binary packages from other package managers. We know that programs such as Firefox may take a long time to compile. Binpack will install Debian (including Ubuntu) and Archlinux packages. The format is
 
 	binpack [file]
 
