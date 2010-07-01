@@ -95,6 +95,8 @@ bool version::operator< (const version ver) const{
 	for(int i=0;i<vecver.size();i++){
 		if(vecver[i]>numberst[i])
 			return 1;
+		else if(vecver[i]<numberst[i])
+			return 0;
 	}
 	return 0;
 }

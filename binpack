@@ -239,6 +239,11 @@ case $1 in
 	fi
 	pacman $1
 	;;
+	-c| --clean)
+	getname $2
+	echo $ret
+	exit 0
+	;;
 	*)
 	echo -e "Usage:\n\tbinpack [file]\n"
 	echo "Supported files: *i686.pkg.tar.gz"

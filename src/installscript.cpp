@@ -164,7 +164,7 @@ bool installScript(packinst inst, int bail=-1)
 	if(tars2->size()>0)
 		tar=(*tars2)[0];
 	else if(tars->size()<=0){
-		cout<<"\nPackage not found locally, I will download it now"<<endl;
+		cout<<"\n** Package not found locally, I will download it now"<<endl;
 
 		if(inst.getWget()==""){
 			err("No URL specified to download!",2);
@@ -203,23 +203,24 @@ bool installScript(packinst inst, int bail=-1)
 	}
 	delete tfiles;
 	//Aplly the patches
+	mkdir( (tardir+"patches/").c_str(),S_IWUSR);
 	vector<string> patches;
 	for(int i=0;i<inst.getPatches().size();i++){
 		if(inst.getPatches()[i].find_last_of("/")==string::npos){
 			err("Patch url "+inst.getPatches()[i]+" looks bad, skipping",0);
 			continue;
 		}
-		if(wget(inst.getPatches()[i].c_str(),tardir.c_str(),inst.getPatches()[i].substr(inst.getPatches()[i].find_last_of("/")+1).c_str(),LOGNONE,1)){
+		if(wget(inst.getPatches()[i].c_str(),(tardir+"patches/").c_str(),inst.getPatches()[i].substr(inst.getPatches()[i].find_last_of("/")+1).c_str(),LOGNONE,1)){
 			err("Patch url "+inst.getPatches()[i]+" could not be downloaded, skipping",0);
 			continue;
 		}
 		patches.push_back(inst.getPatches()[i].substr(inst.getPatches()[i].find_last_of("/")+1));
 	}
 	for(int i=0;i<patches.size();i++){
-		if( system( ("patch -Np1 -i ../"+patches[i]).c_str())!=0)
+		if( system( ("patch -Np1 -i "+tardir+"patches/"+patches[i]).c_str())!=0)
 			err("Patch "+patches[i]+" could not be applied",0);
 		else
-			cout<<"Patch "+patches[i]+" successful"<<endl;
+			cout<<"** Patch "+patches[i]+" successful"<<endl;
 	}
 	//Run preinstall commands
 	if(inst.getPreInstall()!=""){
@@ -258,7 +259,7 @@ bool installScript(packinst inst, int bail=-1)
 	}
 	//Do we need to remove the old package?
 	if(bail==1){
-		cout<<"Removing version "<<inst.getVersion()<<endl;
+		cout<<"** Removing version "<<inst.getVersion()<<endl;
 		if(!removePack(inst.getName()))
 			err("Removing old package failed!",1);
 

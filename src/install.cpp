@@ -44,7 +44,7 @@ using namespace std;
 //Does the actual installing from fakeroot
 void installFake(packinst pack){
 	vector<string> locs;
-	cout<<"Copying files..."<<endl;
+	cout<<"** Copying files..."<<endl;
 	vector<string> *files = new vector<string>;
 	*files=com2vec(search(Config::getInstallDir()+"fakeroot/"));
 	for(int i=0;i<files->size();i++){
@@ -58,10 +58,10 @@ void installFake(packinst pack){
 	installed->save();
 	depTree(pack.getDeps(),pack.getName());
 	delete installed;
-	cout<<"Clearing up..."<<endl;
+	cout<<"** Clearing up..."<<endl;
 	erase(Config::getInstallDir()+"fakeroot/");
 	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");
-	cout<<"Saving options..."<<endl;
+	cout<<"** Saving options..."<<endl;
 	vector<string> plus,minus;
 	if(!getPackageDeps(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion(),plus,minus,pack.getName()))
 		err("\tCannot save options!",0);
@@ -85,7 +85,7 @@ void installFake(packinst pack){
 
 //Installs and cleans up packages
 void clean(packinst pack){
-	cout<<"\nAdding install paths..."<<endl;
+	cout<<"\n** Adding install paths..."<<endl;
 	package *installed=new package;
 	if(pack.getMeta()){
 		packinst *temp=new packinst;
@@ -101,9 +101,9 @@ void clean(packinst pack){
 	installed->save();
 	depTree(pack.getDeps(),pack.getName());
 	delete installed;
-	cout<<"Clearing up..."<<endl;
+	cout<<"** Clearing up..."<<endl;
 	erase(Config::getTarballDir()+pack.getName()+"-"+pack.getVersion()+"/");
-	cout<<"Saving options..."<<endl;
+	cout<<"** Saving options..."<<endl;
 	vector<string> plus,minus;
 	if(!getPackageDeps(Config::getPackInstDir()+pack.getName()+"-"+pack.getVersion(),plus,minus,pack.getName()))
 		err("\tCannot save options!",0);
@@ -179,7 +179,7 @@ void install(string packname, int bail){
 		y=(*installed)[i];
 		sepVer(y,depver);
 		if( !strcmp(y.c_str(), (packageinst->getName()).c_str()) && depver>=packageinst->getVersion()){
-			cout<<"\nThe package is installed with the current or more recent version"<<endl;
+			cout<<"\n** The package is installed with the current or more recent version"<<endl;
 			exit(0);
 		}
 	}
@@ -197,23 +197,23 @@ void install(string packname, int bail){
 			gotit=0;
 			if(!strcmp(inst.c_str(),y.c_str())){
 				if( instver>=depver.asString()  || instver=="0.0.0" ){
-					cout<<"\nPackage "<<y<<" is installed, removing from dependencies...";
+					cout<<"\n** Package "<<y<<" is installed, removing from dependencies...";
 					gotit=1;
 					break;
 				}
 				else{
-					cout<<"\nPackage "<<y<<" version "<<instver.asString()<<" found but version "<<depver.asString()<<" required."<<endl;
+					cout<<"\n** Package "<<y<<" version "<<instver.asString()<<" found but version "<<depver.asString()<<" required."<<endl;
 				}
 			}
 
 		}
 		if (!gotit){
-			cout<<"\nDependency "<<y<<" needs to be installed.";
+			cout<<"\n** Dependency "<<y<<" needs to be installed.";
 			install(y,bail); 
 		}
 	}
 	delete installed;
-	cout<<"\nInstalling "<<packname<<"...\n";
+	cout<<"\n** Installing "<<packname<<"...\n";
 	//Have a packinst!
 	if(!packageinst->getMeta()){
 		if(installScript(*packageinst,bail)){
@@ -221,7 +221,7 @@ void install(string packname, int bail){
 				installFake(*packageinst);
 			else
 				clean(*packageinst);
-			cout<<"\n"<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
+			cout<<"\n** "<<packageinst->getName()<<"-"<<packageinst->getVersion()<<" is installed!"<<endl;
 		}
 
 		else
@@ -270,7 +270,7 @@ void pretend(string packname, int bail){
 		y=(*installed)[i];
 		sepVer(y,depver);
 		if( !strcmp(y.c_str(), (packageinst->getName()).c_str()) && depver>=packageinst->getVersion()){
-			cout<<"\nThe package is installed with the current or more recent version"<<endl;
+			cout<<"\n** The package is installed with the current or more recent version"<<endl;
 			exit(0);
 		}
 	}

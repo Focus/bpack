@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-# BINPACK (c) 2009 Bati Sengul <batieatworld@gmail.com>
+# PACKMAKER (c) 2009 Bati Sengul <batieatworld@gmail.com>
 #
 # I hereby let you (presumably a user) to use, modify and redistribute the software
 # with no conditions imposed. It would be nice to let me know if you do plan to
@@ -81,9 +81,9 @@ pack (){
 		fi
 	done
 
-	if [ ! $file == "" ] && [ $newest -eq 0 ]; then
-		output="$file.pack"
-		tar cf $output $( cat $BPACK_DIR/installed/$file )
+	if [ -n $file ] && [ $inst -eq 0 ]; then
+		output="$file.bpack"
+		tar cf $output $( cat $BPACK_DIR/installed/$file ) $BPACK_DIR/installed/$file
 		return
 	fi
 	if [ $inst -eq 1 ]; then

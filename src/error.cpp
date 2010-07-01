@@ -9,14 +9,14 @@
 
 void err(std::string message, int level,bool errnoset){
 	
-	std::cerr<<"\n"<<message<<std::endl;
+	std::cerr<<"\n** "<<message<<std::endl;
 	if(errnoset){
-		std::cerr<<"\nReason: "<<strerror(errno)<<std::endl;
+		std::cerr<<"\n** Reason: "<<strerror(errno)<<std::endl;
 	}
 	if(level==0)
 		return;
 	if(level==2)
-		std::cerr<<"\nFatal Error"<<std::endl;
+		std::cerr<<"\n** Fatal Error"<<std::endl;
 	if(level<Config::getQuit())
 		return;
 	if( (Config::getQuit()<0 && -Config::getQuit()>=level) || level==1 ){
@@ -28,7 +28,7 @@ void err(std::string message, int level,bool errnoset){
 			return;
 		}
 		delete input;
-		std::cerr<<"\nAborted"<<std::endl;
+		std::cerr<<"\n** Aborted"<<std::endl;
 		exit(1);
 	}
 	exit(1);
