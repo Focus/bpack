@@ -55,7 +55,7 @@ VERSION = 0.1.3
 bindir = @bindir@
 DESTDIR=/var/bpack/
 
-bpack: src/error.o src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o packs.list src/sync.o
+bpack: src/error.o src/search.o src/terminal.o src/remove.o src/update.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o libs/hijack.so.1.0 src/qhttp.o src/sync.o
 	$(CXX) $(CXXFLAGS) src/sync.o src/error.o src/update.o src/qhttp.o src/terminal.o src/search.o src/remove.o src/main.o src/config.o src/installscript.o src/storage.o src/packinst.o src/version.o src/install.o src/package.o src/scan.o -o bpack
 
 src/qhttp.o: src/qhttp.c src/qhttp.h
@@ -125,6 +125,7 @@ install: bpack libs/hijack.so.1.0
 	cp -f libs/hijack.so.1.0 $(DESTDIR)/libs/
 	ln -sf $(bindir)/bpack $(bindir)/versioncmp
 	cp -f binpack $(bindir)/binpack
+	cp -f packmaker $(bindir)/packmaker
 	touch /etc/bpack.conf
 	echo -e "$(bindir)/bpack\n$(bindir)/binpack\n$(DESTDIR)/libs/hijack.so.1.0" > $(DESTDIR)/installed/bpack-$(VERSION)
 
