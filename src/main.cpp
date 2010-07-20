@@ -25,6 +25,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 using namespace std;
 #include "version.hpp"
 #include "package.hpp"
@@ -43,6 +44,7 @@ extern "C"{
 
 
 #define VERSION 0.2
+#define MIN(x,y) x<y? x:y
 
 //List of functions we need.
 void help();
@@ -143,6 +145,34 @@ int main(int argc, char *argv[]){
 				install(argv[i],1);
 		}
 	}
+	else if(!strcmp(argv[1],"get")){
+		if(argc<4){
+			cout<<"Usage:\n\t bpack get [url] [save directory]"<<endl;
+			return 0;
+		}
+		return wget(argv[2],argv[3],NULL,LOGNONE,1);
+	}
+	else if(!strcmp(argv[1],"search")){
+		for(int i=2;i < argc;i++){
+			string pack(argv[i]);
+			vector <string> partial = com2vec(search(Config::getPackInstDir(),"*"+pack+"*"));
+			sort(partial.begin(),partial.end());
+			version ver;
+			string name,hold;
+			cout<<"Packages starting with the name "<<pack<<":";
+			for(int j=0; j<partial.size();j++){
+					name=partial[j];
+					sepVer(name,ver);
+					if(name!=hold){
+							cout<<"\n\n  "<<name<<"\n    "<<ver.asString();
+							hold=name;
+					}
+					else
+							cout<<" , "<<ver.asString();
+			}
+			cout<<"\n\n";
+		}
+	}
 	else if(!strcmp(argv[1],"--help"))
 		help();
 	else if(!strcmp(argv[1],"list"))
@@ -207,12 +237,15 @@ void help()
 	cout<<"\n  remove [package]";
 	cout<<"\n  upgrade [packages]";
 	cout<<"\n  update";
+	cout<<"\n  search [package (maybe partial) names]";
+	cout<<"\n  track [command (use quote marks if you have escape characters)]";
 	cout<<"\n  list";
 	cout<<"\n  sizeof [package]";
 	cout<<"\n  clean";
 	cout<<"\n  clean cache";
 	cout<<"\n  clean packs";
 	cout<<"\n  sync [package manager]";
+	cout<<"\n  get [url] [save directory]";
 	cout<<"\n  --help";
 
 

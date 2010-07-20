@@ -48,7 +48,10 @@ string search(string dir, string name){
 	}
 	if(!strcmp((name.substr(name.size()-1,1)).c_str(),"*")){
 		name= name.substr(0,name.size()-1);
-		pos=2;
+		if(pos == 1)
+				pos=3;
+		else
+				pos=2;
 	}
 	}
 	//Begin the search
@@ -70,14 +73,14 @@ string search(string dir, string name){
 		ret=d->d_name;
 		if(strcmp(ret.c_str(),".") && strcmp(ret.c_str(),"..")){
 		if((findy=ret.find(name))>=0){
-			if(findy>0 && pos==1){
+			if(findy>0 && (pos == 1 || pos == 3) ){
 				rety=rety+ret+",";
 				}
 			if(findy==0 && pos==0 && ret.size()==name.size()){
 				closedir(dp);dp=NULL;
 				return ret;
 				}
-			if(findy==0 && pos==2){
+			if(findy == 0 && (pos == 2 || pos == 3)){
 				rety=rety+ret+",";
 				}
 		}
