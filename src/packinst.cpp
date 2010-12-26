@@ -112,7 +112,7 @@ vector<string> optional(string packs, string name=NULL){
 			}
 		}
 	}
-	delete add,remove;
+	delete add, rem;
 	return ret;
 }
 
